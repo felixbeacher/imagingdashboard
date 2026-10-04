@@ -35,24 +35,23 @@
   <p id="loading" class="loading">Dashboard data unavailable.</p>
   <noscript><p class="empty">Enable JavaScript to display the dashboard. Source data are embedded in this page; no local Python server is required for the published website.</p></noscript>
   <div id="dashboard" hidden>
-    <section class="section card benchmark" aria-labelledby="fda-title"><p class="eyebrow" id="regulation-scope">Regulation</p><h2 id="fda-title">FDA-listed radiology AI authorisations</h2><p class="note" id="fda-notice"></p><div class="benchmark-grid"><div id="fda-metric"></div><div id="fda-series"></div></div><details id="fda-classifications" hidden><summary>Reviewed modality &amp; application classifications</summary><div class="grid two" style="margin-top:15px"><div id="fda-modalities"></div><div id="fda-applications"></div></div></details></section>
+    <section class="section card benchmark" id="regulation-section" aria-labelledby="fda-title"><p class="eyebrow" id="regulation-scope">Regulation</p><h2 id="fda-title">FDA-listed radiology AI authorisations</h2><p class="note" id="fda-notice"></p><div id="market-access-content"></div><div class="benchmark-grid" id="regulation-charts"><div id="fda-metric"></div><div id="fda-series"></div></div><details id="fda-classifications" hidden><summary>Reviewed modality &amp; application classifications</summary><div class="grid two" style="margin-top:15px"><div id="fda-modalities"></div><div id="fda-applications"></div></div></details></section>
     <div id="regional-dashboard">
-      <section class="section" aria-labelledby="regional-title"><div class="section-head"><h2 id="regional-title">AI research activity</h2><p class="muted">A research-activity proxy</p></div><div class="grid research-grid"><div id="research-card"></div><article class="card"><h3>Regional registry samples</h3><p class="note">Counts of matching registrations with study sites in named country samples. Samples differ in size; multinational studies can appear in several views. These are not market-size rankings and must not be added together.</p><div id="research-samples"></div></article></div></section>
+      <section class="section" id="research-section" aria-labelledby="regional-title"><div class="section-head"><h2 id="regional-title">AI research activity</h2><p class="muted">A research-activity proxy</p></div><div class="grid research-grid" id="research-grid"><div id="research-card"></div><article class="card" id="research-comparison"><h3>Regional registry samples</h3><p class="note">Counts of matching registrations with study sites in named country samples. Samples differ in size; multinational studies can appear in several views. These are not market-size rankings and must not be added together.</p><div id="research-samples"></div></article></div></section>
       <section class="section" id="additional-section" hidden aria-labelledby="additional-title"><div class="section-head"><h2 id="additional-title">Additional sourced observations</h2><p class="muted" id="additional-region"></p></div><div id="metric-groups"></div></section>
-      <section class="section" id="investment-section" hidden aria-labelledby="investment-title"><div class="section-head"><h2 id="investment-title">AI authorisations &amp; MedTech venture investment</h2><p class="muted" id="investment-region"></p></div><div class="grid two"><article class="card" id="authorisations-panel"></article><article class="card" id="funding-panel"></article></div><p class="note" style="margin-top:13px">Regulatory activity shows progress towards market access; venture investment supports development and expansion. Broad MedTech funding is a wider financing comparator, not imaging AI funding. Geography, periods and funding scope must be checked before comparing the two; neither measures paid adoption or establishes causation.</p></section>
-      <section class="section" id="classification-section" hidden aria-labelledby="classification-title"><h2 id="classification-title">AI authorisations by imaging modality</h2><div class="grid two"><article class="card" id="modality-panel"></article><article class="card" id="application-panel"></article></div><p class="note">Each authorisation receives one category per breakdown. Supply shares are not usage or revenue shares.</p></section>
+      <section class="section" id="investment-section" hidden aria-labelledby="investment-title"><div class="section-head"><h2 id="investment-title">Venture investment</h2><p class="muted" id="investment-region"></p></div><article class="card" id="funding-panel"></article><p class="note">Funding supports product development and commercial expansion. Broad MedTech investment is contextual and is not imaging AI funding. The source must identify the sector, geography, currency and period; funding does not measure paid adoption.</p></section>
       <section class="section card" id="vendor-section" hidden aria-labelledby="vendor-title"><h2 id="vendor-title">Selected vendor AI revenue observations</h2><p class="note">Up to five sourced vendor observations are displayed. These are not necessarily the five largest vendors. Compare only matching revenue definitions, currencies and reporting periods. Application-level revenue and market shares are not inferred from company totals.</p><div id="vendor-content"></div></section>
       <section class="section card" id="outlook-section" hidden aria-labelledby="outlook-title"><h2 id="outlook-title">Attributed analyst commentary</h2><div id="editorial-content"></div></section>
       <section class="section" id="regional-context-section" hidden aria-labelledby="regional-context-title"><h2 id="regional-context-title">Additional regional context</h2><div class="grid two" id="regional-context-cards"></div></section>
     </div>
-    <section class="section" aria-labelledby="context-title"><div class="section-head"><h2 id="context-title">Regional financial context</h2><p class="muted" id="context-scope"></p></div><p class="note" id="context-note"></p><div class="grid two" id="context-cards"></div><div id="country-context"></div></section>
-    <section class="section card" aria-labelledby="market-history-title">
+    <details class="section quality" id="financial-section"><summary>Financial context and country inflation</summary><div style="margin-top:16px"><div class="section-head"><h2 id="context-title">Regional financial context</h2><p class="muted" id="context-scope"></p></div><p class="note" id="context-note"></p><div class="grid two" id="context-cards"></div><div id="country-context"></div></div></details>
+    <details class="section quality" id="market-history-section"><summary>Global equity and financing context · optional</summary><div style="margin-top:16px">
       <div class="section-head"><h2 id="market-history-title">Equities &amp; financing rates — six-month context</h2><p class="muted" id="market-history-scope"></p></div>
       <p class="note">Equity and financing benchmarks provide investment context, not imaging AI market performance. Each series states its geography and definition. Parallel movements do not establish correlation or causation.</p>
       <div class="grid two"><article id="equity-history-panel"></article><article id="rate-history-panel"></article></div>
-      <p class="note">Historical series use six completed calendar months. Missing regional observations remain blank; no US series is substituted into Europe, Asia-Pacific, Middle East or LATAM views. Country and euro-area benchmarks are labelled as subsets, not region-wide averages.</p>
-    </section>
-    <section class="section card" aria-labelledby="news-title"><div class="section-head"><h2 id="news-title">Industry headlines</h2><p class="muted" id="news-scope"></p></div><p class="note" id="news-notice"></p><div id="headline-summary"></div><div class="news-list" id="news-content"></div><p class="note" id="news-failures"></p></section>
+      <p class="note">Historical series use six completed calendar months. This optional panel appears only in the Global view. No US series is substituted into regional views. Country and euro-area benchmarks are labelled as subsets, not region-wide averages.</p>
+    </div></details>
+    <section class="section card" id="news-section" aria-labelledby="news-title"><div class="section-head"><h2 id="news-title">Industry headlines</h2><p class="muted" id="news-scope"></p></div><p class="note" id="news-notice"></p><div id="headline-summary"></div><div class="news-list" id="news-content"></div><p class="note" id="news-failures"></p></section>
     <details class="section quality"><summary>Data coverage & interpretation</summary><div id="quality-content"></div><div id="missing-content"></div><ul><li>Reported values come from named sources; estimates retain their methodology and scope.</li><li>Registered research measures the pipeline of study activity; it is not completed clinical evidence, unique technologies or paid use.</li><li>FDA authorisations measure regulatory activity, not hospital adoption or the number of unique commercial products.</li><li>Consumer price indices are cost-pressure proxies; they do not directly measure hospital input costs.</li><li>Paid deployment, usage, renewals, reimbursement, funding and vendor revenues require separate sourced inputs. They are not inferred from the public benchmarks.</li></ul></details>
   </div>
 </main>
@@ -154,39 +153,33 @@ function updateRegion(key, push=false) {
   const region=dashboardData.regions[key], preview=!!dashboardData.design_preview;
   byId('regionSelect').value=key;
   renderRegionalSections(key);
-  byId('investment-title').textContent=`${region.name}: authorisations & venture investment`;
-  byId('classification-title').textContent=`${region.name}: authorisations by imaging modality`;
+  byId('investment-title').textContent=`${region.name}: venture investment`;
   byId('vendor-title').textContent=`${region.name}: selected vendor AI revenue observations`;
   byId('regional-title').textContent=`${region.name}: AI research activity`;
   const study=region.metrics.prospective_studies;
   const registry=study.source?.url?.includes('clinicaltrials.gov/api/');
   byId('research-card').replaceChildren(metricCard(study,registry?'Active matching registrations, including planned studies. Read the query and site coverage before interpreting this as an evidence signal.':'Sourced research evidence for the stated geography and period. The counting method and study scope are disclosed in the methodology.'));
   const groups=byId('metric-groups');groups.replaceChildren();
-  const supplied=dashboardData.definitions.metrics.filter(d=>d.key!=='prospective_studies' && isNumber(region.metrics[d.key]?.value));
+  const supplied=dashboardData.definitions.metrics.filter(d=>d.key!=='prospective_studies' && (preview || isNumber(region.metrics[d.key]?.value)));
   showPanel('additional-section',supplied.length>0);
   byId('additional-region').textContent=region.name;
   [...new Set(supplied.map(d=>d.group))].forEach(name=>{const section=create('div','section'),grid=create('div','grid metric-grid');section.append(create('h3','',name));supplied.filter(d=>d.group===name).forEach(d=>grid.append(metricCard(region.metrics[d.key],d.description)));section.append(grid);groups.append(section);});
-  // Restore the commercial panels without restoring the old unsourced figures.
-  const regionalAuthorisations=hasSeries(region.authorisations);
-  const useUS=key==='global' || key==='northAmerica';
-  const authorisationSeries=regionalAuthorisations ? region.authorisations : (useUS ? dashboardData.fda_benchmark.series : region.authorisations);
-  showPanel('investment-section',true);
+  // Investment is independent of the regulatory benchmark; no duplicate authorisation chart.
+  showPanel('investment-section',preview || hasSeries(region.funding));
   byId('investment-region').textContent=region.name;
-  showPanel('authorisations-panel',true);showPanel('funding-panel',true);
-  seriesPanel('authorisations-panel',authorisationSeries,regionalAuthorisations ? 'Sourced authorisations for the stated regulator and geography.' : (useUS ? 'US FDA benchmark; a US subset or comparator, not a worldwide or Canadian count.' : `No sourced ${region.name} authorisation series. A US series is not substituted.`));
-  seriesPanel('funding-panel',region.funding,'Venture funding for the stated sector, geography and reporting periods. Imaging AI and broad MedTech funding must remain separately labelled.','#72d6ba');
-  const modalityData=region.modalities.items.length ? region.modalities : (useUS ? dashboardData.fda_benchmark.modalities : region.modalities);
-  showPanel('classification-section',true);showPanel('modality-panel',true);
-  breakdown('modality-panel',modalityData);
-  showPanel('application-panel',region.applications.items.length>0);
-  if(region.applications.items.length)breakdown('application-panel',region.applications);
-  showPanel('vendor-section',true);vendors(region.vendors.slice(0,5));
+  seriesPanel('funding-panel',region.funding,'Sourced funding for the stated sector and geography; broad MedTech and imaging AI investment remain separately labelled.','#72d6ba');
+  const regionalVendors=region.vendors.filter(row=>key==='global' || revenueFitsRegion(row,key));
+  showPanel('vendor-section',regionalVendors.length>0 || (preview && key==='global'));
+  vendors(regionalVendors.slice(0,5));
+  showPanel('research-comparison',key==='global');
+  byId('research-grid').style.gridTemplateColumns=key==='global' ? '' : 'minmax(0,1fr)';
+  showPanel('research-section',preview || isNumber(study.value) || key==='global');
   const hasEditorial=!!region.editorial.summary || ['drivers','headwinds','highlights'].some(k=>region.editorial[k].length);
   showPanel('outlook-section',hasEditorial);if(hasEditorial)editorial(region.editorial);
   const regionalContext=byId('regional-context-cards');regionalContext.replaceChildren();
   const extraContext=dashboardData.definitions.context.filter(d=>!['policy_rate','inflation'].includes(d.key) && isNumber(region.context[d.key]?.value));
   showPanel('regional-context-section',extraContext.length>0);extraContext.forEach(d=>regionalContext.append(metricCard(region.context[d.key],d.description)));
-  byId('coverage').textContent=preview ? 'Design preview: blank frames contain no reported observations.' : 'The selected region controls regulation, research, financial context, investment, classifications, revenues and headline filtering. Country benchmarks retain their stated scope; missing regional data are not replaced with US figures.';
+  byId('coverage').textContent=preview ? 'Design preview: blank frames contain no reported observations.' : 'Each region shows relevant sourced observations and market-access context. Country benchmarks retain their stated scope; unavailable panels are omitted and US figures are not substituted for regional data.';
   const missing=dashboardData.definitions.metrics.filter(d=>d.key!=='prospective_studies' && !isNumber(region.metrics[d.key]?.value));
   const gaps=byId('missing-content');gaps.replaceChildren(create('h3','','Measures not currently reported'));
   gaps.append(create('p','note',`${region.name}: ${missing.map(d=>region.metrics[d.key].label).join('; ') || 'None'}. These measures have no validated observation for this view and are not included as empty cards.`));
@@ -201,35 +194,87 @@ function researchSamples() {
     const scope=create('details');scope.style.gridColumn='1 / -1';scope.style.margin='0';scope.append(create('summary','','Country coverage & query'),create('p','meta',observation.geography || observation.reason || 'Awaiting registry data'));const link=sourceLink(observation.source);if(link)scope.append(link);row.append(scope);panel.append(row);
   });
 }
+// Region-specific presentation rules. These are editorial scope rules, not market observations.
+const REGION_POLICY={
+  global:{countries:[],access:''},
+  northAmerica:{countries:['United States','USA','US','Canada'],access:''},
+  europe:{countries:['United Kingdom','UK','Germany','France','Italy','Spain','Netherlands','Sweden','Poland','Switzerland'],access:'Assess product availability and market access by the relevant jurisdiction. EU conformity assessment and CE marking should not be counted as an FDA-style European approval series. UK and other non-EU requirements need separate treatment.'},
+  asia:{countries:['China','Japan','India','South Korea','Australia','New Zealand','Singapore','Taiwan','Thailand'],access:'Assess regulatory status and product availability country by country. A single Asia-Pacific authorisation total would combine different regulatory systems and source coverage.'},
+  middleEast:{countries:['Israel','Saudi Arabia','United Arab Emirates','UAE','Iran','Turkey','Egypt'],access:'Assess local registration, distribution and procurement requirements in named countries. The dashboard does not infer a Middle East approval total from FDA decisions or a partial country sample.'},
+  southAmerica:{countries:['Brazil','Mexico','Argentina','Chile','Colombia','Peru'],access:'Local registration and market availability remain relevant even where an authority relies on assessments from the FDA or another recognised regulator. Reliance is not automatic access across LATAM. A pooled approval count is not used as a measure of regional innovation or adoption.'}
+};
+function normaliseScope(value){return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function singleCountryScope(observation,key){
+  const geography=normaliseScope(observation?.geography);
+  return (REGION_POLICY[key]?.countries || []).some(country=>geography===normaliseScope(country));
+}
+function revenueFitsRegion(row,key){
+  const scope=normaliseScope(row.geography);
+  if(!scope || /\b(global|worldwide|international|world)\b/.test(scope))return false;
+  return scope===normaliseScope(dashboardData.regions[key].name) || singleCountryScope(row,key);
+}
+function renderMarketAccess(key){
+  const panel=byId('market-access-content');panel.replaceChildren();
+  const policy=REGION_POLICY[key];
+  if(!policy.access)return;
+  panel.append(create('p','note',policy.access));
+  panel.append(create('p','meta','Useful local observations: verified product registrations or availability, procurement awards, paid hospital deployments, reimbursement and local clinical validation. No unsourced counts are inferred.'));
+  if(key==='southAmerica'){
+    const p=create('p','source','Reference: ');
+    p.append(sourceLink({name:'ANVISA — regulatory reliance',url:'https://www.gov.br/anvisa/en/international-position/regulatory-reliance'}));
+    panel.append(p,create('p','meta','The linked policy describes Brazil; it is not a regulatory rule for every LATAM country.'));
+  }
+  if(key==='europe'){
+    const p=create('p','source','Reference: ');p.append(sourceLink({name:'European Commission — medical-device conformity assessment',url:'https://health.ec.europa.eu/medical-devices-topics-interest/notified-bodies-medical-devices_en'}));panel.append(p);
+  }
+}
 function renderRegionalSections(key) {
-  const region=dashboardData.regions[key], useUS=key==='global' || key==='northAmerica';
-  const useFDA=useUS && !hasSeries(region.authorisations);
+  const region=dashboardData.regions[key], useFDA=key==='global' || key==='northAmerica', preview=!!dashboardData.design_preview;
   const fda=dashboardData.fda_benchmark;
+  // Regional counts require a sourced single-country observation, not a continental aggregate.
+  const countrySeries=!useFDA && singleCountryScope(region.authorisations,key) && hasSeries(region.authorisations) && validLink(region.authorisations.source?.url) && !!region.authorisations.methodology;
   const series=useFDA ? fda.series : region.authorisations;
-  const latest=(series.points || []).at(-1);
-  const metric=useFDA ? fda.metric : {...series,label:`${region.name}: latest reported authorisation period`,value:latest?.value ?? null,period:latest ? `${latest.start} to ${latest.end}` : '',reason:series.reason || 'No sourced regional authorisation observations.'};
-  byId('regulation-scope').textContent=useFDA ? 'Regulation · United States benchmark' : `Regulation · ${region.name}`;
-  byId('fda-title').textContent=useFDA ? 'FDA-listed radiology AI authorisations' : `${region.name}: imaging AI regulatory activity`;
-  byId('fda-notice').textContent=useFDA ? 'US FDA list only. In North America this is a US subset, excluding Canadian authorisations; in Global it is a US comparator.' : 'Only sourced authorisations for the selected geography are shown. Regulatory inventories are not harmonised across regions.';
-  byId('fda-metric').replaceChildren(metricCard(metric,useFDA ? 'Entries through the latest listed decision date; source coverage is periodic and non-comprehensive.' : 'The latest supplied period for the stated regulator; not paid deployment or clinical effectiveness.',''));
-  seriesPanel('fda-series',series,'Sourced regulatory activity for the stated geography and periods.');
+  const latest=(series.points || []).filter(point=>isNumber(point.value)).at(-1);
+  const metric=useFDA ? fda.metric : {...series,label:`${series.geography}: latest reported regulatory period`,value:latest?.value ?? null,period:latest ? `${latest.start} to ${latest.end}` : ''};
+  const charts=useFDA ? (preview || isNumber(metric.value) || hasSeries(series)) : countrySeries;
+  showPanel('regulation-section',!useFDA || charts);
+  showPanel('regulation-charts',charts);
+  byId('regulation-scope').textContent=useFDA ? 'Regulation · United States benchmark' : `Market access · ${region.name}`;
+  byId('fda-title').textContent=useFDA ? 'FDA-listed radiology AI authorisations' : `${region.name}: market access and availability`;
+  byId('fda-notice').textContent=useFDA ? 'US FDA list only. North America excludes Canadian authorisations; Global uses this as a US comparator. Counts are regulatory activity, not unique products, paid adoption or clinical effectiveness.' : 'Country-specific observations are preferred. No pooled regional regulatory total or US substitute is displayed.';
+  renderMarketAccess(key);
+  byId('fda-metric').replaceChildren();byId('fda-series').replaceChildren();
+  if(charts){
+    byId('fda-metric').append(metricCard(metric,useFDA ? 'Entries through the latest listed decision date; source coverage is periodic and non-comprehensive.' : 'Sourced regulatory activity in the named country; local registration does not establish adoption.',''));
+    seriesPanel('fda-series',series,'Regulatory activity for the stated jurisdiction and periods.');
+  }
   const modality=useFDA ? fda.modalities : region.modalities, application=useFDA ? fda.applications : region.applications;
-  showPanel('fda-classifications',!!modality.items.length || !!application.items.length);
-  showPanel('fda-modalities',!!modality.items.length);showPanel('fda-applications',!!application.items.length);
-  if(modality.items.length)breakdown('fda-modalities',modality);if(application.items.length)breakdown('fda-applications',application);
-  if(useFDA && fda.retrieved_at)byId('fda-metric').append(create('p','meta',`Retrieved: ${new Date(fda.retrieved_at).toLocaleString('en-GB')}`));
+  const modalityEligible=useFDA || (countrySeries && normaliseScope(modality.geography)===normaliseScope(series.geography));
+  const applicationEligible=useFDA || (countrySeries && normaliseScope(application.geography)===normaliseScope(series.geography));
+  const showModality=charts && modalityEligible && (modality.items.length>0 || preview);
+  const showApplication=charts && applicationEligible && (application.items.length>0 || preview);
+  showPanel('fda-classifications',showModality || showApplication);
+  showPanel('fda-modalities',showModality);showPanel('fda-applications',showApplication);
+  if(showModality)breakdown('fda-modalities',modality);if(showApplication)breakdown('fda-applications',application);
+  if(useFDA && charts && fda.retrieved_at)byId('fda-metric').append(create('p','meta',`Retrieved: ${new Date(fda.retrieved_at).toLocaleString('en-GB')}`));
   const context=byId('context-cards');context.replaceChildren();
   byId('context-title').textContent=`${region.name}: financial context`;
   byId('context-scope').textContent='Named country / policy-area benchmarks';
   byId('context-note').textContent='Benchmarks use their stated jurisdiction. A US or euro-area observation is not a rate for every country in its region. Country CPI below is annual all-items inflation, not medical-care inflation or hospital input costs.';
-  ['policy_rate','inflation'].forEach(field=>{const observation=region.context[field];context.append(metricCard(isNumber(observation.value) ? observation : {...observation,label:`${region.name}: ${field==='policy_rate'?'financing benchmark':'medical-price inflation proxy'}`,reason:`No validated observation for this view. See available individual country CPI observations below.`},field==='policy_rate'?'Financing context for the named jurisdiction; not a vendor borrowing cost or a regional average.':'Medical-price context where explicitly sourced; not a direct measure of hospital costs or AI software prices.'));});
+  const contextFields=['policy_rate','inflation'].filter(field=>preview || isNumber(region.context[field]?.value));
+  showPanel('financial-section',contextFields.length>0 || (region.country_context || []).length>0 || preview);
+  contextFields.forEach(field=>{const observation=region.context[field];context.append(metricCard(isNumber(observation.value) ? observation : {...observation,label:`${region.name}: ${field==='policy_rate'?'financing benchmark':'medical-price inflation proxy'}`,reason:`No validated observation for this view. See available individual country CPI observations below.`},field==='policy_rate'?'Financing context for the named jurisdiction; not a vendor borrowing cost or a regional average.':'Medical-price context where explicitly sourced; not a direct measure of hospital costs or AI software prices.'));});
   countryContext(region);
   const unavailable=(label,unit)=>({label,unit,points:[],status:'unavailable',reason:'No sourced historical series for this region.'});
-  const history=region.market_history || (key==='global' ? dashboardData.market_history : {});
+  const history=key==='global' ? (region.market_history || dashboardData.market_history || {}) : {};
+  const showHistory=key==='global' && (preview || hasSeries(history.equity) || hasSeries(history.policy_rate));
+  showPanel('market-history-section',showHistory);
+  showPanel('equity-history-panel',preview || hasSeries(history.equity));showPanel('rate-history-panel',preview || hasSeries(history.policy_rate));
   byId('market-history-scope').textContent=key==='global' ? 'Global equity benchmark · US rate comparator' : region.name;
   seriesPanel('equity-history-panel',history?.equity || unavailable(`${region.name} equity benchmark`,'Index points'),'Named equity benchmark, currency and index variant. The geography remains the one stated by its source.');
   seriesPanel('rate-history-panel',history?.policy_rate || unavailable(`${region.name} financing benchmark`,'%'),'Named financing benchmark at each completed month end. No US values are substituted into other regions.');
   const headlines=region.news || (key==='global' ? dashboardData.news : []);
+  showPanel('news-section',preview || headlines.length>0);
   byId('news-scope').textContent=key==='global' ? 'Selected industry headlines' : `${region.name}: title-based geography filter`;
   byId('news-notice').textContent=key==='global' ? 'Selected industry headlines; publisher coverage may be concentrated.' : 'Only headlines explicitly mentioning a country or regulator in the selected region are included. This filter is incomplete; publisher location does not determine article geography.';
   const news=byId('news-content');news.replaceChildren();
@@ -243,8 +288,8 @@ function countryContext(region) {
   const panel=byId('country-context');panel.replaceChildren();
   panel.append(create('h3','','Country consumer-price inflation'));
   const rows=region.country_context || [];
-  if(!rows.length){panel.append(create('p','note','Country observations could not be collected for this build. No regional inflation average is assumed.'));return;}
-  const details=create('details');details.open=region.name!=='Global';details.append(create('summary','',`View ${rows.length} selected-country observations`));
+  if(!rows.length){if(dashboardData.design_preview)panel.append(create('p','note','Awaiting sourced country CPI observations. No regional inflation average is assumed.'));else panel.replaceChildren();return;}
+  const details=create('details');details.open=false;details.append(create('summary','',`View ${rows.length} selected-country observations`));
   const wrap=create('div','table-wrap'),table=create('table'),head=create('thead'),hr=create('tr');
   ['Country','Annual CPI inflation','Observation year','Source'].forEach(x=>hr.append(create('th','',x)));head.append(hr);table.append(head);
   const body=create('tbody');rows.forEach(row=>{const tr=create('tr');tr.append(create('td','',row.geography),create('td','',isNumber(row.value)?`${formatNumber(row.value)}%`:'Not available'),create('td','',row.period || '—'));const td=create('td'),link=sourceLink(row.source);if(link)td.append(link);else td.append(create('span','',row.reason));tr.append(td);body.append(tr);});table.append(body);wrap.append(table);details.append(wrap);
