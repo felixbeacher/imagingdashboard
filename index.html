@@ -7,6 +7,37 @@
   <meta name="theme-color" content="#09111c">
   <title>The Medical Imaging Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* The original hero's six-second gradient animation, scoped to this heading. */
+    @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+      .landing-page #hero-title {
+        background: linear-gradient(90deg, #f3f4f6, var(--accent-color, #38bdf8), #34d399);
+        background-size: 200% auto;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: lp-heading-shine 6s linear infinite;
+        animation-delay: -3s;
+      }
+      .landing-page #hero-title span {
+        color: inherit;
+        -webkit-text-fill-color: inherit;
+      }
+    }
+    @keyframes lp-heading-shine {
+      to { background-position: 200% center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .landing-page #hero-title { animation: none; }
+    }
+    @media print {
+      .landing-page #hero-title {
+        background: none;
+        -webkit-text-fill-color: currentColor;
+        animation: none;
+      }
+    }
+  </style>
 </head>
 <body class="landing-page">
 <a class="lp-skip" href="#main">Skip to content</a>
