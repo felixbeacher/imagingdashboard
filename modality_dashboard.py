@@ -28,7 +28,7 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-_spec = importlib.util.spec_from_file_location('imaging_ai_base', BASE_DIR / '1_update_data_ai.py')
+_spec = importlib.util.spec_from_file_location('imaging_ai_base', BASE_DIR / 'ai_update_data.py')
 ai = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ai)
 
