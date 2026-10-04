@@ -8,13 +8,32 @@ Offline: add --offline. Curated data: --data dashboard_data.json.
 See readme.txt for the data contract and source/coverage limitations.
 
 Automatic public sources: ClinicalTrials.gov registry activity, US effective
-federal funds rate, and US medical-care CPI. This module also supplies WHO
+federal funds rate (including six completed months of history), and US medical-care CPI. This module also supplies WHO
 equipment-capacity collectors to modality_dashboard.py. No API keys are needed.
 Unconnected adoption/commercial indicators still require sourced curated data.
+
+Restored panels: supply funding and vendor observations under regions.<key>,
+and optional reviewed fda_classifications keyed by submission number. Vendor
+revenue_unit should explicitly state "currency units" or "millions"; ranges
+require estimated status and an explanation. Never infer revenue from clearances.
+
+Optional market_history.equity in dashboard_data.json uses the existing sourced
+series contract (source, geography, period, as_of, methodology, status, points).
+Also require benchmark="MSCI World", currency="USD" (or the actual index
+currency), and return_basis="price", "net_total_return", or "gross_total_return".
+Points must cover exactly six completed calendar months, oldest first; start/end
+are calendar-month boundaries, value is the sourced month-end index level or null.
+Do not substitute an ETF price for this index. Missing MSCI data remain blank.
+market_history.policy_rate is collected automatically from the New York Fed.
+An explicit curated override must identify benchmark="EFFR", geography="United
+States", aggregation="month_end", unit="%", and the same monthly point contract.
+Offline builds never fetch history. auto_sources=false disables automatic history.
+
 """
 from __future__ import annotations
 
 import argparse
+import calendar
 import copy
 import csv
 import io
@@ -46,6 +65,12 @@ REGIONS = {
 }
 MODALITIES = ['CT', 'MRI', 'General X-ray', 'Mammography', 'Ultrasound', 'Nuclear medicine / PET', 'Multiple modalities', 'Other imaging']
 APPLICATIONS = ['Breast', 'Cardiology', 'Neurology', 'Pulmonology', 'Liver', 'Musculoskeletal', 'Prostate', 'Other / multiple']
+FDA_MODALITY_CODES = {
+    'JAK': 'CT', 'LNH': 'MRI', 'IYN': 'Ultrasound',
+}
+# These primary FDA classifications establish a modality, not AI application.
+FDA_CODE_SOURCE = 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfPCD/classification.cfm?ID='
+
 RSS_FEEDS = {
     'Radiology Business': 'https://radiologybusiness.com/rss.xml',
     'AuntMinnie': 'https://www.auntminnie.com/rss/rss.aspx',
@@ -170,8 +195,14 @@ def normalise_series(raw, label, unit, errors, path):
                 raise ValueError('values must be non-negative finite numbers or null')
             clean.append({'start': start.isoformat(), 'end': end.isoformat(),
                           'label': str(point.get('label') or start.isoformat()), 'value': value})
+            observed_on = point.get('observed_on')
+            if observed_on is not None:
+                if not start <= iso_date(observed_on) <= end:
+                    raise ValueError('observation date must lie within its reporting period')
+                clean[-1]['observed_on'] = observed_on
             previous = end
-        result.update(meta, points=clean, unit=str(raw.get('unit') or unit), reason='')
+        result.update(meta, points=clean, unit=str(raw.get('unit') or unit),
+                      label=str(raw.get('label') or label), reason='')
     except (ValueError, TypeError, KeyError) as exc:
         errors.append(f'{path}: {exc}')
         result['reason'] = 'The supplied series did not pass source and period checks.'
@@ -225,7 +256,8 @@ def normalise_vendors(rows, errors, path):
             if row['application'] not in APPLICATIONS + ['Total imaging AI']:
                 raise ValueError('use a non-overlapping clinical application or Total imaging AI')
             result.append(meta | {k: row[k] for k in ('vendor', 'application', 'currency', 'revenue_scope')} |
-                          {'revenue_low': low, 'revenue_high': high})
+                          {'revenue_low': low, 'revenue_high': high,
+                           'revenue_unit': str(row.get('revenue_unit') or 'currency units')})
         except (ValueError, TypeError, KeyError) as exc:
             errors.append(f'{path}[{i}]: {exc}')
     return result
@@ -368,7 +400,10 @@ def fda_benchmark(source, classifications, errors):
                 if not row['date'].startswith(year):
                     continue
                 item = classifications.get(row['submission'], {})
-                category = 'Unclassified'
+                category = (FDA_MODALITY_CODES.get(row['code'], 'Unclassified')
+                            if field == 'modality' else 'Unclassified')
+                if category != 'Unclassified':
+                    classified += 1
                 if item:
                     try:
                         if not isinstance(item, dict) or not safe_url(item.get('source_url')) or not item.get('reviewed_at'):
@@ -379,15 +414,25 @@ def fda_benchmark(source, classifications, errors):
                         if candidate is not None:
                             if candidate not in categories:
                                 raise ValueError(f'invalid {field} category')
+                            if category == 'Unclassified':
+                                classified += 1
                             category = candidate
-                            classified += 1
                     except (ValueError, TypeError) as exc:
                         errors.append(f'fda_classifications.{row["submission"]}.{field}: {exc}')
                 counts[category] += 1
             if classified:
                 output.update(meta, items=[{'label': k, 'value': v} for k, v in counts.items() if v],
                               total=metric['value'], reason='')
-                output['methodology'] += ' One reviewed category per submission; unreviewed entries remain Unclassified. Mapping sources are supplied in the curated input.'
+                output['classified_count'] = sum(v for k, v in counts.items() if k != 'Unclassified')
+                output['unclassified_count'] = counts['Unclassified']
+                output['methodology'] += (' One category per submission. Modality uses a narrow FDA primary-product-code map '
+                    '(JAK=CT, LNH=MRI, IYN=Ultrasound), overridden by valid reviewed submission mappings. '
+                    'Broad software codes and all other unmapped entries remain Unclassified. '
+                    'Counts include equipment and software; zero classified entries do not imply no products in a modality. '
+                    'Clinical applications require reviewed submission mappings.')
+                if field == 'modality':
+                    output['classification_sources'] = [{'name': f'FDA {code}: {name}', 'url': FDA_CODE_SOURCE + code}
+                                                       for code, name in FDA_MODALITY_CODES.items()]
     return {'metric': metric, 'series': series, 'modalities': modality, 'applications': application,
             'retrieved_at': source.get('retrieved_at', ''), 'notice': 'US regulatory benchmark only. It does not represent global or regional adoption, unique commercial products or software-only AI.'}
 
@@ -649,6 +694,100 @@ def us_financing():
         'or the borrowing cost of an imaging vendor.', as_of=day)
 
 
+def completed_months(today=None):
+    """Six completed calendar months, oldest first; omit the current partial month."""
+    today = today or date.today()
+    current = today.year * 12 + today.month - 1
+    result = []
+    for index in range(current - 6, current):
+        year, month0 = divmod(index, 12)
+        month = month0 + 1
+        result.append((date(year, month, 1), date(year, month, calendar.monthrange(year, month)[1])))
+    return result
+
+
+def us_financing_history():
+    months = completed_months()
+    url = 'https://markets.newyorkfed.org/api/rates/unsecured/effr/search.json?' + urllib.parse.urlencode(
+        {'startDate': months[0][0].isoformat(), 'endDate': months[-1][1].isoformat()})
+    response = public_json(url)
+    observations = {}
+    for row in response['refRates']:
+        day, value = iso_date(row['effectiveDate']), row['percentRate']
+        if row.get('type') != 'EFFR' or not finite_number(value) or value < 0:
+            raise ValueError('Invalid EFFR history observation')
+        if not months[0][0] <= day <= months[-1][1]:
+            raise ValueError('EFFR history contains an out-of-range date')
+        if day in observations and observations[day] != value:
+            raise ValueError('Conflicting EFFR history observations')
+        observations[day] = value
+    points = []
+    for start, end in months:
+        dates = [day for day in observations if start <= day <= end]
+        last = max(dates) if dates else None
+        # Never carry a previous month's value forward to manufacture a missing month.
+        usable = last is not None and (end - last).days <= 7
+        points.append({'start': start.isoformat(), 'end': end.isoformat(),
+                       'label': start.strftime('%b %Y'),
+                       'value': observations[last] if usable else None,
+                       'observed_on': last.isoformat() if usable else None})
+    if not any(p['value'] is not None for p in points):
+        raise ValueError('No usable completed-month EFFR observations')
+    return dict(label='US effective federal funds rate — month end', unit='%',
+                status='reported', source={'name': 'New York Fed — EFFR historical observations', 'url': url},
+                geography='United States', period=f'{months[0][0]} to {months[-1][1]}',
+                as_of=months[-1][1].isoformat(), points=points, benchmark='EFFR', aggregation='month_end',
+                methodology='Last published daily EFFR in each of six completed calendar months. '
+                'A value more than seven days before month end is withheld. Missing months stay null. '
+                'This is an observed overnight interbank rate, not a target midpoint, monthly average or global rate.')
+
+
+def normalise_market_history(raw, offline, errors):
+    raw = raw if isinstance(raw, dict) else {}
+    equity = normalise_series(raw.get('equity'), 'MSCI World Index', 'index points', errors, 'market_history.equity')
+    if equity['points']:
+        source = raw['equity']
+        try:
+            if source.get('benchmark') != 'MSCI World':
+                raise ValueError('benchmark must be MSCI World; ETF prices must not be labelled as index points')
+            if not re.fullmatch(r'[A-Z]{3}', str(source.get('currency', ''))):
+                raise ValueError('an explicit three-letter currency is required')
+            if source.get('return_basis') not in ('price', 'net_total_return', 'gross_total_return'):
+                raise ValueError('return_basis must identify the index variant')
+            equity.update({k: source[k] for k in ('benchmark', 'currency', 'return_basis')})
+            equity['label'] = f"MSCI World — {source['currency']} {source['return_basis'].replace('_', ' ')} index"
+        except ValueError as exc:
+            errors.append(f'market_history.equity: {exc}')
+            equity = normalise_series(None, 'MSCI World Index', 'index points', errors, 'market_history.equity')
+            equity['reason'] = 'Supplied index history failed benchmark, currency or index-variant checks.'
+    else:
+        equity['reason'] = 'No sourced MSCI World index history supplied. An ETF price is not silently substituted.'
+    rate_raw = raw.get('policy_rate')
+    if not rate_raw and not offline:
+        try:
+            rate_raw = us_financing_history()
+        except Exception as exc:
+            logging.warning('US EFFR history unavailable: %s', exc)
+    if rate_raw and isinstance(rate_raw, dict) and rate_raw.get('points'):
+        if (rate_raw.get('benchmark') != 'EFFR' or rate_raw.get('aggregation') != 'month_end'
+                or rate_raw.get('geography') != 'United States' or rate_raw.get('unit', '%') != '%'):
+            errors.append('market_history.policy_rate: requires US EFFR, month_end aggregation and percent units')
+            rate_raw = None
+    rate = normalise_series(rate_raw, 'US effective federal funds rate — month end', '%', errors, 'market_history.policy_rate')
+    if not rate['points']:
+        rate['reason'] = 'US EFFR historical observations unavailable; no current rate was copied into past months.'
+    # Both plots share exactly the same completed-month window.
+    expected = [(start.isoformat(), end.isoformat()) for start, end in completed_months()]
+    for key, series in [('equity', equity), ('policy_rate', rate)]:
+        if series['points'] and [(p['start'], p['end']) for p in series['points']] != expected:
+            errors.append(f'market_history.{key}: supply exactly six completed calendar months in order')
+            replacement = normalise_series(None, series['label'], series['unit'], errors, f'market_history.{key}')
+            replacement['reason'] = 'Historical periods do not match the six completed calendar months.'
+            if key == 'equity': equity = replacement
+            else: rate = replacement
+    return {'equity': equity, 'policy_rate': rate}
+
+
 def us_medical_inflation():
     year = date.today().year
     url = 'https://api.bls.gov/publicAPI/v2/timeseries/data/CUUR0000SAM?' + urllib.parse.urlencode(
@@ -822,8 +961,6 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
             'notice': 'Automatic collection covers registry activity and selected public benchmarks. '
                       'Unconnected commercial and clinical indicators require sourced curated inputs.'},
     }
-    for error in errors:
-        logging.warning('Data validation: %s', error)
     # Fixed public context stays separate from curated regional observations.
     # A curated G7/other-country value must not acquire a US benchmark heading.
     payload['public_context'] = {}
@@ -837,6 +974,10 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
         if payload['public_context'][key]['value'] is None:
             payload['public_context'][key]['label'] = ('US overnight financing rate proxy'
                 if key == 'policy_rate' else 'US medical-care CPI proxy')
+    payload['market_history'] = normalise_market_history(curated.get('market_history'),
+        offline or curated.get('auto_sources') is False, errors)
+    for error in errors:
+        logging.warning('Data validation: %s', error)
     payload['ai_coverage'] = ai_coverage_report(payload)
     logging.info('AI coverage: FDA=%s, registered research=%s/6 views, headlines=%s. '
                  'Other indicators require separately sourced observations.',

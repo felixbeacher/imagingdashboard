@@ -8,34 +8,42 @@
   <title>The Medical Imaging Dashboard</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* The original hero's six-second gradient animation, scoped to this heading. */
+    /* Explicitly requested title animation; isolate it from shared motion rules. */
+    .landing-page #hero-title { color: #edf3fa; }
     @supports ((background-clip: text) or (-webkit-background-clip: text)) {
       .landing-page #hero-title {
-        background: linear-gradient(90deg, #f3f4f6, var(--accent-color, #38bdf8), #34d399);
-        background-size: 200% auto;
+        background-image: linear-gradient(90deg, #f3f4f6 0%, #38bdf8 25%, #34d399 50%, #38bdf8 75%, #f3f4f6 100%);
+        background-size: 200% 100%;
+        background-position: 0% 50%;
+        background-repeat: repeat;
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: lp-heading-shine 6s linear infinite;
-        animation-delay: -3s;
-      }
-      .landing-page #hero-title span {
-        color: inherit;
-        -webkit-text-fill-color: inherit;
+        animation: lp-title-shimmer 6s linear infinite !important;
       }
     }
-    @keyframes lp-heading-shine {
-      to { background-position: 200% center; }
+    @keyframes lp-title-shimmer {
+      from { background-position: 0% 50%; }
+      to { background-position: 200% 50%; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .landing-page #hero-title { animation: none; }
+    .landing-page #hero-title[data-paused="true"] {
+      animation-play-state: paused !important;
+    }
+    .landing-page .title-motion-toggle {
+      margin: 0; padding: 3px 0; border: 0; background: transparent;
+      color: var(--text-muted, #acbbce); font: inherit; font-size: 12px;
+      text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+    }
+    .landing-page .title-motion-toggle:focus-visible {
+      outline: 2px solid var(--accent-color, #38bdf8); outline-offset: 4px;
     }
     @media print {
       .landing-page #hero-title {
-        background: none;
+        background: none; color: #111;
         -webkit-text-fill-color: currentColor;
-        animation: none;
+        animation: none !important;
       }
+      .landing-page .title-motion-toggle { display: none; }
     }
   </style>
 </head>
@@ -60,8 +68,9 @@
 <main id="main" class="lp-container">
   <section class="lp-hero" aria-labelledby="hero-title">
     <div class="lp-hero-copy">
-    <h1 id="hero-title">A clearer view of<br><span>medical imaging.</span></h1>
+    <h1 id="hero-title">A clearer view of<br>medical imaging.</h1>
     <p class="lp-lede">Understand the conditions shaping medical imaging.</p>
+    <button type="button" id="title-motion-toggle" class="title-motion-toggle" aria-controls="hero-title" aria-pressed="false" hidden>Pause animation</button>
     </div>
     <div class="lp-hero-art" aria-hidden="true"><img src="images/earth-hero.png" width="1536" height="1024" alt="" fetchpriority="high" decoding="async"></div>
   </section>
@@ -96,5 +105,20 @@
 <footer class="lp-footer">
   <div class="lp-container lp-footer-content"><p>© 2026 Felix Beacher. All rights reserved.</p><p>For market research and general information. Not financial or clinical advice.</p></div>
 </footer>
+<script>
+  (() => {
+    const title = document.getElementById('hero-title');
+    const toggle = document.getElementById('title-motion-toggle');
+    const supported = window.CSS && (CSS.supports('background-clip', 'text') || CSS.supports('-webkit-background-clip', 'text'));
+    if (!supported) return;
+    toggle.hidden = false;
+    toggle.addEventListener('click', () => {
+      const paused = title.dataset.paused !== 'true';
+      title.dataset.paused = String(paused);
+      toggle.setAttribute('aria-pressed', String(paused));
+      toggle.textContent = paused ? 'Play animation' : 'Pause animation';
+    });
+  })();
+</script>
 </body>
 </html>
