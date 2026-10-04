@@ -1,5 +1,6 @@
 # Builds and publishes the AI, CT, MRI, PET and X-ray dashboards.
 # Keep the source HTML templates and Python scripts in the repository root.
+# Publish the generated _site artifact directly; no generated-file commits or pushes.
 # Set Settings > Pages > Build and deployment > Source to GitHub Actions.
 name: Weekly Dashboard Update
 
@@ -33,7 +34,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
-      contents: write
+      contents: read
       pages: write
     steps:
       - name: Checkout source templates and scripts
@@ -119,20 +120,6 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-
-      - name: Save generated pages to the repository
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f -- _site
-          if git diff --cached --quiet; then
-            echo 'No generated page changes to commit.'
-          else
-            git commit -m 'Update generated imaging dashboards'
-            git push origin HEAD:"${GITHUB_REF_NAME}"
-          fi
 
       - name: Upload the generated website
         uses: actions/upload-pages-artifact@v3
