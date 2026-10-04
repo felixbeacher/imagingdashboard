@@ -1,64 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Imaging Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore medical imaging market intelligence across AI, CT, MRI, PET and X-ray, with a focus on financing, clinical demand, regulation and clinical evidence.">
+  <meta name="theme-color" content="#09111c">
+  <title>The Medical Imaging Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+<body class="landing-page">
+<a class="lp-skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="lp-container lp-masthead">
+    <a class="brand" href="index.html" aria-label="The Medical Imaging Dashboard home">
+      <span class="brand-mark" aria-hidden="true"><span></span></span>
+      <span class="brand-text"><strong>The Medical Imaging Dashboard</strong><small>Created and managed by Felix Beacher, PhD</small></span>
+    </a>
+  </div>
+  <nav class="lp-container nav-tabs" aria-label="Dashboard sections">
+    <a href="index.html" class="active" aria-current="page">Home</a>
+    <a href="1_ai.html">AI</a>
+    <a href="2_ct.html">CT</a>
+    <a href="3_mri.html">MRI</a>
+    <a href="4_pet.html">PET</a>
+    <a href="5_xray.html">X-ray</a>
+  </nav>
+</header>
 
-<body>
+<main id="main" class="lp-container">
+  <section class="lp-hero" aria-labelledby="hero-title">
+    <div class="lp-hero-copy">
+    <h1 id="hero-title">A clearer view of<br><span>medical imaging.</span></h1>
+    <p class="lp-lede">Understand the conditions shaping medical imaging.</p>
+    <p class="lp-audience">For technology vendors, healthcare providers and investors.</p>
+    </div>
+    <div class="lp-hero-art" aria-hidden="true"><img src="images/earth-hero.png" width="1536" height="1024" alt="" fetchpriority="high" decoding="async"></div>
+  </section>
 
-    <header>
-        <div class="header-content">
-            <div class="title-area">
-                <h1>The Medical Imaging Dashboard</h1>
-                <p>Created and managed by Felix Beacher, PhD</p>
-            </div>
-            <!-- Tab Links -->
-            <nav class="nav-tabs">
-                <a href="index.html" class="tab-btn active">Home</a>
-                <a href="1_ai.html" class="tab-btn">AI</a>
-                <a href="2_ct.html" class="tab-btn">CT</a>
-                <a href="3_mri.html" class="tab-btn">MRI</a>
-                <a href="4_pet.html" class="tab-btn">PET</a>
-                <a href="5_xray.html" class="tab-btn">Xray</a>
-            </nav>
-        </div>
-    </header>
+  <section class="lp-purpose" aria-labelledby="purpose-title">
+    <div class="lp-purpose-copy">
+      <p class="lp-eyebrow">The aim of this dashboard</p>
+      <h2 id="purpose-title">To give you a comprehensive perspective on getting new imaging technologies into clinical practice.</h2>
+    </div>
+    <div class="lp-pillars">
+      <article class="lp-pillar">
+        <span class="lp-number" aria-hidden="true">01</span>
+        <div><h3>Financing conditions</h3><p>Capital availability and the capacity to invest in innovation.</p></div>
+      </article>
+      <article class="lp-pillar">
+        <span class="lp-number" aria-hidden="true">02</span>
+        <div><h3>Clinical demand</h3><p>Imaging demand, workforce capacity and unmet need.</p></div>
+      </article>
+      <article class="lp-pillar">
+        <span class="lp-number" aria-hidden="true">03</span>
+        <div><h3>Regulation &amp; market access</h3><p>Authorisations, payment arrangements and routes to adoption.</p></div>
+      </article>
+      <article class="lp-pillar">
+        <span class="lp-number" aria-hidden="true">04</span>
+        <div><h3>Clinical evidence</h3><p>Validation, patient outcomes and demonstrated value.</p></div>
+      </article>
+    </div>
+  </section>
 
-    <main>
-        <!-- HOME TAB -->
-        <div id="home-tab" class="tab-pane active">
-            <div class="hero-banner">
-                <div class="hero-content">
-                    <div class="hero-badge-group">
-                        <div class="hero-badge">Imaging Intelligence</div>
-                        <div class="hero-badge free">100% Free Access</div>
-                    </div>
-                    <h2>Worldwide Imaging Market Analytics</h2>
-                    <p>The intelligent way to do market intelligence.</p>
-                    
-                    <div class="hero-stats-row">
-                        <div class="hero-stat-card">
-                            <h4>Primary Focus</h4>
-                            <div class="val">Imaging Modalities</div>
-                        </div>
-                        <div class="hero-stat-card">
-                            <h4>Coverage</h4>
-                            <div class="val">Global & Regional</div>
-                        </div>
-                        <div class="hero-stat-card">
-                            <h4>Intelligence</h4>
-                            <div class="val">Leaders and Trends</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <section id="dashboards" class="lp-explore" aria-labelledby="dashboards-title">
+    <div class="lp-section-heading"><h2 id="dashboards-title">Choose a modality:</h2></div>
+    <div class="lp-dashboard-grid">
+      <a class="lp-dashboard lp-dashboard-compact lp-dashboard-featured" href="1_ai.html">AI</a>
+      <a class="lp-dashboard lp-dashboard-compact" href="2_ct.html">CT</a>
+      <a class="lp-dashboard lp-dashboard-compact" href="3_mri.html">MRI</a>
+      <a class="lp-dashboard lp-dashboard-compact" href="4_pet.html">PET</a>
+      <a class="lp-dashboard lp-dashboard-compact" href="5_xray.html">X-ray</a>
+    </div>
+  </section>
+</main>
 
-            </div>
-    </main>
-
+<footer class="lp-footer">
+  <div class="lp-container lp-footer-content"><p>© 2026 Felix Beacher. All rights reserved.</p><p>For market research and general information. Not financial or clinical advice.</p></div>
+</footer>
 </body>
 </html>
