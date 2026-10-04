@@ -1,0 +1,155 @@
+# Builds and publishes the AI, CT, MRI, PET and X-ray dashboards.
+# Keep the source HTML templates and Python scripts in the repository root.
+# Set Settings > Pages > Build and deployment > Source to GitHub Actions.
+name: Weekly Dashboard Update
+
+on:
+  schedule:
+    # Every Monday at 06:17 UTC (07:17 UK time during British Summer Time).
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekly.yml'
+      - '*.html'
+      - '*.py'
+      - '*.json'
+      - 'styles.css'
+      - 'images/**'
+
+# Serialize publication so scheduled and manual runs cannot race each other.
+concurrency:
+  group: imaging-dashboard-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update-news:
+    # Publish from the default branch, including manually triggered runs.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - name: Checkout source templates and scripts
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # These updaters use the Python standard library. Optional Gemini
+      # commentary is not enabled, so requirements.txt is not needed.
+      - name: Fetch data and build all five dashboards
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import shutil
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd()
+          output = root / '_site'
+          dashboards = [
+              ('AI', '1_update_data_ai.py', '1_ai.html'),
+              ('CT', '2_update_data_ct.py', '2_ct.html'),
+              ('MRI', '3_update_data_mri.py', '3_mri.html'),
+              ('PET', '4_update_data_pet.py', '4_pet.html'),
+              ('X-ray', '5_update_data_xray.py', '5_xray.html'),
+          ]
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'modality_dashboard.py']
+          required += [filename for _, script, template in dashboards for filename in (script, template)]
+          missing = [filename for filename in required if not (root / filename).is_file()]
+          if missing:
+              raise SystemExit('Required repository files are missing: ' + ', '.join(missing))
+
+          # _site is generated output, not the location of the source templates.
+          if output.exists():
+              shutil.rmtree(output)
+          (output / 'images').mkdir(parents=True)
+          for filename in ('index.html', 'styles.css', 'images/earth-hero.png'):
+              shutil.copy2(root / filename, output / filename)
+          (output / '.nojekyll').touch()
+
+          summary = ['## Dashboard refresh', '', '| Dashboard | Core observations | Headlines | FDA benchmark |',
+                     '|---|---:|---:|---|']
+          for label, script, template in dashboards:
+              command = [sys.executable, script, '--build', str(output / template)]
+              if label == 'AI' and (root / 'dashboard_data.json').is_file():
+                  command += ['--data', 'dashboard_data.json']
+              # Modality updaters discover ct_data.json, mri_data.json,
+              # pet_data.json and xray_data.json if present beside the scripts.
+              subprocess.run(command, check=True, timeout=300)
+              html = (output / template).read_text(encoding='utf-8')
+              if 'DASHBOARD_DATA_PLACEHOLDER' in html:
+                  raise SystemExit(f'{template}: the data placeholder was not replaced')
+              match = re.search(r'<script id="dashboard-data" type="application/json">(.*?)</script>', html, re.S)
+              if not match:
+                  raise SystemExit(f'{template}: embedded dashboard data is missing')
+              payload = json.loads(match.group(1))
+              available = sum(observation.get('value') is not None
+                              for region in payload['regions'].values()
+                              for observation in region['metrics'].values())
+              total = sum(len(region['metrics']) for region in payload['regions'].values())
+              benchmark = payload['fda_benchmark']['metric']
+              benchmark_status = benchmark['status']
+              summary.append(f'| {label} | {available}/{total} across all region views | {len(payload["news"])} | {benchmark_status} |')
+              if benchmark.get('value') is None:
+                  print(f'::warning::{label}: FDA benchmark unavailable; see the source notice on the published page.')
+              if payload.get('quality_messages'):
+                  print(f'::warning::{label}: {len(payload["quality_messages"])} curated data checks failed; affected observations were withheld.')
+              if payload.get('news_failures'):
+                  print(f'::warning::{label}: one or more headline feeds were unavailable.')
+          summary += ['', 'Blank measures require sourced curated observations. A successful build does not mean every external source is available.']
+          if os.getenv('GITHUB_STEP_SUMMARY'):
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
+                  handle.write('\n'.join(summary) + '\n')
+          PY
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Save generated pages to the repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f -- _site
+          if git diff --cached --quiet; then
+            echo 'No generated page changes to commit.'
+          else
+            git commit -m 'Update generated imaging dashboards'
+            git push origin HEAD:"${GITHUB_REF_NAME}"
+          fi
+
+      - name: Upload the generated website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: update-news
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
