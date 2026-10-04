@@ -29,6 +29,16 @@ An explicit curated override must identify benchmark="EFFR", geography="United
 States", aggregation="month_end", unit="%", and the same monthly point contract.
 Offline builds never fetch history. auto_sources=false disables automatic history.
 
+Regional views: regions.<key>.market_history accepts explicitly scoped six-month
+policy/equity series. Non-US views never fall back to US FDA or EFFR data.
+Europe can collect an ECB euro-area benchmark (not an all-Europe average).
+Country CPI context uses World Bank FP.CPI.TOTL.ZG, annual all-items inflation,
+shown as separate named-country rows; it is not healthcare inflation.
+Non-global curated observations must state a geography within the selected
+region. Worldwide vendor totals are excluded from regional revenue tables.
+Regional RSS headlines require explicit country/regulator mentions in the title;
+this is an incomplete title filter, not an assessment of the article's full scope.
+
 """
 from __future__ import annotations
 
@@ -173,7 +183,7 @@ def normalise_metric(raw, definition, errors, path):
     return result
 
 
-def normalise_series(raw, label, unit, errors, path):
+def normalise_series(raw, label, unit, errors, path, allow_negative=False):
     result = missing(label, unit)
     result['points'] = []
     if not raw:
@@ -191,8 +201,8 @@ def normalise_series(raw, label, unit, errors, path):
             if end > iso_date(raw['as_of']):
                 raise ValueError('series period extends beyond as_of')
             value = point.get('value')
-            if value is not None and (not finite_number(value) or value < 0):
-                raise ValueError('values must be non-negative finite numbers or null')
+            if value is not None and (not finite_number(value) or (value < 0 and not allow_negative)):
+                raise ValueError('invalid series value')
             clean.append({'start': start.isoformat(), 'end': end.isoformat(),
                           'label': str(point.get('label') or start.isoformat()), 'value': value})
             observed_on = point.get('observed_on')
@@ -908,10 +918,186 @@ def ai_coverage_report(payload):
     }
 
 
+def scope_matches_region(scope, key):
+    if key == 'global':
+        return True
+    if not isinstance(scope, str) or re.search(r'\b(global|worldwide|international)\b', scope, re.I):
+        return False
+    names = [REGIONS[key], *[name for _, name in COUNTRY_SAMPLES[key]]]
+    names += {'europe': ['Euro area', 'Eurozone', 'European Union', 'UK'],
+              'northAmerica': ['US', 'USA', 'U.S.', 'United States'],
+              'asia': ['Asia', 'Asia Pacific', 'Republic of Korea'],
+              'southAmerica': ['Latin America', 'South America'],
+              'middleEast': ['Middle East', 'UAE']}[key]
+    return any(re.search(r'(?<!\w)' + re.escape(name) + r'(?!\w)', scope, re.I) for name in names)
+
+
+def regional_country_inflation():
+    # Annual country observations are kept separate: no regional average is implied.
+    year = date.today().year - 1
+    url = 'https://api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG?' + urllib.parse.urlencode(
+        {'format': 'json', 'date': f'{year - 4}:{year}', 'per_page': 5000})
+    data = public_json(url)
+    if not isinstance(data, list) or len(data) != 2 or not isinstance(data[0], dict) or data[0].get('pages') != 1:
+        raise ValueError('Incomplete or invalid World Bank response')
+    latest = {}
+    allowed = {code for sample in COUNTRY_SAMPLES.values() for code, _ in sample}
+    for row in data[1] or []:
+        code, value = row.get('countryiso3code'), row.get('value')
+        if code not in allowed or not finite_number(value):
+            continue
+        if row.get('indicator', {}).get('id') != 'FP.CPI.TOTL.ZG':
+            raise ValueError('Unexpected inflation indicator')
+        observation_year = int(row['date'])
+        if not year - 4 <= observation_year <= year:
+            raise ValueError('Unexpected inflation period')
+        if code not in latest or observation_year > latest[code]['year']:
+            latest[code] = dict(year=observation_year, value=value)
+    result = {}
+    for key in REGIONS:
+        sample = (list(dict.fromkeys(pair for group in COUNTRY_SAMPLES.values() for pair in group))
+                  if key == 'global' else COUNTRY_SAMPLES[key])
+        rows = []
+        for code, name in sample:
+            observation = latest.get(code)
+            if observation is None:
+                metric = missing(f'{name}: consumer-price inflation', '% annual', 'No observation in the five completed-year search window.')
+                metric['geography'] = name
+            else:
+                y = observation['year']
+                metric = sourced(observation['value'], f'{name}: consumer-price inflation', '% annual', name,
+                    str(y), 'World Bank WDI — consumer-price inflation', url,
+                    'Latest available annual consumer-price inflation for this country in the five completed-year search window. '
+                    'All-items CPI, not medical-care inflation or hospital input costs. Countries can have different observation years. '
+                    'Rows are individual country observations, not a regional aggregate.', as_of=f'{y}-12-31')
+            rows.append(metric)
+        result[key] = rows
+    return result
+
+
+def euro_area_financing():
+    url = 'https://data-api.ecb.europa.eu/service/data/FM/D.U2.EUR.4F.KR.DFR.LEV?' + urllib.parse.urlencode(
+        {'format': 'csvdata', 'startPeriod': '2000-01-01', 'endPeriod': date.today().isoformat()})
+    content = read_url(url).decode('utf-8-sig')
+    observations = {}
+    for row in csv.DictReader(io.StringIO(content)):
+        if row.get('KEY') and row['KEY'] != 'FM.D.U2.EUR.4F.KR.DFR.LEV':
+            raise ValueError('Unexpected ECB series key')
+        day = iso_date(row['TIME_PERIOD'])
+        value = float(row['OBS_VALUE'])
+        if not finite_number(value) or day > date.today():
+            raise ValueError('Invalid ECB policy-rate observation')
+        if day in observations and observations[day] != value:
+            raise ValueError('Conflicting ECB observations')
+        observations[day] = value
+    if not observations:
+        raise ValueError('Empty ECB policy-rate history')
+    last = max(observations)
+    source = 'https://data.ecb.europa.eu/data/datasets/FM/FM.D.U2.EUR.4F.KR.DFR.LEV'
+    method = ('ECB deposit facility rate, effective date of rate changes. This is a euro-area policy benchmark, '
+              'not a rate for all European countries or a company borrowing rate. '
+              'Monthly history shows the officially effective rate at each month end, using dated rate-change observations.')
+    metric = sourced(observations[last], 'Euro-area deposit facility rate', '%', 'Euro area',
+                     f'Effective from {last}', 'European Central Bank — deposit facility rate', source, method, as_of=last.isoformat())
+    months = completed_months()
+    points = []
+    for start, end in months:
+        effective = [day for day in observations if day <= end]
+        day = max(effective) if effective else None
+        points.append(dict(start=start.isoformat(), end=end.isoformat(), label=start.strftime('%b %Y'),
+                           value=observations[day] if day else None))
+    history = dict(metric, label='Euro-area deposit facility rate — month end', points=points,
+                   period=f'{months[0][0]} to {months[-1][1]}', as_of=months[-1][1].isoformat())
+    return metric, history
+
+
+def collect_regional_context(offline):
+    result = {'countries': {}, 'europe_rate': None, 'europe_history': None}
+    if offline:
+        return result
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        country = executor.submit(regional_country_inflation)
+        europe = executor.submit(euro_area_financing)
+        try:
+            result['countries'] = country.result()
+        except Exception as exc:
+            logging.warning('Country inflation collection unavailable: %s', exc)
+        try:
+            result['europe_rate'], result['europe_history'] = europe.result()
+        except Exception as exc:
+            logging.warning('Euro-area rate collection unavailable: %s', exc)
+    return result
+
+
+def regional_history(raw, key, errors):
+    raw = raw if isinstance(raw, dict) else {}
+    result = {}
+    expected = [(a.isoformat(), b.isoformat()) for a, b in completed_months()]
+    for field, label, unit in [('equity', f'{REGIONS[key]} equity benchmark', 'index points'),
+                               ('policy_rate', f'{REGIONS[key]} financing benchmark', '%')]:
+        observation = normalise_series(raw.get(field), label, unit, errors, f'{key}.market_history.{field}',
+                                       allow_negative=field == 'policy_rate')
+        if observation['points']:
+            valid = scope_matches_region(observation['geography'], key)
+            valid = valid and [(p['start'], p['end']) for p in observation['points']] == expected
+            if field == 'equity':
+                source = raw[field]
+                valid = valid and bool(source.get('benchmark')) and bool(re.fullmatch(r'[A-Z]{3}', str(source.get('currency', ''))))
+                valid = valid and source.get('return_basis') in ('price', 'net_total_return', 'gross_total_return')
+                if valid:
+                    observation['label'] = f"{source['benchmark']} — {source['currency']} {source['return_basis'].replace('_', ' ')}"
+            if not valid:
+                errors.append(f'{key}.market_history.{field}: geography, monthly periods or benchmark definition mismatch')
+                observation = normalise_series(None, label, unit, errors, f'{key}.market_history.{field}')
+        if not observation['points']:
+            observation['reason'] = f'No validated six-month {field.replace("_", " ")} series for {REGIONS[key]}; no US substitution.'
+        result[field] = observation
+    return result
+
+
+def region_headlines(news, key):
+    if key == 'global':
+        return news
+    tokens = [name for _, name in COUNTRY_SAMPLES[key]] + {
+        'northAmerica': ['United States', 'Canadian', 'FDA', 'Medicare', 'CMS'],
+        'europe': ['European', 'Europe', 'NHS', 'MHRA', 'Euro area'],
+        'asia': ['Asia-Pacific', 'Asia Pacific', 'Asian', 'Japanese', 'Chinese', 'Indian', 'Australian'],
+        'middleEast': ['Middle East', 'Saudi', 'Emirati'],
+        'southAmerica': ['Latin America', 'LATAM', 'Brazilian', 'Mexican']}[key]
+    return [item for item in news if any(re.search(r'(?<!\w)' + re.escape(token) + r'(?!\w)', item['title'], re.I) for token in tokens)]
+
+
+def check_regional_scope(region, key, errors):
+    if key == 'global':
+        return
+    # Never let a supplied worldwide/company-total observation acquire a regional heading.
+    blocks = [region['metrics'], region['context'],
+              {field: region[field] for field in ('authorisations', 'funding', 'modalities', 'applications')}]
+    for block in blocks:
+        for field, observation in block.items():
+            populated = finite_number(observation.get('value')) or bool(observation.get('points')) or bool(observation.get('items'))
+            if populated and not scope_matches_region(observation.get('geography'), key):
+                errors.append(f'{key}.{field}: supplied geography is outside the selected region')
+                observation.update(value=None, status='unavailable', reason='Supplied geography does not match the selected region.',
+                                   geography='', period='', as_of='', source=None, methodology='')
+                if 'points' in observation: observation['points'] = []
+                if 'items' in observation: observation.update(items=[], total=None)
+    valid = []
+    for row in region['vendors']:
+        if scope_matches_region(row['geography'], key):
+            valid.append(row)
+        else:
+            errors.append(f'{key}.vendors: excluded {row["vendor"]}; revenue geography is outside the selected region')
+    region['vendors'] = valid
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
     automatic = automatic_observations('ai', offline or curated.get('auto_sources') is False)
+    regional_sources = collect_regional_context(offline or curated.get('auto_sources') is False)
+    if regional_sources['europe_rate']:
+        automatic['europe']['context']['policy_rate'] = regional_sources['europe_rate']
     curated = merge_automatic(curated, automatic)
     regions = {}
     for key, label in REGIONS.items():
@@ -953,7 +1139,7 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                          (TRIAL_DESCRIPTION if d[0] == 'prospective_studies' else d[4])} for d in METRICS],
                         'context': [{'key': d[0], 'description': d[3]} for d in CONTEXT]},
         'fda_benchmark': fda_benchmark(fda, curated.get('fda_classifications', {}), errors),
-        'news': news, 'news_notice': 'Headlines are a global feed and do not change with the region selector.',
+        'news': news, 'news_notice': 'Selected industry headlines. Regional views require explicit country or regulator mentions in the title; coverage is incomplete.',
         'news_failures': news_failures,
         'headline_summary': generate_gemini_commentary(news, ai_commentary and not offline),
         'quality_messages': errors,
@@ -976,6 +1162,28 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                 if key == 'policy_rate' else 'US medical-care CPI proxy')
     payload['market_history'] = normalise_market_history(curated.get('market_history'),
         offline or curated.get('auto_sources') is False, errors)
+    for key, region in regions.items():
+        raw = curated.get('regions', {}).get(key, {})
+        check_regional_scope(region, key, errors)
+        region['country_context'] = regional_sources['countries'].get(key, [])
+        history_raw = copy.deepcopy(raw.get('market_history') or {})
+        if not isinstance(history_raw, dict):
+            errors.append(f'{key}.market_history must be an object')
+            history_raw = {}
+        if key == 'europe' and not history_raw.get('policy_rate') and regional_sources['europe_history']:
+            history_raw['policy_rate'] = regional_sources['europe_history']
+        if key in ('global', 'northAmerica'):
+            # The global view labels this explicitly as a US comparator.
+            region['market_history'] = copy.deepcopy(payload['market_history'])
+            if key == 'northAmerica':
+                region['market_history']['equity'] = regional_history(history_raw, key, errors)['equity']
+            if history_raw:
+                supplied = regional_history(history_raw, key, errors)
+                for field, value in supplied.items():
+                    if value['points']: region['market_history'][field] = value
+        else:
+            region['market_history'] = regional_history(history_raw, key, errors)
+        region['news'] = region_headlines(news, key)
     for error in errors:
         logging.warning('Data validation: %s', error)
     payload['ai_coverage'] = ai_coverage_report(payload)
