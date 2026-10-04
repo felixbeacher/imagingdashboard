@@ -6,6 +6,11 @@ Run: python3 1_update_data_ai.py --port 8080
 Build: python3 1_update_data_ai.py --build rendered_ai.html
 Offline: add --offline. Curated data: --data dashboard_data.json.
 See readme.txt for the data contract and source/coverage limitations.
+
+Automatic public sources: ClinicalTrials.gov registry activity, US effective
+federal funds rate, and US medical-care CPI. This module also supplies WHO
+equipment-capacity collectors to modality_dashboard.py. No API keys are needed.
+Unconnected adoption/commercial indicators still require sourced curated data.
 """
 from __future__ import annotations
 
@@ -13,11 +18,14 @@ import argparse
 import copy
 import csv
 import io
+import hashlib
 import json
 import logging
 import math
 import os
 import re
+import statistics
+import tempfile
 import threading
 import time
 import urllib.parse
@@ -457,9 +465,282 @@ def generate_gemini_commentary(news, enabled=False):
     return result
 
 
+# Country samples are editorial coverage definitions, not regional aggregates.
+# The same samples are used for WHO capacity benchmarks and registry searches.
+COUNTRY_SAMPLES = {
+    'northAmerica': [('USA', 'United States'), ('CAN', 'Canada')],
+    'europe': [('GBR', 'United Kingdom'), ('DEU', 'Germany'), ('FRA', 'France'),
+               ('ITA', 'Italy'), ('ESP', 'Spain'), ('NLD', 'Netherlands'),
+               ('SWE', 'Sweden'), ('POL', 'Poland'), ('CHE', 'Switzerland')],
+    'asia': [('CHN', 'China'), ('JPN', 'Japan'), ('IND', 'India'),
+             ('KOR', 'South Korea'), ('AUS', 'Australia'), ('NZL', 'New Zealand'),
+             ('SGP', 'Singapore'), ('TWN', 'Taiwan'), ('THA', 'Thailand')],
+    'middleEast': [('ISR', 'Israel'), ('SAU', 'Saudi Arabia'),
+                   ('ARE', 'United Arab Emirates'), ('IRN', 'Iran'),
+                   ('TUR', 'Turkey'), ('EGY', 'Egypt')],
+    'southAmerica': [('BRA', 'Brazil'), ('MEX', 'Mexico'), ('ARG', 'Argentina'),
+                     ('CHL', 'Chile'), ('COL', 'Colombia'), ('PER', 'Peru')],
+}
+TRIAL_TERMS = {
+    'ai': '("artificial intelligence" OR "machine learning" OR "deep learning") AND '
+          '("radiology" OR "medical imaging" OR "computed tomography" OR '
+          '"magnetic resonance" OR "x-ray" OR "ultrasound" OR "mammography" OR '
+          '"positron emission")',
+    'ct': '"computed tomography"', 'mri': '"magnetic resonance imaging"',
+    'pet': '"positron emission tomography"',
+    'xray': '("radiography" OR "fluoroscopy" OR "x-ray")',
+}
+TRIAL_DESCRIPTION = ('Automatic data count active interventional ClinicalTrials.gov registrations matching an '
+                     'explicit intervention-text query. This is a research-activity proxy, '
+                     'not a count of validated technologies, completed studies or clinical benefit. '
+                     'Regional views use named country samples; multinational studies can appear '
+                     'in several views. The global query counts registrations directly. '
+                     'Curated prospective-study counts retain their supplied scope and methodology.')
+
+
+def public_json(url):
+    """Bounded, key-free JSON retrieval; share fresh responses across the five builds.
+
+    Cache files are local build inputs, never published. Expired responses are not
+    silently used when a fetch fails. --offline bypasses this function entirely.
+    """
+    folder = BASE_DIR / '.dashboard_cache'
+    path = folder / (hashlib.sha256(url.encode()).hexdigest() + '.json')
+    try:
+        cached = json.loads(path.read_text(encoding='utf-8'))
+        age = time.time() - cached['retrieved_at']
+        if 0 <= age < 3600:
+            return cached['response']
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    request = urllib.request.Request(url, headers={
+        'User-Agent': 'MedicalImagingDashboard/2.0', 'Accept': 'application/json'})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        content = response.read(4_000_001)
+    if len(content) > 4_000_000:
+        raise ValueError('Public source response exceeded the size limit')
+    result = json.loads(content)
+    try:
+        folder.mkdir(exist_ok=True)
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=folder,
+                                         delete=False, suffix='.tmp') as handle:
+            json.dump({'retrieved_at': time.time(), 'response': result}, handle)
+            temporary = Path(handle.name)
+        temporary.replace(path)
+    except OSError:
+        logging.warning('Public source cache could not be written; collection still succeeded.')
+    return result
+
+
+def sourced(value, label, unit, geography, period, source_name, source_url, methodology,
+            as_of=None, status='reported'):
+    return dict(value=value, label=label, unit=unit, geography=geography, period=period,
+                source={'name': source_name, 'url': source_url}, methodology=methodology,
+                as_of=as_of or date.today().isoformat(), status=status)
+
+
+def trial_observations(slug):
+    """Count distinct registry records, not publications or proven clinical efficacy."""
+    def one(region):
+        advanced = 'AREA[StudyType]INTERVENTIONAL'
+        names = [name for _, name in COUNTRY_SAMPLES.get(region, [])]
+        if names:
+            advanced += ' AND (' + ' OR '.join(
+                f'AREA[LocationCountry]"{name}"' for name in names) + ')'
+        params = {'query.intr': TRIAL_TERMS[slug], 'filter.advanced': advanced,
+                  'filter.overallStatus': 'RECRUITING,NOT_YET_RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION',
+                  'countTotal': 'true', 'pageSize': 1, 'fields': 'NCTId'}
+        url = 'https://clinicaltrials.gov/api/v2/studies?' + urllib.parse.urlencode(params)
+        try:
+            response = public_json(url)
+            count = response.get('totalCount')
+            if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+                raise ValueError('Registry did not return a valid totalCount')
+            if not isinstance(response.get('studies'), list) or count < len(response['studies']):
+                raise ValueError('Registry result structure is inconsistent')
+            if count and not response['studies']:
+                raise ValueError('Nonzero registry count without a sample record')
+            scope = ('Worldwide ClinicalTrials.gov registrations' if region == 'global'
+                     else 'Study sites in selected countries: ' + ', '.join(names))
+            observation = sourced(count, 'Active registered studies (research proxy)', 'studies',
+                scope, 'Registry snapshot ' + date.today().isoformat(), 'ClinicalTrials.gov / NLM',
+                url,
+                TRIAL_DESCRIPTION + ' Exact API query: ' + url)
+            observation['query_url'] = url
+            return region, observation
+        except Exception as exc:
+            logging.warning('%s %s registry collection failed: %s', slug, region, exc)
+            return region, {'value': None, 'reason':
+                'The ClinicalTrials.gov registry query could not be retrieved or validated; no zero was assumed.'}
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        return dict(executor.map(one, REGIONS))
+
+
+def who_capacity(slug):
+    """Explicit country medians: do not mistake them for pooled regional density."""
+    code = {'ct': 'DEVICES09', 'mri': 'DEVICES08', 'pet': 'DEVICES10'}.get(slug)
+    if not code:
+        return {}
+    url = 'https://ghoapi.azureedge.net/api/' + code
+    try:
+        response = public_json(url)
+        if response.get('@odata.nextLink'):
+            raise ValueError('WHO response is paginated; incomplete coverage withheld')
+        latest = {}
+        for row in response['value']:
+            if row.get('SpatialDimType') != 'COUNTRY' or any(row.get(d) for d in ('Dim1', 'Dim2', 'Dim3')):
+                continue
+            country, year, value = row.get('SpatialDim'), row.get('TimeDim'), row.get('NumericValue')
+            if not isinstance(country, str) or not isinstance(year, int) or not finite_number(value) or value < 0:
+                continue
+            if year > date.today().year:
+                continue
+            start = str(row.get('TimeDimensionBegin') or f'{year}-01-01')[:10]
+            end = str(row.get('TimeDimensionEnd') or f'{year}-12-31')[:10]
+            iso_date(start); iso_date(end)
+            if end < start or iso_date(end) > date.today():
+                continue
+            candidate = dict(country=country, value=value, year=year, start=start, end=end)
+            if country not in latest or (year, end) > (latest[country]['year'], latest[country]['end']):
+                latest[country] = candidate
+            elif (year, end) == (latest[country]['year'], latest[country]['end']) and value != latest[country]['value']:
+                raise ValueError('WHO returned conflicting latest country observations')
+        if not latest:
+            raise ValueError('WHO returned no usable country densities')
+        results = {}
+        for region in REGIONS:
+            sample = COUNTRY_SAMPLES.get(region)
+            observations = ([latest[c] for c, _ in sample if c in latest] if sample else list(latest.values()))
+            if not observations:
+                results[region] = {'value': None, 'reason': 'WHO has no scanner-density observations for the named country sample.'}
+                continue
+            names = dict(sample or [])
+            scope = (f'Worldwide reporting-country sample ({len(observations)} countries)' if not sample
+                     else 'Reporting-country sample: ' + ', '.join(names[r['country']] for r in observations))
+            start, end = min(r['start'] for r in observations), max(r['end'] for r in observations)
+            results[region] = sourced(statistics.median(r['value'] for r in observations),
+                'Country median reported scanner density', 'systems / million people', scope,
+                f'Latest available per country; observation periods span {start} to {end}',
+                'WHO Global Health Observatory — ' + code, url,
+                f'Unweighted median of latest reported country densities ({len(observations)} countries). '
+                'Each country has equal weight; this is not scanners divided by the combined regional population. '
+                'WHO reports equipment availability, not independently verified operational status. '
+                'Country years vary, reporting coverage is incomplete, and these historical observations '
+                'are not current installed-base estimates. The complete country/value/year sample is embedded in the dataset.',
+                as_of=end, status='estimated')
+            results[region]['country_observations'] = observations
+        return results
+    except Exception as exc:
+        logging.warning('%s WHO capacity collection failed: %s', slug, exc)
+        return {r: {'value': None, 'reason': 'WHO equipment data could not be retrieved or validated.'} for r in REGIONS}
+
+
+def us_financing():
+    url = 'https://markets.newyorkfed.org/api/rates/unsecured/effr/last/1.json'
+    data = public_json(url)['refRates']
+    row = data[0]
+    value, day = row['percentRate'], row['effectiveDate']
+    if row.get('type') != 'EFFR' or not finite_number(value) or iso_date(day) > date.today():
+        raise ValueError('Invalid effective federal funds observation')
+    return sourced(value, 'US overnight financing rate proxy', '%', 'United States', day,
+        'Federal Reserve Bank of New York — EFFR', 'https://www.newyorkfed.org/markets/reference-rates/effr',
+        'Latest published effective federal funds rate: volume-weighted median of reported overnight '
+        'federal funds transactions. An observed US interbank financing proxy, not a global/G7 rate '
+        'or the borrowing cost of an imaging vendor.', as_of=day)
+
+
+def us_medical_inflation():
+    year = date.today().year
+    url = 'https://api.bls.gov/publicAPI/v2/timeseries/data/CUUR0000SAM?' + urllib.parse.urlencode(
+        {'startyear': year - 2, 'endyear': year})
+    response = public_json(url)
+    if response.get('status') != 'REQUEST_SUCCEEDED':
+        raise ValueError('BLS request was not successful: ' + str(response.get('message')))
+    series = response['Results']['series']
+    if len(series) != 1 or series[0]['seriesID'] != 'CUUR0000SAM':
+        raise ValueError('Unexpected BLS series')
+    points = {}
+    for row in series[0]['data']:
+        if re.fullmatch(r'M(0[1-9]|1[0-2])', row['period']):
+            if row['value'] in ('-', '.', ''):
+                continue  # BLS missing observations are not numerical index values.
+            y, m, value = int(row['year']), int(row['period'][1:]), float(row['value'])
+            if not finite_number(value) or value <= 0:
+                raise ValueError('Invalid CPI index value')
+            if date(y, m, 1) <= date.today():
+                points[y, m] = value
+    current = max(points)
+    previous = (current[0] - 1, current[1])
+    if previous not in points:
+        raise ValueError('Matching prior-year CPI month is missing; no alternative period substituted')
+    value = (points[current] / points[previous] - 1) * 100
+    period = f'{current[0]}-{current[1]:02d}'
+    return sourced(value, 'US medical-care CPI proxy', '% YoY', 'US urban consumers', period,
+        'US Bureau of Labor Statistics — CUUR0000SAM', 'https://data.bls.gov/timeseries/CUUR0000SAM',
+        'Medical-care CPI-U, not seasonally adjusted. Year-on-year change = '
+        '(latest monthly index / same month one year earlier - 1) × 100. '
+        'US-only published CPI basket; no international aggregation or averaging. '
+        'Consumer medical prices are a proxy, not hospital input costs or imaging-equipment prices.',
+        as_of=date.today().isoformat(), status='estimated')
+
+
+def automatic_observations(slug, offline=False):
+    regions = {r: {'metrics': {}, 'context': {}} for r in REGIONS}
+    if offline:
+        return regions
+    # Independent sources fail independently; failures never become numeric zeroes.
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        trials = executor.submit(trial_observations, slug)
+        capacity = executor.submit(who_capacity, slug)
+        financing = executor.submit(us_financing)
+        inflation = executor.submit(us_medical_inflation)
+        for region, value in trials.result().items():
+            regions[region]['metrics']['prospective_studies'] = value
+        for region, value in capacity.result().items():
+            regions[region]['metrics']['systems_density'] = value
+        for key, future in [('policy_rate', financing), ('inflation', inflation)]:
+            try:
+                value = future.result()
+            except Exception as exc:
+                logging.warning('Automatic %s collection failed: %s', key, exc)
+                value = {'value': None, 'reason': f'The US {key} source could not be retrieved or validated.'}
+            # Show the US benchmark only in the global and North America views.
+            for region in ('global', 'northAmerica'):
+                regions[region]['context'][key] = copy.deepcopy(value)
+    return regions
+
+
+def merge_automatic(curated, automatic):
+    """Supplied non-null observations take priority, including validation failures.
+
+    Empty example placeholders allow automatic collection. Set automatic:false on
+    an individual null observation to explicitly withhold that automatic measure.
+    """
+    result = copy.deepcopy(curated)
+    supplied = result.setdefault('regions', {})
+    if not isinstance(supplied, dict):
+        return result
+    for region, blocks in automatic.items():
+        target = supplied.setdefault(region, {})
+        if not isinstance(target, dict):
+            continue
+        for block, observations in blocks.items():
+            destination = target.setdefault(block, {})
+            if not isinstance(destination, dict):
+                continue
+            for key, observation in observations.items():
+                existing = destination.get(key)
+                if existing is None or (isinstance(existing, dict) and existing.get('value') is None
+                                        and existing.get('automatic', True)):
+                    destination[key] = observation
+    return result
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
+    automatic = automatic_observations('ai', offline or curated.get('auto_sources') is False)
+    curated = merge_automatic(curated, automatic)
     regions = {}
     for key, label in REGIONS.items():
         raw = curated.get('regions', {}).get(key, {})
@@ -496,13 +777,17 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     news, news_failures = news_source if news_source is not None else fetch_news(offline)
     payload = {
         'schema_version': 1, 'generated_at': utc_now(), 'regions': regions,
-        'definitions': {'metrics': [{'key': d[0], 'group': d[2], 'description': d[4]} for d in METRICS],
+        'definitions': {'metrics': [{'key': d[0], 'group': d[2], 'description':
+                         (TRIAL_DESCRIPTION if d[0] == 'prospective_studies' else d[4])} for d in METRICS],
                         'context': [{'key': d[0], 'description': d[3]} for d in CONTEXT]},
         'fda_benchmark': fda_benchmark(fda, curated.get('fda_classifications', {}), errors),
         'news': news, 'news_notice': 'Headlines are a global feed and do not change with the region selector.',
         'news_failures': news_failures,
         'headline_summary': generate_gemini_commentary(news, ai_commentary and not offline),
         'quality_messages': errors,
+        'data_collection': {'automatic_sources': automatic,
+            'notice': 'Automatic collection covers registry activity and selected public benchmarks. '
+                      'Unconnected commercial and clinical indicators require sourced curated inputs.'},
     }
     for error in errors:
         logging.warning('Data validation: %s', error)
@@ -608,7 +893,7 @@ def main():
     parser.add_argument('--port', type=int, default=int(os.getenv('PORT', '8080')))
     parser.add_argument('--host', default='127.0.0.1', help='Use 0.0.0.0 behind your hosting reverse proxy.')
     parser.add_argument('--template', type=Path, default=BASE_DIR / '1_ai.html')
-    parser.add_argument('--data', type=Path, default=Path(os.environ['DASHBOARD_DATA_FILE']) if os.getenv('DASHBOARD_DATA_FILE') else None)
+    parser.add_argument('--data', type=Path, default=Path(os.environ['DASHBOARD_DATA_FILE']) if os.getenv('DASHBOARD_DATA_FILE') else BASE_DIR / 'dashboard_data.json')
     parser.add_argument('--offline', action='store_true')
     parser.add_argument('--ai-commentary', action='store_true', help='Enable optional Gemini headline summary; requires google-genai and credentials.')
     parser.add_argument('--cache-seconds', type=int, default=900)
@@ -617,13 +902,21 @@ def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     if args.cache_seconds < 1:
         parser.error('--cache-seconds must be positive')
-    service = DashboardService(args.template, args.data, args.offline, args.ai_commentary, args.cache_seconds)
+    if not args.data.exists() and args.data != BASE_DIR / 'dashboard_data.json':
+        parser.error('--data file does not exist')
+    service = DashboardService(args.template, args.data if args.data.exists() else None, args.offline, args.ai_commentary, args.cache_seconds)
     if args.build:
+        if args.build.resolve() == args.template.resolve():
+            parser.error('--build must not overwrite the source template')
         args.build.parent.mkdir(parents=True, exist_ok=True)
         args.build.write_text(service.html(), encoding='utf-8')
         logging.info('Rendered dashboard: %s', args.build)
         return
-    server = ThreadingHTTPServer((args.host, args.port), make_handler(service))
+    handler = make_handler(service)
+    if (BASE_DIR / 'modality_dashboard.py').is_file():
+        from modality_dashboard import site_handler
+        handler = site_handler(service, 'ai')
+    server = ThreadingHTTPServer((args.host, args.port), handler)
     logging.info('Dashboard running at http://%s:%s/ai.html', args.host, server.server_port)
     try:
         server.serve_forever()

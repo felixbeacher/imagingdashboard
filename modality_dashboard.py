@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 """
-This file is a shared Python engine for the AI, CT, MRI, PET, and X-ray dashboards
+This file is a shared Python engine for the CT, MRI, PET, and X-ray dashboards
 Purpose: Powers the 4 updater scripts to ensure consistent behaviour and simplified maintenance.
 Core Functions: 
 1. Defines modality metrics
 2. validates JSON data (values, dates, sources)
-3. fetches US FDA clearances and RSS headlines
+3. fetches WHO equipment-density benchmarks, registered-study activity,
+   US financial context, US FDA clearances and RSS headlines
 4. populates HTML templates (leaving blank sections where data is unavailable).
 """
 
@@ -35,13 +36,13 @@ def measure(key, label, group, unit, description, rule='nonnegative'):
     return dict(key=key, label=label, group=group, unit=unit, description=description, rule=rule)
 
 COMMON = [
-    measure('systems_density', 'Operational systems per million people', 'Capacity & use', 'systems / million people', 'Operational clinical systems divided by the stated population. Define mobile systems, hybrid systems and public/private coverage.'),
+    measure('systems_density', 'Reported scanner capacity benchmark', 'Capacity & use', 'systems / million people', 'Sourced equipment density or an explicitly labelled median of country densities. WHO reports availability, not verified operational status. Country samples and observation years are disclosed; a country median is not pooled regional density.'),
     measure('exam_volume', 'Annual examination volume', 'Capacity & use', 'examinations', 'Completed examinations in the stated coverage and year; distinguish examinations from images, sequences and billed procedures.', 'count'),
     measure('imaging_growth', 'Examination volume growth', 'Capacity & use', '% YoY', 'Year-on-year change using comparable institutions, examinations and reporting periods.', 'signed'),
     measure('scan_wait', 'Referral-to-examination wait', 'Clinical access', 'days', 'Median referral-to-examination wait; specify urgency, patient pathway and sample.'),
     measure('reporting_time', 'Reporting turnaround', 'Clinical access', 'hours', 'Median examination-completion to final-report time; distinguish urgent and routine pathways.'),
     measure('staff_vacancy', 'Imaging staff vacancy rate', 'Clinical access', '%', 'Unfilled funded modality-relevant posts divided by all funded posts. State roles and full-time-equivalent basis.', 'percent'),
-    measure('prospective_studies', 'Unique prospective clinical studies', 'Evidence & quality', 'studies', 'Unique prospective studies of the explicitly defined new technology, indication and comparator; deduplicate registrations and publications.', 'count'),
+    measure('prospective_studies', 'Prospective evidence / registered-study activity', 'Evidence & quality', 'studies', ai.TRIAL_DESCRIPTION, 'count'),
     measure('procurement_time', 'Procurement-to-clinical-use time', 'Commercial delivery', 'months', 'Median contract-award to routine clinical-use time, including installation, commissioning and staff training.'),
     measure('contract_awards', 'Disclosed equipment contract awards', 'Commercial delivery', 'contracts', 'Paid equipment procurement awards; deduplicate announcements and state whether one award covers several systems.', 'count'),
     measure('replacement_share', 'Systems beyond stated replacement age', 'Commercial delivery', '%', 'Operational systems older than a stated threshold divided by surveyed systems. Age alone does not establish a need to replace.', 'percent'),
@@ -92,7 +93,8 @@ def normalise_measure(raw, definition, errors, path):
             if not isinstance(raw.get('denominator'), str) or not raw['denominator'].strip(): raise ValueError('share requires a denominator definition')
         unit = str(raw.get('unit') or definition['unit'])
         if unit != definition['unit'] and definition['key'] != 'operating_cost': raise ValueError('unit must match the defined measure')
-        result.update(meta, value=value, unit=unit, denominator=str(raw.get('denominator','')), reason='')
+        result.update(meta, value=value, unit=unit, label=str(raw.get('label') or definition['label']),
+                      denominator=str(raw.get('denominator','')), reason='')
         if definition['key'] == 'policy_rate' and 'G7' in str(raw.get('label','')): result['label'] = 'G7 financing proxy'
     except (ValueError, TypeError) as exc:
         errors.append(f'{path}: {exc}')
@@ -265,6 +267,8 @@ def build_dashboard(slug, data_path=None, offline=False):
     config=CONFIGS[slug]; errors=[]; raw=ai.load_curated(data_path,errors)
     if raw and raw.get('modality') != slug:
         errors.append('Curated file modality does not match this dashboard; observations withheld.'); raw={}
+    automatic=ai.automatic_observations(slug,offline or raw.get('auto_sources') is False)
+    raw=ai.merge_automatic(raw,automatic)
     regions={}
     for key,name in ai.REGIONS.items():
         region=raw.get('regions',{}).get(key,{})
@@ -286,7 +290,10 @@ def build_dashboard(slug, data_path=None, offline=False):
     return dict(schema_version=1,modality=slug,generated_at=ai.utc_now(),regions=regions,
         definitions={'metrics':config['metrics'],'context':CONTEXT}, fda_benchmark=benchmark,
         news=news,news_notice=f"Global {config['name']} headline feed; it does not change with the region selector. Title matching is selective and is not comprehensive coverage.",news_failures=failures,
-        headline_summary={'text':'','label':'','sources':[]},quality_messages=errors)
+        headline_summary={'text':'','label':'','sources':[]},quality_messages=errors,
+        data_collection={'automatic_sources':automatic,
+            'notice':'Automatic public benchmarks have partial geography and dated source coverage. '
+                     'Other clinical and commercial indicators require sourced curated inputs.'})
 
 
 class ModalityService(ai.DashboardService):
