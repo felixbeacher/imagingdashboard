@@ -21,7 +21,6 @@
 <header>
   <div class="wrap masthead">
     <div><h1>Medical Imaging AI</h1></div>
-    <p class="note">Regulation · Research · Market context</p>
   </div>
   <nav class="wrap nav" aria-label="Website sections">
     <a href="index.html">Home</a><a href="1_ai.html" aria-current="page">AI</a><a href="2_ct.html">CT</a><a href="3_mri.html">MRI</a><a href="4_pet.html">PET</a><a href="5_xray.html">X-ray</a>
@@ -29,10 +28,10 @@
 </header>
 <main class="wrap" id="main">
   <div class="toolbar">
-    <div class="filter"><label for="regionSelect">Research region</label><select id="regionSelect" aria-controls="regional-dashboard"><option value="global">Global</option><option value="northAmerica">North America</option><option value="europe">Europe</option><option value="asia">Asia-Pacific</option><option value="middleEast">Middle East</option><option value="southAmerica">LATAM</option></select></div>
+    <div class="filter"><label for="regionSelect">Select region: </label><select id="regionSelect" aria-controls="regional-dashboard"><option value="global">Global</option><option value="northAmerica">North America</option><option value="europe">Europe</option><option value="asia">Asia-Pacific</option><option value="middleEast">Middle East</option><option value="southAmerica">LATAM</option></select></div>
     <div class="refresh" id="refresh">Data availability is being checked.</div>
   </div>
-  <div class="intro"><p>Follow the regulatory, research and financial conditions shaping medical imaging AI.</p><p class="note">Public-source indicators are updated on the scheduled build. Country samples and source dates are disclosed; these measures do not establish commercial adoption or clinical benefit.</p><p class="coverage" id="coverage" role="status" aria-live="polite"></p></div>
+  <div class="intro"><p class="coverage" id="coverage" role="status" aria-live="polite"></p></div>
   <p id="loading" class="loading">Dashboard data unavailable.</p>
   <noscript><p class="empty">Enable JavaScript to display the dashboard. Source data are embedded in this page; no local Python server is required for the published website.</p></noscript>
   <div id="dashboard" hidden>
