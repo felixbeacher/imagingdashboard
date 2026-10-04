@@ -736,6 +736,39 @@ def merge_automatic(curated, automatic):
     return result
 
 
+def ai_coverage_report(payload):
+    """Machine-readable coverage for the maintained AI view; never infer missing values.
+
+    The regional data contract is retained for optional sourced observations and
+    for the modality engine. Display coverage separately from source validation.
+    """
+    regions = {}
+    for key, region in payload['regions'].items():
+        available = [name for name, metric in region['metrics'].items()
+                     if finite_number(metric.get('value'))]
+        regions[key] = {
+            'reported_metrics': available,
+            'unreported_metrics': [name for name in region['metrics'] if name not in available],
+            'research_available': 'prospective_studies' in available,
+            'authorisation_series_available': any(finite_number(p.get('value'))
+                                                  for p in region['authorisations']['points']),
+            'funding_series_available': any(finite_number(p.get('value'))
+                                           for p in region['funding']['points']),
+            'vendor_observations': len(region['vendors']),
+        }
+    context = payload.get('public_context', payload['regions']['global']['context'])
+    return {
+        'scope': 'Public-source regulation, registered research and US financial context. '
+                 'Not a complete dataset of adoption, market size or vendor performance.',
+        'regions': regions,
+        'fda_available': finite_number(payload['fda_benchmark']['metric'].get('value')),
+        'us_financial_context_available': {key: finite_number(context[key].get('value'))
+                                          for key in ('policy_rate', 'inflation')},
+        'headline_count': len(payload['news']),
+        'news_feed_failures': payload['news_failures'],
+    }
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
@@ -791,6 +824,25 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     }
     for error in errors:
         logging.warning('Data validation: %s', error)
+    # Fixed public context stays separate from curated regional observations.
+    # A curated G7/other-country value must not acquire a US benchmark heading.
+    payload['public_context'] = {}
+    for key in ('policy_rate', 'inflation'):
+        definition = next(d for d in CONTEXT if d[0] == key)
+        observation = automatic['global']['context'].get(key)
+        if observation is None:
+            observation = {'value': None, 'reason': 'Automatic US context collection is disabled.'}
+        payload['public_context'][key] = normalise_metric(
+            observation, definition, errors, f'public_context.{key}')
+        if payload['public_context'][key]['value'] is None:
+            payload['public_context'][key]['label'] = ('US overnight financing rate proxy'
+                if key == 'policy_rate' else 'US medical-care CPI proxy')
+    payload['ai_coverage'] = ai_coverage_report(payload)
+    logging.info('AI coverage: FDA=%s, registered research=%s/6 views, headlines=%s. '
+                 'Other indicators require separately sourced observations.',
+                 payload['ai_coverage']['fda_available'],
+                 sum(r['research_available'] for r in payload['ai_coverage']['regions'].values()),
+                 payload['ai_coverage']['headline_count'])
     return payload
 
 
