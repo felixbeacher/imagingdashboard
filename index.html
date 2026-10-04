@@ -7,89 +7,108 @@
   <meta name="theme-color" content="#09111c">
   <title>The Medical Imaging Dashboard</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Explicitly requested title animation; isolate it from shared motion rules. */
-    .landing-page #hero-title { color: #edf3fa; }
-    @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-      .landing-page #hero-title {
-        background-image: linear-gradient(90deg, #f3f4f6 0%, #38bdf8 25%, #34d399 50%, #38bdf8 75%, #f3f4f6 100%);
-        background-size: 200% 100%;
-        background-position: 0% 50%;
-        background-repeat: repeat;
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: lp-title-shimmer 6s linear infinite !important;
-      }
-    }
-    @keyframes lp-title-shimmer {
-      from { background-position: 0% 50%; }
-      to { background-position: 200% 50%; }
-    }
-    @media print {
-      .landing-page #hero-title {
-        background: none; color: #111;
-        -webkit-text-fill-color: currentColor;
-        animation: none !important;
-      }
-    </style>
 </head>
+
 <body class="landing-page">
-<a class="lp-skip" href="#main">Skip to content</a>
-<header class="site-header">
-  <div class="lp-container lp-masthead">
-    <a class="brand" href="index.html" aria-label="The Medical Imaging Dashboard home">
-      <span class="brand-text"><strong>The Medical Imaging Dashboard</strong><small>Created and managed by Felix Beacher, PhD</small></span>
-    </a>
-  </div>
-  <nav class="lp-container nav-tabs" aria-label="Dashboard sections">
-    <a href="index.html" class="active" aria-current="page">Home</a>
-    <a href="1_ai.html">AI</a>
-    <a href="2_ct.html">CT</a>
-    <a href="3_mri.html">MRI</a>
-    <a href="4_pet.html">PET</a>
-    <a href="5_xray.html">X-ray</a>
-  </nav>
-</header>
+  <a class="lp-skip" href="#main">Skip to content</a>
 
-<main id="main" class="lp-container">
-  <section class="lp-hero" aria-labelledby="hero-title">
-    <div class="lp-hero-copy">
-    <h1 id="hero-title">A clearer view of<br>medical imaging.</h1>
-    <p class="lp-lede">Understand the conditions shaping medical imaging.</p>
+  <header class="site-header">
+    <div class="lp-container lp-masthead">
+      <a class="brand" href="index.html"
+         aria-label="The Medical Imaging Dashboard home">
+        <span class="brand-text">
+          <strong>The Medical Imaging Dashboard</strong>
+          <small>Created and managed by Felix Beacher, PhD</small>
+        </span>
+      </a>
     </div>
-    <div class="lp-hero-art" aria-hidden="true"><img src="images/earth-hero.png" width="1536" height="1024" alt="" fetchpriority="high" decoding="async"></div>
-  </section>
 
-  <section class="lp-purpose" aria-labelledby="purpose-title">
-    <div class="lp-purpose-copy">
-      <p class="lp-eyebrow">Aim of this dashboard</p>
-      <h2 id="purpose-title">To provide a detailed overview of the medical imaging sector, for innovators and investors.</h2>
+    <nav class="lp-container nav-tabs" aria-label="Dashboard sections">
+      <a href="index.html" class="active" aria-current="page">Home</a>
+      <a href="1_ai.html">AI</a>
+      <a href="2_ct.html">CT</a>
+      <a href="3_mri.html">MRI</a>
+      <a href="4_pet.html">PET</a>
+      <a href="5_xray.html">X-ray</a>
+    </nav>
+  </header>
+
+  <main id="main" class="lp-container">
+    <section class="lp-hero" aria-labelledby="hero-title">
+      <div class="lp-hero-copy">
+        <h1 id="hero-title">
+          A clearer view of<br>medical imaging.
+        </h1>
+        <p class="lp-lede">
+          Understand the conditions shaping medical imaging.
+        </p>
+      </div>
+
+      <div class="lp-hero-art" aria-hidden="true">
+        <img
+          src="images/earth-hero.png"
+          width="1536"
+          height="1024"
+          alt=""
+          fetchpriority="high"
+          decoding="async"
+        >
+      </div>
+    </section>
+
+    <section class="lp-purpose" aria-labelledby="purpose-title">
+      <div class="lp-purpose-copy">
+        <p class="lp-eyebrow">Aim of this dashboard</p>
+        <h2 id="purpose-title">
+          To provide a detailed overview of the medical imaging sector,
+          for innovators and investors.
+        </h2>
+      </div>
+
+      <div class="lp-pillars">
+        <article class="lp-pillar">
+          <span class="lp-number" aria-hidden="true">01</span>
+          <div>
+            <h3>Financing conditions</h3>
+            <p>Capital availability and the capacity to invest in innovation.</p>
+          </div>
+        </article>
+
+        <article class="lp-pillar">
+          <span class="lp-number" aria-hidden="true">02</span>
+          <div>
+            <h3>Clinical demand</h3>
+            <p>Imaging demand, workforce capacity and unmet need.</p>
+          </div>
+        </article>
+
+        <article class="lp-pillar">
+          <span class="lp-number" aria-hidden="true">03</span>
+          <div>
+            <h3>Regulation &amp; market access</h3>
+            <p>Authorisations, payment arrangements and routes to adoption.</p>
+          </div>
+        </article>
+
+        <article class="lp-pillar">
+          <span class="lp-number" aria-hidden="true">04</span>
+          <div>
+            <h3>Clinical evidence</h3>
+            <p>Validation, patient outcomes and demonstrated value.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lp-footer">
+    <div class="lp-container lp-footer-content">
+      <p>© 2026 Felix Beacher. All rights reserved.</p>
+      <p>
+        For market research and general information.
+        Not financial or clinical advice.
+      </p>
     </div>
-    <div class="lp-pillars">
-      <article class="lp-pillar">
-        <span class="lp-number" aria-hidden="true">01</span>
-        <div><h3>Financing conditions</h3><p>Capital availability and the capacity to invest in innovation.</p></div>
-      </article>
-      <article class="lp-pillar">
-        <span class="lp-number" aria-hidden="true">02</span>
-        <div><h3>Clinical demand</h3><p>Imaging demand, workforce capacity and unmet need.</p></div>
-      </article>
-      <article class="lp-pillar">
-        <span class="lp-number" aria-hidden="true">03</span>
-        <div><h3>Regulation &amp; market access</h3><p>Authorisations, payment arrangements and routes to adoption.</p></div>
-      </article>
-      <article class="lp-pillar">
-        <span class="lp-number" aria-hidden="true">04</span>
-        <div><h3>Clinical evidence</h3><p>Validation, patient outcomes and demonstrated value.</p></div>
-      </article>
-    </div>
-  </section>
-
-</main>
-
-<footer class="lp-footer">
-  <div class="lp-container lp-footer-content"><p>© 2026 Felix Beacher. All rights reserved.</p><p>For market research and general information. Not financial or clinical advice.</p></div>
-</footer>
+  </footer>
 </body>
 </html>
