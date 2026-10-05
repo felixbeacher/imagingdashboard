@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Imaging AI & Health Macro Dashboard</title>
+    
+	<!-- Browser Tab Icon (Favicon) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E">
+	<!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="title-area">
+                <h1>The Medical Imaging Dashboard</h1>
+                <p class="author-bio">Created and managed by Felix Beacher, PhD.</p>
+            </div>
+            <!-- Modern Flashy Tab Navigation (Home First) -->
+            <nav class="nav-tabs">
+                <a href="index.html" class="tab-btn">Home</a>
+                <a href="ai.html" class="tab-btn active">AI</a>
+                <a href="ct.html" class="tab-btn">CT</a>
+                <a href="mri.html" class="tab-btn">MRI</a>
+                <a href="pet.html" class="tab-btn">PET</a>
+                <a href="xray.html" class="tab-btn">Xray</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="region-filter-container">
+            <label for="regionSelect">SELECT REGION:</label>
+            <select id="regionSelect">
+                <option value="global">Global</option>
+                <option value="northAmerica">North America</option>
+                <option value="europe">Europe</option>
+                <option value="asia">Asia</option>
+                <option value="middleEast">Middle East</option>
+                <option value="southAmerica">South America</option>
+            </select>
+        </div>
+
+        <!-- Regional Summary Box Section -->
+        <div class="card" style="margin-bottom: 25px;">
+            <h2>Description of Region</h2>
+            <p id="regional-summary-text" class="metric-desc" style="margin-top: 10px; font-size: 1rem;">
+                <!-- REGIONAL_SUMMARY_PLACEHOLDER -->
+            </p>
+        </div>
+
+        <!-- Top Macro Indicators Ticker (Dynamic) -->
+        <div class="ticker-banner">
+            <div class="ticker-card">
+                <div class="metric-label" id="ticker1-label">Central Bank Policy</div>
+                <div class="metric" id="ticker1-val"><!-- POLICY_RATE_PLACEHOLDER --></div>
+                <div class="metric-sub" id="ticker1-sub"><!-- POLICY_RATE_BASIS_PLACEHOLDER --></div>
+                <p class="metric-desc" id="ticker1-desc">Sets baseline borrowing costs, shaping capital purchasing cycles across healthcare systems.</p>
+            </div>
+            <div class="ticker-card">
+                <div class="metric-label" id="ticker2-label">Healthcare Inflation</div>
+                <div class="metric" id="ticker2-val"><!-- HEALTHCARE_INFLATION_PLACEHOLDER --></div>
+                <div class="metric-sub" id="ticker2-sub"><!-- HEALTHCARE_INFLATION_BASIS_PLACEHOLDER --></div>
+                <p class="metric-desc" id="ticker2-desc">Measures operational expenditure pressure, pushing trusts to seek AI efficiency gains.</p>
+            </div>
+            <div class="ticker-card">
+                <div class="metric-label" id="ticker3-label">MedTech Index <!-- MEDTECH_INDEX_NAME_PLACEHOLDER --></div>
+                <div class="metric" id="ticker3-val"><!-- MEDTECH_INDEX_PLACEHOLDER --></div>
+                <div class="metric-sub" id="ticker3-sub">Sector Benchmark</div>
+                <p class="metric-desc" id="ticker3-desc">Reflects healthcare sector equity valuations and broader investment appetite.</p>
+            </div>
+            <div class="ticker-card">
+                <div class="metric-label" id="ticker4-label">Imaging Demand Backlog</div>
+                <div class="metric" id="ticker4-val"><!-- IMAGING_DEMAND_BACKLOG_PLACEHOLDER --></div>
+                <div class="metric-sub" id="ticker4-sub"><!-- IMAGING_BACKLOG_BASIS_PLACEHOLDER --></div>
+                <p class="metric-desc" id="ticker4-desc"><!-- IMAGING_BACKLOG_DESCRIPTION_PLACEHOLDER --></p>
+            </div>
+            <div class="ticker-card">
+                <div class="metric-label" id="ticker5-label">Cloud Inference Index</div>
+                <div class="metric" id="ticker5-val"><!-- CLOUD_INFERENCE_INDEX_PLACEHOLDER --></div>
+                <div class="metric-sub" id="ticker5-sub">Compute Cost YoY</div>
+                <p class="metric-desc" id="ticker5-desc"><!-- CLOUD_INFERENCE_ANALYSIS_PLACEHOLDER --></p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <!-- Sector Outlook Summary Unit -->
+            <div class="card col-12 outlook-box">
+                <div class="outlook-header">
+                    <h2 id="outlook-title">Sector Outlook Summary <!-- OUTLOOK_PERIOD_PLACEHOLDER --></h2>
+                    <!-- OUTLOOK_BADGE_STYLE_PLACEHOLDER -->
+                    <span id="outlook-badge"><!-- OUTLOOK_BADGE_PLACEHOLDER --></span>
+                </div>
+                <p id="outlook-summary-text" class="outlook-summary">
+                    <!-- OUTLOOK_SUMMARY_PLACEHOLDER -->
+                </p>
+                
+                <div class="outlook-factors-grid">
+                    <!-- 4 Key Growth Drivers -->
+                    <div class="factor-column drivers-column">
+                        <h3>KEY DRIVERS</h3>
+                        <div class="factor-list">
+                            <!-- DRIVERS_CARDS_PLACEHOLDER -->
+                        </div>
+                    </div>
+
+                    <!-- 4 Key Headwinds -->
+                    <div class="factor-column headwinds-column">
+                        <h3>KEY HEADWINDS</h3>
+                        <div class="factor-list">
+                            <!-- HEADWINDS_CARDS_PLACEHOLDER -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integrated Regional Operational Highlights Footer -->
+                <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 15px;">
+                    <h3 id="highlights-title" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; color: var(--text-main);">Regional Operational Highlights</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                        <!-- HIGHLIGHTS_CARDS_PLACEHOLDER -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Sector Metrics -->
+            <div class="card col-3">
+                <div class="metric-label">FDA Clearances (LLZ Category)</div>
+                <div class="metric" id="clearances-metric"><!-- FDA_LLZ_CLEARANCES_PLACEHOLDER --></div>
+                <div class="metric-sub">Radiology Image Processing</div>
+                <p class="metric-desc"><!-- FDA_CLEARANCES_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
+            </div>
+            <div class="card col-3">
+                <div class="metric-label">Radiologist Vacancy Rate</div>
+                <div class="metric"><!-- RADIOLOGIST_VACANCY_RATE_PLACEHOLDER --></div>
+                <div class="metric-sub"><!-- RADIOLOGIST_WORKFORCE_STATUS_PLACEHOLDER --></div>
+                <p class="metric-desc">Measures unfilled clinical posts, underscoring the structural need for automated productivity solutions.</p>
+            </div>
+            <div class="card col-3">
+                <div class="metric-label">Reimbursement Adoption</div>
+                <div class="metric"><!-- REIMBURSEMENT_ADOPTION_PLACEHOLDER --></div>
+                <div class="metric-sub">Hospitals with Active Billing</div>
+                <p class="metric-desc"><!-- REIMBURSEMENT_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
+            </div>
+            <div class="card col-3">
+                <div class="metric-label">Prospective Clinical Validation</div>
+                <div class="metric"><!-- PROSPECTIVE_CLINICAL_VALIDATION_YTD_PLACEHOLDER --></div>
+                <div class="metric-sub">Peer-Reviewed Papers YTD</div>
+                <p class="metric-desc">Quantifies real-world clinical evidence publications needed to convince hospital procurement committees.</p>
+            </div>
+
+            <!-- Graph Unit 1: Approvals vs VC Funding -->
+            <div class="card col-8">
+                <h2>AI Approvals vs. MedTech Venture Capital Investment</h2>
+                <canvas id="approvalsChart"></canvas>
+            </div>
+
+            <!-- Text Unit: Targeted News Feed -->
+            <div class="card col-4">
+                <h2>Latest Industry Headlines</h2>
+                <div id="news-feed-container">
+                    <!-- NEWS_ITEMS_PLACEHOLDER -->
+                </div>
+            </div>
+
+            <!-- Graph Unit 2: Modality Breakdown -->
+            <div class="card col-6">
+                <h2>AI Clearances by Imaging Modality</h2>
+                <canvas id="modalityChart"></canvas>
+                <p class="metric-desc" style="margin-top: 15px;">
+                    <!-- MODALITY_ANALYSIS_PLACEHOLDER -->
+                </p>
+            </div>
+
+            <!-- Graph Unit 3: Stock Index vs Interest Rate Graph (6-Month View) -->
+            <div class="card col-6">
+                <h2 id="macroChartTitle">Stock Market Index & Interest Rates</h2>
+                <canvas id="macroChart"></canvas>
+                <p class="metric-desc" style="margin-top: 15px;">
+                    <!-- MACRO_ANALYSIS_PLACEHOLDER -->
+                </p>
+            </div>
+
+            <!-- Graph Unit 4: Vendor Revenue Breakdown (Pie Charts) -->
+            <div class="card col-12">
+                <h2>Vendor AI Revenue Breakdown</h2>
+				<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 15px;">
+                    <div style="flex: 1; min-width: 260px; max-width: 320px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Total Overall Revenue</h3>
+                        <canvas id="totalVendorChart"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Cardiology</h3>
+                        <canvas id="cardioVendorChart"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Pulmonology</h3>
+                        <canvas id="pulmoVendorChart"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Neurology</h3>
+                        <canvas id="neuroVendorChart"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Breast</h3>
+                        <canvas id="breastVendorChart"></canvas>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Oncology</h3>
+                        <canvas id="oncologyVendorChart"></canvas>
+                    </div>
+                </div>
+                <p class="metric-desc" style="margin-top: 15px;">
+                    <!-- VENDOR_REVENUE_SOURCE_DESCRIPTION_PLACEHOLDER -->
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <div>&copy; 2026 Felix Beacher. All rights reserved.</div>
+        <p class="footer-disclaimer">
+            Disclaimer: The information and data provided on this dashboard are for general informational purposes only. Nothing contained on this site constitutes any form of financial advice. While metrics and figures are sourced from public registers, APIs, and market estimates, no warranty is made regarding their completeness, accuracy, or timeliness. The creator assumes no liability for any errors, omissions, or actions taken based on the information provided.
+        </p>
+    </footer>
+
+    <script>
+        const monthLabels = [/* MACRO_MONTH_LABELS_PLACEHOLDER */];
+
+        const regionData = {
+            global: {
+                summary: /* GLOBAL_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* GLOBAL_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* GLOBAL_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* GLOBAL_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* GLOBAL_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* GLOBAL_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* GLOBAL_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            europe: {
+                summary: /* EUROPE_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* EUROPE_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* EUROPE_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* EUROPE_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* EUROPE_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* EUROPE_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* EUROPE_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            northAmerica: {
+                summary: /* NORTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* NORTH_AMERICA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* NORTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* NORTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* NORTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* NORTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* NORTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            asia: {
+                summary: /* ASIA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* ASIA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* ASIA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* ASIA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* ASIA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* ASIA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* ASIA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            middleEast: {
+                summary: /* MIDDLE_EAST_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* MIDDLE_EAST_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* MIDDLE_EAST_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* MIDDLE_EAST_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* MIDDLE_EAST_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* MIDDLE_EAST_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* MIDDLE_EAST_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            southAmerica: {
+                summary: /* SOUTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* SOUTH_AMERICA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* SOUTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* SOUTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* SOUTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* SOUTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* SOUTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            }
+        };
+
+        // Line Chart Initialization (Approvals vs VC Funding)
+        const ctxApprovals = document.getElementById('approvalsChart').getContext('2d');
+        const approvalsChart = new Chart(ctxApprovals, {
+            type: 'line',
+            data: {
+                labels: [/* APPROVALS_FUNDING_PERIOD_LABELS_PLACEHOLDER */],
+                datasets: [
+                    {
+                        label: 'AI Regulatory Clearances',
+                        data: regionData.global.clearances,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'VC Funding (£ Millions)',
+                        data: regionData.global.vcFunding,
+                        borderColor: '#34d399',
+                        tension: 0.3,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Clearances', color: '#9ca3af' },
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Funding (£M)', color: '#9ca3af' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+
+        // Doughnut Chart Initialization (Modalities)
+        const ctxModality = document.getElementById('modalityChart').getContext('2d');
+        const modalityChart = new Chart(ctxModality, {
+            type: 'doughnut',
+            data: {
+                labels: ['CT Scans', 'MRI', 'X-Ray / Mammography', 'Ultrasound', 'Pathology'],
+                datasets: [{
+                    data: regionData.global.modalities,
+                    backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } }
+            }
+        });
+
+        // Dual-Axis Line Chart Initialization (Index vs Interest Rate)
+        const ctxMacro = document.getElementById('macroChart').getContext('2d');
+        const macroChart = new Chart(ctxMacro, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'Stock Market Index',
+                        data: regionData.global.indexData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Central Bank Policy Rate (%)',
+                        data: regionData.global.ratesData,
+                        borderColor: '#f87171',
+                        borderDash: [5, 5],
+                        tension: 0.2,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Index Points', color: '#9ca3af' },
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Interest Rate (%)', color: '#9ca3af' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+
+        function updateView(regionKey) {
+            const selectedRegion = regionData[regionKey] || regionData.global;
+
+            document.getElementById('regional-summary-text').innerText = selectedRegion.summary || '';
+
+            approvalsChart.data.datasets[0].data = selectedRegion.clearances;
+            approvalsChart.data.datasets[1].data = selectedRegion.vcFunding;
+            approvalsChart.update();
+
+            modalityChart.data.datasets[0].data = selectedRegion.modalities;
+            modalityChart.update();
+
+            document.getElementById('macroChartTitle').innerText = `${selectedRegion.indexName || 'Stock Market Index'} & Interest Rates`;
+            macroChart.data.datasets[0].label = selectedRegion.indexName || 'Stock Market Index';
+            macroChart.data.datasets[0].data = selectedRegion.indexData;
+            macroChart.data.datasets[1].data = selectedRegion.ratesData;
+            macroChart.update();
+        }
+
+        document.getElementById('regionSelect').addEventListener('change', (e) => {
+            const region = e.target.value;
+            const url = new URL(window.location);
+            url.searchParams.set('region', region);
+            window.history.pushState({}, '', url);
+            updateView(region);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialRegion = urlParams.get('region') || 'global';
+            document.getElementById('regionSelect').value = initialRegion;
+            updateView(initialRegion);
+        });
+    
+        // Vendor Pie Charts Data
+        const vendorLabels = [/* VENDOR_NAMES_PLACEHOLDER */];
+        const vendorColors = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa'];
+        const commonPieOptions = { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } } };
+
+        new Chart(document.getElementById('totalVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* TOTAL_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('cardioVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* CARDIOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('pulmoVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* PULMONOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('neuroVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* NEUROLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('breastVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* BREAST_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('oncologyVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* ONCOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+    </script>
+</body>
+</html>
