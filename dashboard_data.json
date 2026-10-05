@@ -1,0 +1,15 @@
+{
+  "regions": {
+    "global": {
+      "metrics": {},
+      "news": []
+    }
+  },
+  "fda_benchmark": {
+    "metric": {
+      "status": "active",
+      "value": 100
+    }
+  },
+  "news": []
+}
