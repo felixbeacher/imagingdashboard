@@ -63,11 +63,11 @@ jobs:
           root = Path.cwd()
           output = root / '_site'
           dashboards = [
-              ('AI', '1_update_data_ai.py', '1_ai.html'),
-              ('CT', '2_update_data_ct.py', '2_ct.html'),
-              ('MRI', '3_update_data_mri.py', '3_mri.html'),
-              ('PET', '4_update_data_pet.py', '4_pet.html'),
-              ('X-ray', '5_update_data_xray.py', '5_xray.html'),
+              ('AI', 'ai_update_data.py', 'ai.html'),
+              ('CT', 'ct_update_data.py', 'ct.html'),
+              ('MRI', 'mri_update_data.py', 'mri.html'),
+              ('PET', 'pet_update_data.py', 'pet.html'),
+              ('X-ray', 'xray_update_data.py', 'xray.html'),
           ]
           required = ['index.html', 'styles.css', 'images/earth-hero.png', 'modality_dashboard.py']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
