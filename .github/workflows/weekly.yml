@@ -89,8 +89,6 @@ jobs:
               command = [sys.executable, script, '--build', str(root / template)]
               if label == 'AI' and (root / 'dashboard_data.json').is_file():
                   command += ['--data', 'dashboard_data.json']
-              # Modality updaters discover ct_data.json, mri_data.json,
-              # pet_data.json and xray_data.json if present beside the scripts.
               subprocess.run(command, check=True, timeout=300)
               shutil.copy2(root / template, output / template)
               html = (output / template).read_text(encoding='utf-8')
@@ -103,4 +101,41 @@ jobs:
               available = sum(observation.get('value') is not None
                               for region in payload['regions'].values()
                               for observation in region['metrics'].values())
-              total = sum
+              total = sum(len(region['metrics']) for region in payload['regions'].values())
+              benchmark = payload['fda_benchmark']['metric']
+              benchmark_status = benchmark['status']
+              summary.append(f'| {label} | {available}/{total} across all region views | {len(payload["news"])} | {benchmark_status} |')
+              if benchmark.get('value') is None:
+                  print(f'::warning::{label}: FDA benchmark unavailable; see the source notice on the published page.')
+              if payload.get('quality_messages'):
+                  print(f'::warning::{label}: {len(payload["quality_messages"])} curated data checks failed; affected observations were withheld.')
+              if payload.get('news_failures'):
+                  print(f'::warning::{label}: one or more headline feeds were unavailable.')
+          summary += ['', 'Blank measures require sourced curated observations. A successful build does not mean every external source is available.']
+          if os.getenv('GITHUB_STEP_SUMMARY'):
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
+                  handle.write('\n'.join(summary) + '\n')
+          PY
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the generated website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: update-news
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
