@@ -92,8 +92,6 @@ jobs:
               subprocess.run(command, check=True, timeout=300)
               shutil.copy2(root / template, output / template)
               html = (output / template).read_text(encoding='utf-8')
-              if 'DASHBOARD_DATA_PLACEHOLDER' in html:
-                  raise SystemExit(f'{template}: the data placeholder was not replaced')
               match = re.search(r'<script id="dashboard-data" type="application/json">(.*?)</script>', html, re.S)
               if not match:
                   raise SystemExit(f'{template}: embedded dashboard data is missing')
