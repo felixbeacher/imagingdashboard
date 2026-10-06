@@ -1306,14 +1306,28 @@ function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
  const r=payload.regions[key];document.getElementById('regionSelect').value=key;
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
+ // FDA observations concern US market access, not the selected overseas region.
+ const usBenchmark=key==='northAmerica';
+ [2,4,5].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=!usBenchmark;});
+ const studyCard=document.getElementById('ai-metric-3');
+ if(studyCard)studyCard.style.gridColumn=usBenchmark?'':'span 12';
+ text('ai-sector-metrics-title',usBenchmark?'North America — AI Sector Metrics':r.name+' — AI Research Activity');
+ const sector=document.getElementById('ai-sector-metrics-title');
+ if(sector){let note=sector.parentElement.querySelector('[data-region-coverage]');
+ if(!note){note=add(sector.parentElement,'p');note.dataset.regionCoverage='';note.className='metric-desc';}
+ note.textContent=usBenchmark?'FDA figures describe the United States only; they do not include Canadian authorisations. Research counts cover the named country sample.':'US FDA metrics are confined to North America. No validated comparable '+(key==='global'?'worldwide':r.name)+' authorisation dataset is configured; unrelated national figures are not substituted.';}
+ text('clinical-evidence-title','Worldwide Clinical Evidence — Recent Published Studies');
+ text('deployment-adoption-title','Deployment and Adoption — Worldwide Context');
+ text('vendor-revenues-title','Worldwide Imaging AI Vendors — Selected Examples');
  text('ai-context-title',r.economicTitle);
  const economic=document.getElementById('economic-outlook-summary');
  if(economic){economic.replaceChildren();const summary=add(economic,'p',r.economicOverview);summary.className='metric-desc';
  if(r.economicSource){const attribution=add(economic,'p');attribution.className='metric-desc';const link=add(attribution,'a',r.economicSource.name);link.href=r.economicSource.url;link.target='_blank';link.rel='noopener noreferrer';add(attribution,'span',' · '+r.economicDate);}}
  text('economic-scope-note',r.economicScope);
- const available=r.metrics.filter(m=>m.value!==null).length;
+ const visibleMetrics=r.metrics.filter((m,i)=>usBenchmark||![2,4,5].includes(i));
+ const available=visibleMetrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
- text('outlook-badge',available+' / '+r.metrics.length+' metric cards populated');
+ text('outlook-badge',available+' / '+visibleMetrics.length+' metric cards populated');
  text('outlook-summary-text','Page built '+payload.generated_at.slice(0,10)+'.');
  const factors={"global":{"drivers":["Clinical capacity: interpretation and triage support can help teams manage imaging workloads.","Workflow efficiency: automation of repetitive tasks can reduce manual effort.","Access to expertise: decision support can extend specialist input where resources are limited.","Clinical evidence: validation in the intended care setting can strengthen confidence in adoption."],"headwinds":["Evidence requirements: performance must be validated across relevant patients and clinical settings.","Integration costs: deployment requires compatible imaging systems, staff training, and ongoing support.","Commercial viability: providers need a clear purchasing model and evidence of value.","Trust and governance: bias, cybersecurity, privacy, and accountability need sustained attention."]},"northAmerica":{"drivers":["Clinical productivity: interpretation and triage tools can support busy imaging services.","Workflow integration: existing digital imaging systems offer a route for introducing AI tools.","Clinical partnerships: provider-led evaluation can establish usefulness in routine care.","Commercial value: measurable time savings and service improvements can support purchasing decisions."],"headwinds":["Payment arrangements: a workable reimbursement or provider-funded model is needed.","Regulatory requirements: US and Canadian market-access requirements must be addressed separately.","Implementation costs: integration, training, and monitoring add to the purchase price.","Clinical trust: local validation and clear responsibility for decisions remain essential."]},"europe":{"drivers":["Service capacity: workflow support can help health services use available staff and imaging resources.","Clinical collaboration: evaluation with hospitals can establish relevance to local care pathways.","Digital infrastructure: interoperable imaging systems can support deployment across care settings.","Procurement evidence: demonstrated clinical and operational value can strengthen purchasing cases."],"headwinds":["Regulatory compliance: EU medical-device and AI requirements need coordinated planning.","Market fragmentation: procurement and funding differ between countries and healthcare systems.","Data governance: privacy and lawful health-data use constrain implementation choices.","Evidence and integration: local validation, staff training, and system compatibility require investment."]},"asia":{"drivers":["Clinical capacity: interpretation support can help services address workforce and resource constraints.","Access to expertise: AI-assisted workflows may extend specialist support to underserved settings.","Digital development: investment in health information systems can enable implementation.","Local evaluation: partnerships with providers can adapt tools to patients and workflows."],"headwinds":["Uneven infrastructure: connectivity and system readiness vary between care settings.","Country-specific requirements: regulatory and procurement routes differ across markets.","Data representativeness: tools need validation for local populations and clinical practice.","Affordability and skills: purchasing budgets, training, and ongoing support affect adoption."]},"middleEast":{"drivers":["Digital-health investment: smart-health initiatives create opportunities to evaluate imaging AI.","Infrastructure development: connected hospital systems can support implementation.","Clinical efficiency: interpretation and workflow support can improve use of available resources.","Provider partnerships: local evaluation can demonstrate clinical and operational value."],"headwinds":["Country-specific access: regulation and purchasing requirements vary across the region.","Data governance: cybersecurity, privacy, and permitted data sharing require careful planning.","Implementation capability: integration and workforce training are necessary for routine use.","Sustainable value: buyers need evidence that benefits justify ongoing costs."]},"southAmerica":{"drivers":["Clinical capacity: workflow support can help providers make better use of imaging resources.","Access to expertise: decision support may extend specialist input to underserved settings.","Digital transformation: stronger health information systems can support AI deployment.","Provider evaluation: local partnerships can demonstrate usefulness and guide implementation."],"headwinds":["Affordability: budgets and ongoing support costs can constrain purchasing.","Infrastructure gaps: connectivity and interoperability affect reliable deployment.","National requirements: regulatory, privacy, and procurement arrangements vary by country.","Clinical readiness: local validation, staff training, and monitoring require investment."]}};
  const analysis=factors[key]||factors.global;
@@ -1321,7 +1335,9 @@ function update(regionKey){
  showFactors('ai-drivers',analysis.drivers);
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
- plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
+ plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note+(key==='global'?'':' The amber bar highlights '+r.name+'; other bars provide comparison.'),payload.registryChart.source);
+ if(key!=='global'&&charts.approvalsChart){const labels=payload.registryChart.labels;
+ charts.approvalsChart.data.datasets[0].backgroundColor=labels.map(label=>label===r.name+' (sample)'?'#fbbf24':'#38bdf8');charts.approvalsChart.update();}
  const fdaSection=document.getElementById('fda-trend-section');
  if(fdaSection){fdaSection.hidden=key!=='northAmerica';
  if(key==='northAmerica'){plot('fdaTrendChart','United States — Radiology AI Authorisations: Ten-Year Trend',
@@ -1494,7 +1510,7 @@ def template_view(payload):
     for key, region in payload['regions'].items():
         context, metrics = region['context'], region['metrics']
         benchmark = payload['fda_benchmark']
-        # The FDA benchmark is explicitly US-specific in every region view.
+        # Keep the US benchmark in the adapter; only North America displays it.
         outlook = payload.get('economic_outlook', {})
         live = outlook.get('status') == 'live'
         economic_background = [
