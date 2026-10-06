@@ -53,6 +53,21 @@ RSS_FEEDS = {
     'AuntMinnie': 'https://www.auntminnie.com/rss/rss.aspx',
     'FDA News': 'https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml',
 }
+# Region-scoped searches use indexed article content as well as headlines.
+REGIONAL_NEWS_SEARCHES = {
+    'northAmerica': '("United States" OR Canada OR FDA)',
+    'europe': '(Europe OR European OR "United Kingdom" OR NHS OR Germany OR France OR Italy OR Spain)',
+    'asia': '(Asia OR "Asia Pacific" OR China OR Japan OR India OR Korea OR Australia OR Singapore)',
+    'middleEast': '("Middle East" OR Saudi OR UAE OR Israel OR Turkey OR Egypt)',
+    'southAmerica': '("Latin America" OR Brazil OR Mexico OR Argentina OR Chile OR Colombia OR Peru)',
+}
+for _region, _location in REGIONAL_NEWS_SEARCHES.items():
+    _query = ('(radiology OR "medical imaging" OR mammography OR "chest x-ray" OR MRI OR CT) '
+              '("artificial intelligence" OR "machine learning" OR "deep learning" OR AI) '
+              + _location + ' when:90d')
+    RSS_FEEDS['Regional search: ' + _region] = 'https://news.google.com/rss/search?' + urllib.parse.urlencode(
+        dict(q=_query, hl='en-GB', gl='GB', ceid='GB:en'))
+
 # Definitions are stable editorial content. Values, sources and periods are data.
 METRICS = [
     ('paid_sites', 'Paid production sites', 'Adoption', 'sites', 'Sites with a paid AI deployment in routine clinical service; exclude unpaid pilots.'),
@@ -424,7 +439,8 @@ def parse_feed(content, source):
             el = node.find('a:link', ns)
             link = el.get('href', '') if el is not None else ''
         title = re.sub(r'<[^>]+>', '', title).strip()
-        relevant = re.search(r'\b(ai|artificial intelligence|machine learning|deep learning)\b', title, re.I)
+        summary = html.unescape(re.sub(r'<[^>]+>', ' ', node.findtext('description') or node.findtext('a:summary', namespaces=ns) or ''))
+        relevant = re.search(r'\b(ai|artificial intelligence|machine learning|deep learning)\b', title + ' ' + summary, re.I)
         if not relevant or not safe_url(link):
             continue
         raw_date = node.findtext('pubDate') or node.findtext('a:published', namespaces=ns) or node.findtext('a:updated', namespaces=ns)
@@ -435,8 +451,20 @@ def parse_feed(content, source):
                 published = dt.date().isoformat()
             except (ValueError, TypeError):
                 pass
-        rows.append({'title': title, 'url': safe_url(link), 'source': source, 'published': published})
-    return rows[:8]
+        publisher = node.findtext('source') or source
+        publisher_node = node.find('source')
+        publisher_url = publisher_node.get('url', '') if publisher_node is not None else ''
+        region = source.split(': ', 1)[1] if source.startswith('Regional search: ') else None
+        if region and publisher and title.endswith(' - ' + publisher):
+            title = title[:-(len(publisher) + 3)]
+        if published and published > date.today().isoformat():
+            continue
+        rows.append({'title': title, 'url': safe_url(link),
+                     'source': publisher if region else source,
+                     'source_url': safe_url(publisher_url) if publisher_url else RSS_FEEDS.get(source, link),
+                     'published': published, 'summary': summary[:1500],
+                     'regions': [region] if region else [], 'regional_search': bool(region)})
+    return rows[:20]
 
 
 def fetch_news(offline=False):
@@ -458,7 +486,11 @@ def fetch_news(offline=False):
                 if row['url'] not in seen:
                     seen.add(row['url'])
                     items.append(row)
-    return sorted(items, key=lambda x: x['published'], reverse=True)[:12], failures
+                else:
+                    existing = next(item for item in items if item['url'] == row['url'])
+                    existing['regions'] = sorted(set(existing.get('regions', []) + row.get('regions', [])))
+                    existing['regional_search'] = existing.get('regional_search', False) or row.get('regional_search', False)
+    return sorted(items, key=lambda x: x['published'], reverse=True), failures
 
 
 def generate_gemini_commentary(news, enabled=False):
@@ -1294,9 +1326,9 @@ function update(regionKey){
  }
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
  feed.closest('.card').querySelector('h2').textContent=key==='global'?'Latest Industry Headlines':r.name+' — Industry Headlines';
- add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Imaging-AI headlines explicitly mentioning '+r.name+' or countries and institutions associated with this view; title matching may miss relevant stories.');
+ add(feed,'p',key==='global'?'Imaging-AI news from multiple publishers and region-scoped searches; selected reports, not comprehensive coverage.':'Imaging-AI news matched to '+r.name+' using regional searches of indexed articles and explicit geographic references. Search matches are not independently verified regional classifications; coverage varies by language and publisher.');
  if(!r.news.length)add(feed,'p',key==='global'?'No headlines available from the configured feeds. This does not mean no developments occurred.':'No clearly region-matched headlines were found in the current feeds. This does not mean there were no developments.');
- r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);});
+ r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);if(n.searchMatched)add(item,'span',' · Regional search match');});
  const status=document.getElementById('ai-source-status');status.replaceChildren();
  const entries=Object.entries(payload.sources);
  const dates=[...new Set(entries.filter(([,s])=>s.status==='live'&&s.fetched_at).map(([,s])=>s.fetched_at.slice(0,10)))];
@@ -1308,7 +1340,7 @@ function update(regionKey){
   if(s.url.includes('imf.org/')){name='IMF';description='Economic growth and inflation';url='https://www.imf.org/en/Publications/WEO';}
   else if(s.url.includes('fda.gov/')){name='FDA';description='US radiology AI devices';}
   else if(s.url.includes('clinicaltrials.gov')){name='ClinicalTrials.gov';description='Registered research studies';}
-  else {description='Industry news';}
+  else {name='Industry news';description='Reports from multiple publishers';}
   if(!groups.has(name))groups.set(name,{url,description,unavailable:false});
   if(s.status!=='live')groups.get(name).unavailable=true;
  });
@@ -1524,14 +1556,29 @@ def template_view(payload):
             regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
             regions[key]['economicScope'] = 'Selected-country medians for ' + region['name'] + ', not regional totals or weighted averages.'
         for item in payload['news']:
-            if not regional_news_match(item['title'], key):
+            if key != 'global' and key not in item.get('regions', []) and not regional_news_match(
+                    item['title'] + ' ' + item.get('summary', ''), key):
                 continue
             name = item.get('source', 'Industry feed')
             source_key = 'news:' + name
-            sources[source_key] = dict(name=name, url=RSS_FEEDS.get(name, item['url']),
+            sources[source_key] = dict(name=name, url=item.get('source_url') or RSS_FEEDS.get(name, item['url']),
                                       status='live', fetched_at=payload['generated_at'])
             regions[key]['news'].append(dict(title=item['title'], url=item['url'],
-                date=item.get('published', ''), source=source_key))
+                date=item.get('published', ''), source=source_key,
+                searchMatched=item.get('regional_search', False)))
+        # Retain regional candidates before applying display caps; avoid one publisher dominating.
+        selected, publishers, seen_titles = [], {}, set()
+        for story in regions[key]['news']:
+            normalized = re.sub(r'[^a-z0-9]+', '', story['title'].casefold())
+            publisher = story['source']
+            if normalized in seen_titles or publishers.get(publisher, 0) >= 2:
+                continue
+            seen_titles.add(normalized)
+            publishers[publisher] = publishers.get(publisher, 0) + 1
+            selected.append(story)
+            if len(selected) >= (12 if key == 'global' else 8):
+                break
+        regions[key]['news'] = selected
     registry = payload.get('registry_chart', {})
     labels = {'global': 'Worldwide', 'northAmerica': 'North America (sample)',
               'europe': 'Europe (sample)', 'asia': 'Asia-Pacific (sample)',
