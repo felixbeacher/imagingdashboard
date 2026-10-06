@@ -1114,6 +1114,14 @@ def template_view(payload):
                         metrics['workforce_shortfall'], metrics['reimbursed_use'],
                         metrics['prospective_studies']]
         cards = [card(m) for m in observations]
+        research_source = cards[8]['source']
+        if research_source:
+            sources.pop(research_source, None)
+        cards[8]['source'] = None
+        cards[8]['description'] = (
+            'Active registered imaging-AI studies. Counts indicate research activity, '
+            'not completed studies or proven clinical benefit. Regional counts use selected countries '
+            'and may overlap for multinational studies.')
         series = benchmark['series']
         points = series.get('points', [])
         editorial = region['editorial']
