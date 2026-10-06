@@ -1119,6 +1119,17 @@ def template_view(payload):
             region['name'] + ': sourced observations are shown where available. '
             'FDA figures are a US regulatory benchmark. Headlines are a global feed. '
             'Missing values require validated source data and are not zeros.')
+        if key == 'global':
+            summary = (
+                'The United States is the largest and most mature market for medical imaging AI, '
+                'capturing roughly 37% to 40% of global share. Driven by high diagnostic volumes '
+                'and advanced health IT infrastructure, the US functions as a key commercial proving ground. '
+                'FDA regulation shapes the landscape significantly, with hundreds of cleared Software '
+                'as a Medical Device (SaMD) algorithms deployed in radiology, cardiology, and emergency triage. '
+                'Major hospital networks increasingly rely on enterprise platforms and vendor-neutral '
+                'marketplaces to integrate these tools into clinical workflows. '
+                'Despite strong urban adoption, widespread outpatient growth faces ongoing friction '
+                'regarding complex reimbursement pathways and secure insurance payout models for AI-assisted scans.')
         regions[key] = dict(name=region['name'], summary=summary, metrics=cards,
             years=[p['label'] for p in points], approvals=[p['value'] for p in points],
             approvalTitle=series['label'], approvalNote=benchmark['notice'] + ' ' + series.get('methodology', ''),
