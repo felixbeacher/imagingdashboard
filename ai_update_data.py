@@ -1280,11 +1280,11 @@ function plot(id,title,labels,values,note,key){
  const hasData=values.some(v=>typeof v==='number'&&Number.isFinite(v));
  canvas.hidden=!hasData||typeof Chart==='undefined';
  if(hasData&&typeof Chart!=='undefined'){
- charts[id]=new Chart(canvas.getContext('2d'),{type:id==='approvalsChart'?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='macroChart'?'Percent per annum':'Active registered studies'},beginAtZero:id!=='macroChart'}}}});
+ charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Active registered studies'},beginAtZero:id!=='macroChart'}}}});
  }else if(hasData){add(caption,'p','Chart library could not load. Data are shown below.');}
  // Accessible numeric alternative, also works if the CDN is blocked.
  let table=card.querySelector('[data-chart-table]');if(table)table.remove();
- if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Active registered studies');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
+ if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Rate (%)':'Active registered studies');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
 }
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
@@ -1306,6 +1306,12 @@ function update(regionKey){
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
  plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
+ const fdaSection=document.getElementById('fda-trend-section');
+ if(fdaSection){fdaSection.hidden=key!=='northAmerica';
+ if(key==='northAmerica'){plot('fdaTrendChart','United States — Radiology AI Authorisations: Ten-Year Trend',
+ r.years,r.approvals,r.approvalNote+' Blue bars show complete calendar years; the amber YTD bar is partial and should not be compared directly with full years. This US regulatory benchmark does not represent Canadian authorisations or global adoption.',r.approvalSource);}
+ else if(charts.fdaTrendChart){charts.fdaTrendChart.destroy();delete charts.fdaTrendChart;}}
+
  const deployment=document.getElementById('deployment-evidence-feed');
  if(deployment){deployment.replaceChildren();const feed=payload.deploymentEvidence||{};
  const heading=add(deployment,'h3','Recent Implementation Research');heading.style.fontSize='0.95rem';
