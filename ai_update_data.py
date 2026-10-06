@@ -863,6 +863,22 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                         'The FDA list is non-comprehensive and may be revised. This is not global adoption.',
                     reason='')
     payload['fda_benchmark']['annual_change'] = annual_change
+    company_count = missing('Companies with FDA-listed radiology AI devices', 'listed company names',
+                            'The FDA radiology AI list could not be retrieved or validated.')
+    if rows:
+        names = {' '.join(row.get('company', '').split()).casefold() for row in rows}
+        names.discard('')
+        if names:
+            company_count.update(
+                value=len(names), status='reported', period='All listed decision years',
+                as_of=max(row['date'] for row in rows),
+                geography='United States regulatory list; includes companies based elsewhere',
+                source={'name': 'FDA AI-enabled medical devices list', 'url': FDA_PAGE},
+                methodology='Distinct non-empty company names in the FDA radiology AI list, '
+                    'ignoring letter case and repeated whitespace. Subsidiaries and other name '
+                    'variations may be counted separately. Not a count of corporate groups or global suppliers.',
+                reason='')
+    payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
         logging.warning('Data validation: %s', error)
     # Fixed public context stays separate from curated regional observations.
@@ -1082,7 +1098,7 @@ def render_template(template, payload, fallback_theme=False):
         i=counter[0];counter[0]+=1
         return f'<div class="{match.group(1)}" id="ai-metric-{i}">'
     output = re.sub(r'<div class="(ticker-card|card col-3)">', identify, output)
-    if counter[0] != 5: raise ValueError('Expected two context and three sector metric cards')
+    if counter[0] != 6: raise ValueError('Expected two context and four sector metric cards')
     mapping = {
         'REGIONAL_SUMMARY_PLACEHOLDER': html.escape(payload['regions']['global']['summary']),
         'DRIVERS_CARDS_PLACEHOLDER': '<p id="ai-drivers"></p>',
@@ -1148,7 +1164,7 @@ def template_view(payload):
         benchmark = payload['fda_benchmark']
         # The FDA benchmark is explicitly US-specific in every region view.
         observations = [context['policy_rate'], context['inflation'], benchmark['metric'],
-                        metrics['prospective_studies'], benchmark['annual_change']]
+                        metrics['prospective_studies'], benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
         research_source = cards[3]['source']
         if research_source:
