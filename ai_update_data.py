@@ -831,7 +831,25 @@ def fetch_economic_outlook(offline=False):
             if 'disinflation has stalled' in inflation_match.group(1).lower():
                 inflation_summary += 'The decline in the pace of price rises has paused; this does not mean prices are falling. '
             inflation_summary += 'The percentage above is a dated annual consumer-price forecast, not a measure of healthcare costs.'
-        return dict(inflation_summary=inflation_summary, status='live', assessment=excerpt,
+        # Interpret only signals explicitly present in this fetched release.
+        lower = plain.lower()
+        drivers, risks = [], []
+        if 'ai-driven demand' in lower or 'technology upcycle' in lower:
+            drivers.append('investment and demand linked to AI and the technology sector')
+        if 'war shock' in lower or 'headwinds from the war' in lower:
+            risks.append('conflict-related disruption, particularly for economies dependent on imported energy')
+        if 'renewed conflict' in lower:
+            risks.append('a further escalation of conflict')
+        if 'financial market repricing' in lower:
+            risks.append('sudden changes in financial-market valuations')
+        overview = f'The IMF expects global growth of {a}% in {y} and {b}% in {z}. '
+        if 'uneven' in assessment.lower():
+            overview += 'Economic performance differs considerably between countries. '
+        overview += ('Drivers include ' + '; '.join(drivers) + '. ' if drivers else
+                     'A summary of growth drivers could not be extracted from the latest release. ')
+        overview += ('Risks include ' + '; '.join(risks) + '.' if risks else
+                     'A summary of risks could not be extracted from the latest release.')
+        return dict(overview=overview, inflation_summary=inflation_summary, status='live', assessment=excerpt,
                     summary=f'The IMF forecasts world economic output to grow by {a}% in {y} and {b}% in {z}. These projections may change as economic conditions evolve.',
                     source_url=url, published=dates[0].replace('/', '-'), retrieved=date.today().isoformat())
     except Exception as exc:
@@ -1310,6 +1328,16 @@ def render_dashboard(template, payload):
         return _render_data_template(template, payload)
     template = re.sub(r'<script[^>]*id="dashboard-data"[^>]*>.*?</script>', '', template, flags=re.S)
     template = re.sub(r'<div id="economic-outlook-summary">.*?</div>', '', template, flags=re.S)
+    outlook = payload.get('economic_outlook', {})
+    overview = '<p class="metric-desc">' + html.escape(outlook.get('overview',
+        'The latest global economic outlook could not be retrieved. Please check again after the next data update.')) + '</p>'
+    if outlook.get('status') == 'live':
+        overview += ('<p class="metric-desc">Source: <a href="' + html.escape(outlook['source_url'], quote=True)
+                     + '" target="_blank" rel="noopener">IMF World Economic Outlook</a> · Published '
+                     + html.escape(outlook['published']) + ' · Retrieved ' + html.escape(outlook['retrieved']) + '</p>')
+    template = template.replace('<h2 id="ai-context-title">Global Economic Background</h2>',
+        '<h2 id="ai-context-title">Global Economic Background</h2>\\n<div id="economic-outlook-summary">'
+        + overview + '</div>')
     rendered = render_template(template, template_view(payload))
     # Keep the canonical payload available to the workflow's validation/summary.
     data = '<script id="dashboard-data" type="application/json">' + safe_json(payload) + '</script>'
