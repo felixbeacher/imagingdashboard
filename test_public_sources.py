@@ -1,3 +1,9 @@
+# Tests the public-data collectors in ai_update_data.py using simulated responses.
+# Checks that missing or invalid data stays unavailable, valid zeros are preserved,
+# supplied data takes priority, and one source failure does not erase other results.
+# Run manually with: python3 test_public_sources.py
+# This file does not build the dashboard and is not run by the weekly workflow.
+
 import importlib.util, unittest, copy, json
 from pathlib import Path
 from unittest.mock import patch
