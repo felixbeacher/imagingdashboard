@@ -1064,7 +1064,6 @@ def render_template(template, payload, fallback_theme=False):
         raise ValueError('Unresolved template placeholders remain')
     for cid in ['modalityChart', 'totalVendorChart', 'cardioVendorChart', 'pulmoVendorChart', 'neuroVendorChart', 'breastVendorChart', 'oncologyVendorChart']:
         output = output.replace(f'<canvas id="{cid}"></canvas>', '<p class="metric-desc">Not available — no validated comparable dataset.</p>')
-    output = output.replace('KEY DRIVERS', 'AVAILABLE EVIDENCE').replace('KEY HEADWINDS', 'COVERAGE GAPS')
     output = output.replace('grid-template-columns: repeat(3, 1fr)', 'grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))')
     output = output.replace('While metrics and figures are sourced from public registers, APIs, and market estimates,', 'Available figures are linked to public sources; unsupported metrics are labelled unavailable. Geographic subsets and source limitations are disclosed. However,')
     status = '<section class="card" style="margin-top:24px"><h2>Source status and retrieval dates</h2><ul id="ai-source-status"></ul></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
