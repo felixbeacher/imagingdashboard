@@ -824,6 +824,27 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
             'notice': 'Automatic collection covers registry activity and selected public benchmarks. '
                       'Unconnected commercial and clinical indicators require sourced curated inputs.'},
     }
+    annual_change = missing('US FDA-listed radiology AI authorisations — annual change', '%',
+                            'Two complete calendar years of FDA coverage are required.')
+    rows = fda.get('rows', [])
+    if rows:
+        latest = max(row['date'] for row in rows)
+        year = min(date.today().year - 1, int(latest[:4]) - 1)
+        first = min(row['date'] for row in rows)
+        if first < f'{year - 1}-01-01':
+            previous = sum(row['date'].startswith(str(year - 1)) for row in rows)
+            current = sum(row['date'].startswith(str(year)) for row in rows)
+            if previous:
+                annual_change.update(
+                    value=round((current / previous - 1) * 100, 2), status='reported',
+                    period=f'{year} vs {year - 1}', as_of=latest,
+                    geography='United States regulatory activity',
+                    source={'name': 'FDA AI-enabled medical devices list', 'url': FDA_PAGE},
+                    methodology=f'{current} listed authorisations in {year} versus {previous} in {year - 1}. '
+                        'Unique radiology submission numbers; complete calendar years only. '
+                        'The FDA list is non-comprehensive and may be revised. This is not global adoption.',
+                    reason='')
+    payload['fda_benchmark']['annual_change'] = annual_change
     for error in errors:
         logging.warning('Data validation: %s', error)
     # Fixed public context stays separate from curated regional observations.
@@ -992,7 +1013,7 @@ function update(regionKey){
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
  const available=r.metrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name+' — Coverage and Evidence');
- text('outlook-badge',available+' / 9 metric cards populated');
+ text('outlook-badge',available+' / '+r.metrics.length+' metric cards populated');
  text('outlook-summary-text','This is a source-coverage summary, not an investment forecast. Missing figures are not zeros. National benchmarks are labelled explicitly. Page built '+payload.generated_at.slice(0,10)+'.');
  const factors={"global":{"drivers":["Clinical capacity: interpretation and triage support can help teams manage imaging workloads.","Workflow efficiency: automation of repetitive tasks can reduce manual effort.","Access to expertise: decision support can extend specialist input where resources are limited.","Clinical evidence: validation in the intended care setting can strengthen confidence in adoption."],"headwinds":["Evidence requirements: performance must be validated across relevant patients and clinical settings.","Integration costs: deployment requires compatible imaging systems, staff training, and ongoing support.","Commercial viability: providers need a clear purchasing model and evidence of value.","Trust and governance: bias, cybersecurity, privacy, and accountability need sustained attention."]},"northAmerica":{"drivers":["Clinical productivity: interpretation and triage tools can support busy imaging services.","Workflow integration: existing digital imaging systems offer a route for introducing AI tools.","Clinical partnerships: provider-led evaluation can establish usefulness in routine care.","Commercial value: measurable time savings and service improvements can support purchasing decisions."],"headwinds":["Payment arrangements: a workable reimbursement or provider-funded model is needed.","Regulatory requirements: US and Canadian market-access requirements must be addressed separately.","Implementation costs: integration, training, and monitoring add to the purchase price.","Clinical trust: local validation and clear responsibility for decisions remain essential."]},"europe":{"drivers":["Service capacity: workflow support can help health services use available staff and imaging resources.","Clinical collaboration: evaluation with hospitals can establish relevance to local care pathways.","Digital infrastructure: interoperable imaging systems can support deployment across care settings.","Procurement evidence: demonstrated clinical and operational value can strengthen purchasing cases."],"headwinds":["Regulatory compliance: EU medical-device and AI requirements need coordinated planning.","Market fragmentation: procurement and funding differ between countries and healthcare systems.","Data governance: privacy and lawful health-data use constrain implementation choices.","Evidence and integration: local validation, staff training, and system compatibility require investment."]},"asia":{"drivers":["Clinical capacity: interpretation support can help services address workforce and resource constraints.","Access to expertise: AI-assisted workflows may extend specialist support to underserved settings.","Digital development: investment in health information systems can enable implementation.","Local evaluation: partnerships with providers can adapt tools to patients and workflows."],"headwinds":["Uneven infrastructure: connectivity and system readiness vary between care settings.","Country-specific requirements: regulatory and procurement routes differ across markets.","Data representativeness: tools need validation for local populations and clinical practice.","Affordability and skills: purchasing budgets, training, and ongoing support affect adoption."]},"middleEast":{"drivers":["Digital-health investment: smart-health initiatives create opportunities to evaluate imaging AI.","Infrastructure development: connected hospital systems can support implementation.","Clinical efficiency: interpretation and workflow support can improve use of available resources.","Provider partnerships: local evaluation can demonstrate clinical and operational value."],"headwinds":["Country-specific access: regulation and purchasing requirements vary across the region.","Data governance: cybersecurity, privacy, and permitted data sharing require careful planning.","Implementation capability: integration and workforce training are necessary for routine use.","Sustainable value: buyers need evidence that benefits justify ongoing costs."]},"southAmerica":{"drivers":["Clinical capacity: workflow support can help providers make better use of imaging resources.","Access to expertise: decision support may extend specialist input to underserved settings.","Digital transformation: stronger health information systems can support AI deployment.","Provider evaluation: local partnerships can demonstrate usefulness and guide implementation."],"headwinds":["Affordability: budgets and ongoing support costs can constrain purchasing.","Infrastructure gaps: connectivity and interoperability affect reliable deployment.","National requirements: regulatory, privacy, and procurement arrangements vary by country.","Clinical readiness: local validation, staff training, and monitoring require investment."]}};
  const analysis=factors[key]||factors.global;
@@ -1044,7 +1065,7 @@ def render_template(template, payload, fallback_theme=False):
         i=counter[0];counter[0]+=1
         return f'<div class="{match.group(1)}" id="ai-metric-{i}">'
     output = re.sub(r'<div class="(ticker-card|card col-3)">', identify, output)
-    if counter[0] != 9: raise ValueError('Expected five ticker and four sector metric cards')
+    if counter[0] != 7: raise ValueError('Expected two context and five sector metric cards')
     mapping = {
         'REGIONAL_SUMMARY_PLACEHOLDER': html.escape(payload['regions']['global']['summary']),
         'DRIVERS_CARDS_PLACEHOLDER': '<p id="ai-drivers"></p>',
@@ -1109,16 +1130,15 @@ def template_view(payload):
         context, metrics = region['context'], region['metrics']
         benchmark = payload['fda_benchmark']
         # The FDA benchmark is explicitly US-specific in every region view.
-        observations = [context['policy_rate'], context['inflation'], context['equity_return'],
-                        metrics['scan_wait'], context['inference_cost'], benchmark['metric'],
+        observations = [context['policy_rate'], context['inflation'], benchmark['metric'],
                         metrics['workforce_shortfall'], metrics['reimbursed_use'],
-                        metrics['prospective_studies']]
+                        metrics['prospective_studies'], benchmark['annual_change']]
         cards = [card(m) for m in observations]
-        research_source = cards[8]['source']
+        research_source = cards[5]['source']
         if research_source:
             sources.pop(research_source, None)
-        cards[8]['source'] = None
-        cards[8]['description'] = (
+        cards[5]['source'] = None
+        cards[5]['description'] = (
             'Active registered imaging-AI studies. Counts indicate research activity, '
             'not completed studies or proven clinical benefit. Regional counts use selected countries '
             'and may overlap for multinational studies.')
@@ -1152,7 +1172,7 @@ def template_view(payload):
         regions[key] = dict(name=region['name'], summary=summary, metrics=cards,
             years=[p['label'] for p in points], approvals=[p['value'] for p in points],
             approvalTitle=series['label'], approvalNote=benchmark['notice'] + ' ' + series.get('methodology', ''),
-            approvalSource=cards[5]['source'], months=[], rateValues=[],
+            approvalSource=cards[2]['source'], months=[], rateValues=[],
             rateTitle='Policy-rate trend — not available',
             rateNote='No comparable monthly regional policy-rate series is configured. The latest sourced rate is shown in the metric card.',
             rateSource=None, news=[])
