@@ -447,3 +447,27 @@ footer {
     .outlook-factors-grid { grid-template-columns: 1fr; }
     .factor-list { grid-template-columns: 1fr; }
 }
+
+
+/* Compact layouts: preserve the existing desktop presentation. */
+@media (max-width: 600px) {
+    header { padding: 1rem; }
+    main { padding: 1rem; }
+    .header-content, .title-area { min-width: 0; width: 100%; }
+    .nav-tabs { flex-wrap: wrap; width: 100%; border-radius: 16px; gap: 0.25rem; }
+    .tab-btn { padding: 0.7rem 0.85rem; min-height: 44px; }
+    .region-filter-container { flex-wrap: wrap; }
+    .region-filter-container select { min-width: 0; max-width: 100%; flex: 1 1 160px; min-height: 44px; }
+    .dashboard-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+    .dashboard-grid > *, .ticker-card, .factor-column { min-width: 0; }
+    .card { padding: 16px; }
+    .card h2, .metric-label { overflow-wrap: anywhere; }
+    .ticker-card { padding: 12px; }
+    .metric-desc { font-size: 0.85rem; line-height: 1.5; }
+    [data-chart-table] { font-size: 0.85rem !important; }
+    [data-chart-table] th, [data-chart-table] td { padding: 4px; overflow-wrap: anywhere; }
+    .hero-banner { padding: 2rem 1rem; }
+    .hero-banner h2 { font-size: 2rem; }
+    .hero-banner p { font-size: 1rem; margin-bottom: 1.5rem; }
+    .hero-stats-row { grid-template-columns: minmax(0, 1fr); }
+}
