@@ -822,7 +822,16 @@ def fetch_economic_outlook(offline=False):
         if not forecast:
             raise ValueError('Comparable forward growth projections missing')
         a,y,b,z = forecast.groups()
-        return dict(status='live', assessment=excerpt,
+        inflation_match = re.search(r'(Global (?:disinflation|inflation) [^.]+\.)', plain, re.I)
+        inflation_summary = 'A current global inflation assessment could not be extracted from this IMF release.'
+        if inflation_match:
+            inflation_words = inflation_match.group(1).split()
+            inflation_excerpt = ' '.join(inflation_words[:5]) + ('…' if len(inflation_words) > 5 else '')
+            inflation_summary = 'IMF assessment: “' + inflation_excerpt + '” '
+            if 'disinflation has stalled' in inflation_match.group(1).lower():
+                inflation_summary += 'The decline in the pace of price rises has paused; this does not mean prices are falling. '
+            inflation_summary += 'The percentage above is a dated annual consumer-price forecast, not a measure of healthcare costs.'
+        return dict(inflation_summary=inflation_summary, status='live', assessment=excerpt,
                     summary=f'The IMF forecasts world economic output to grow by {a}% in {y} and {b}% in {z}. These projections may change as economic conditions evolve.',
                     source_url=url, published=dates[0].replace('/', '-'), retrieved=date.today().isoformat())
     except Exception as exc:
@@ -1216,6 +1225,16 @@ def template_view(payload):
                  as_of='2026-07-08', source=None, geography='',
                  methodology='Expected rise in consumer prices worldwide; not healthcare-cost inflation.', reason=''),
         ]
+        outlook = payload.get('economic_outlook', {})
+        economic_background[0]['methodology'] = (
+            ('IMF assessment: “' + outlook.get('assessment', '') + '” ' if outlook.get('status') == 'live' else '')
+            + outlook.get('summary', 'The latest IMF growth outlook is unavailable.'))
+        economic_background[1]['methodology'] = outlook.get(
+            'inflation_summary', 'The latest IMF inflation assessment is unavailable.')
+        if outlook.get('status') == 'live':
+            for observation in economic_background:
+                observation['methodology'] += (' IMF outlook published ' + outlook['published']
+                                               + '; retrieved ' + outlook['retrieved'] + '.')
         observations = [*economic_background, benchmark['metric'],
                         metrics['prospective_studies'], benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
@@ -1290,13 +1309,7 @@ def render_dashboard(template, payload):
     if '<!-- DASHBOARD_DATA_PLACEHOLDER -->' in template:
         return _render_data_template(template, payload)
     template = re.sub(r'<script[^>]*id="dashboard-data"[^>]*>.*?</script>', '', template, flags=re.S)
-    outlook = payload.get('economic_outlook', {})
-    summary = '<p class="metric-desc">' + html.escape(outlook.get('summary', 'Economic outlook unavailable.')) + '</p>'
-    if outlook.get('status') == 'live':
-        summary = '<p class="metric-desc">IMF assessment: “' + html.escape(outlook['assessment']) + '” ' + html.escape(outlook['summary']) + '</p>'
-        summary += '<p class="metric-desc"><a href="' + html.escape(outlook['source_url'], quote=True) + '" target="_blank" rel="noopener">IMF World Economic Outlook</a> · Published ' + html.escape(outlook['published']) + ' · Retrieved ' + html.escape(outlook['retrieved']) + '</p>'
     template = re.sub(r'<div id="economic-outlook-summary">.*?</div>', '', template, flags=re.S)
-    template = template.replace('<h2 id="ai-context-title">Global Economic Background</h2>', '<h2 id="ai-context-title">Global Economic Background</h2>\n<div id="economic-outlook-summary">' + summary + '</div>')
     rendered = render_template(template, template_view(payload))
     # Keep the canonical payload available to the workflow's validation/summary.
     data = '<script id="dashboard-data" type="application/json">' + safe_json(payload) + '</script>'
