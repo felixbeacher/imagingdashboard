@@ -44,7 +44,7 @@ FDA_PAGE = 'https://www.fda.gov/medical-devices/artificial-intelligence-enabled-
 FDA_CSV = 'https://www.fda.gov/media/178541/download?attachment='
 REGIONS = {
     'global': 'Global', 'northAmerica': 'North America', 'europe': 'Europe',
-    'asia': 'Asia-Pacific', 'middleEast': 'Middle East', 'southAmerica': 'LATAM',
+    'asia': 'Asia-Pacific', 'middleEast': 'Middle East', 'southAmerica': 'Latin America',
 }
 MODALITIES = ['CT', 'MRI', 'General X-ray', 'Mammography', 'Ultrasound', 'Nuclear medicine / PET', 'Multiple modalities', 'Other imaging']
 APPLICATIONS = ['Breast', 'Cardiology', 'Neurology', 'Pulmonology', 'Liver', 'Musculoskeletal', 'Prostate', 'Other / multiple']
@@ -1128,8 +1128,9 @@ function update(regionKey){
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
  plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
- add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Global imaging-AI headlines; this feed does not change with the region selector.');
- if(!r.news.length)add(feed,'p','No headlines available from the configured feeds. This does not mean no developments occurred.');
+ feed.closest('.card').querySelector('h2').textContent=key==='global'?'Latest Industry Headlines':r.name+' — Industry Headlines';
+ add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Imaging-AI headlines explicitly mentioning '+r.name+' or countries and institutions associated with this view; title matching may miss relevant stories.');
+ if(!r.news.length)add(feed,'p',key==='global'?'No headlines available from the configured feeds. This does not mean no developments occurred.':'No clearly region-matched headlines were found in the current feeds. This does not mean there were no developments.');
  r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);});
  const status=document.getElementById('ai-source-status');status.replaceChildren();
  Object.entries(payload.sources).forEach(([key,s])=>{const row=add(status,'li');source(row,key);});
@@ -1207,6 +1208,27 @@ def render_template(template, payload, fallback_theme=False):
 _render_data_template = render_dashboard
 
 
+REGIONAL_NEWS_TERMS = {
+    'northAmerica': ['United States', 'US', 'U.S.', 'USA', 'Canada', 'Canadian', 'FDA', 'North America'],
+    'europe': ['Europe', 'European', 'United Kingdom', 'UK', 'NHS', 'Germany', 'German',
+               'France', 'French', 'Italy', 'Spain', 'Netherlands', 'Sweden', 'Poland', 'Switzerland', 'EU'],
+    'asia': ['Asia', 'Asia-Pacific', 'China', 'Chinese', 'Japan', 'Japanese', 'India', 'Indian',
+             'South Korea', 'Korean', 'Australia', 'Australian', 'New Zealand', 'Singapore', 'Taiwan', 'Thailand'],
+    'middleEast': ['Middle East', 'Israel', 'Israeli', 'Saudi', 'UAE', 'United Arab Emirates',
+                   'Iran', 'Turkey', 'Türkiye', 'Egypt'],
+    'southAmerica': ['Latin America', 'LATAM', 'Brazil', 'Brazilian', 'Mexico', 'Mexican',
+                     'Argentina', 'Chile', 'Colombia', 'Peru'],
+}
+
+
+def regional_news_match(title, key):
+    """Conservative title matching; do not infer geography from a vendor's origin."""
+    if key == 'global':
+        return True
+    return any(re.search(r'(?<!\w)' + re.escape(term) + r'(?!\w)', title, re.I)
+               for term in REGIONAL_NEWS_TERMS.get(key, []))
+
+
 def template_view(payload):
     """Project validated observations onto the supplied nine-card AI template."""
     sources = {}
@@ -1263,7 +1285,9 @@ def template_view(payload):
         cards[3]['description'] = (
             'Active registered imaging-AI studies. Counts indicate research activity, '
             'not completed studies or proven clinical benefit. Regional counts use selected countries '
-            'and may overlap for multinational studies.')
+            'and may overlap for multinational studies.'
+            + (' Worldwide registry query.' if key == 'global' else ' Country sample: '
+               + ', '.join(name for _, name in COUNTRY_SAMPLES[key]) + '.'))
         series = benchmark['series']
         points = series.get('points', [])
         editorial = region['editorial']
@@ -1276,9 +1300,9 @@ def template_view(payload):
         regional_descriptions = {
             "northAmerica": "North America provides an established commercial setting for medical imaging AI, with the United States and Canada offering different routes into hospital and outpatient care. Imaging platforms can support interpretation, prioritisation, and workflow efficiency, but successful deployment depends on fitting local clinical practice and demonstrating value to healthcare providers. In the United States, FDA oversight is central to market access for regulated products; Canadian requirements and purchasing arrangements must be considered separately. Across the region, clinical validation, integration with existing imaging systems, data protection, and sustainable payment arrangements shape the path from pilot projects to routine use.",
             "europe": "Europe offers a diverse setting for medical imaging AI, spanning national health services, university hospitals, and private providers with different procurement and funding arrangements. Imaging tools can help clinicians interpret examinations and organise workflows, but adoption requires evidence that they are useful within the intended care setting. In the European Union, medical-device requirements interact with the AI Act, while countries outside the EU follow their own frameworks. Clinical validation, health-data protection, interoperability, and local reimbursement decisions are key considerations. Suppliers therefore need to plan for country-specific implementation rather than treating Europe as a single uniform market.",
-            "asia": "Asia encompasses a wide range of healthcare systems, digital infrastructure, and regulatory environments, creating varied opportunities for medical imaging AI. Tools for interpretation support, examination prioritisation, and workflow management may be valuable where imaging services face pressure on staff and capacity. Deployment strategies must reflect differences between countries and between major urban centres and less connected settings. Local clinical validation, representative patient data, integration with hospital systems, and workforce training are essential considerations. Sustainable growth depends on clear governance and purchasing arrangements, alongside evidence that the technology improves care in the settings where it is used.",
+            "asia": "Asia-Pacific encompasses a wide range of healthcare systems, digital infrastructure, and regulatory environments, creating varied opportunities for medical imaging AI. Tools for interpretation support, examination prioritisation, and workflow management may be valuable where imaging services face pressure on staff and capacity. Deployment strategies must reflect differences between countries and between major urban centres and less connected settings. Local clinical validation, representative patient data, integration with hospital systems, and workforce training are essential considerations. Sustainable growth depends on clear governance and purchasing arrangements, alongside evidence that the technology improves care in the settings where it is used.",
             "middleEast": "The Middle East presents a varied landscape for medical imaging AI, with healthcare investment and digital-health priorities differing substantially across countries. The UAE's work on smart health services illustrates interest in AI applications, digital infrastructure, and stronger health-data governance. Imaging tools can support interpretation and workflow management, but a successful deployment requires alignment with the needs and capabilities of each healthcare organisation. Country-specific medical-device requirements, cybersecurity, data-sharing rules, and clinical validation must be addressed. Long-term adoption also depends on staff training, reliable integration with existing systems, and a clear case for clinical and operational value.",
-            "southAmerica": "South America offers opportunities for medical imaging AI across public health services and private provider networks, with considerable variation in resources and digital readiness. Tools that support interpretation and workflow management may help healthcare teams make better use of available imaging capacity, provided they are validated for the intended patients and care settings. Regional digital-health efforts emphasise stronger information systems, responsible AI governance, and workforce capabilities. Deployment must account for national regulatory and data-protection requirements, local procurement arrangements, and interoperability with existing hospital systems. Affordability, connectivity, training, and measurable clinical value are central considerations for sustainable adoption.",
+            "southAmerica": "Latin America offers opportunities for medical imaging AI across public health services and private provider networks, with considerable variation in resources and digital readiness. Tools that support interpretation and workflow management may help healthcare teams make better use of available imaging capacity, provided they are validated for the intended patients and care settings. Regional digital-health efforts emphasise stronger information systems, responsible AI governance, and workforce capabilities. Deployment must account for national regulatory and data-protection requirements, local procurement arrangements, and interoperability with existing hospital systems. Affordability, connectivity, training, and measurable clinical value are central considerations for sustainable adoption.",
         }
         if key in regional_descriptions:
             summary = regional_descriptions[key]
@@ -1290,6 +1314,8 @@ def template_view(payload):
             rateNote='No comparable monthly regional policy-rate series is configured. The latest sourced rate is shown in the metric card.',
             rateSource=None, news=[])
         for item in payload['news']:
+            if not regional_news_match(item['title'], key):
+                continue
             name = item.get('source', 'Industry feed')
             source_key = 'news:' + name
             sources[source_key] = dict(name=name, url=RSS_FEEDS.get(name, item['url']),
