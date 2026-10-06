@@ -1366,7 +1366,7 @@ def render_dashboard(template, payload):
                      + '" target="_blank" rel="noopener">IMF World Economic Outlook</a> · Published '
                      + html.escape(outlook['published']) + ' · Retrieved ' + html.escape(outlook['retrieved']) + '</p>')
     template = template.replace('<h2 id="ai-context-title">Global Economic Background</h2>',
-        '<h2 id="ai-context-title">Global Economic Background</h2>\\n<div id="economic-outlook-summary">'
+        '<h2 id="ai-context-title">Global Economic Background</h2>\n<div id="economic-outlook-summary">'
         + overview + '</div>')
     rendered = render_template(template, template_view(payload))
     # Keep the canonical payload available to the workflow's validation/summary.
