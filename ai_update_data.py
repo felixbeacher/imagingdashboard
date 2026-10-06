@@ -1163,7 +1163,16 @@ def template_view(payload):
         context, metrics = region['context'], region['metrics']
         benchmark = payload['fda_benchmark']
         # The FDA benchmark is explicitly US-specific in every region view.
-        observations = [context['policy_rate'], context['inflation'], benchmark['metric'],
+        # Dated IMF disclosure snapshot; update when a new WEO release is verified.
+        economic_background = [
+            dict(label='Global economic growth', value=3.0, unit='%', period='2026 forecast · IMF July 2026',
+                 as_of='2026-07-08', source=None, geography='',
+                 methodology='Expected growth in world economic output.', reason=''),
+            dict(label='Global consumer inflation', value=4.7, unit='%', period='2026 forecast · IMF July 2026',
+                 as_of='2026-07-08', source=None, geography='',
+                 methodology='Expected rise in consumer prices worldwide; not healthcare-cost inflation.', reason=''),
+        ]
+        observations = [*economic_background, benchmark['metric'],
                         metrics['prospective_studies'], benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
         research_source = cards[3]['source']
