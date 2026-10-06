@@ -1197,7 +1197,27 @@ function update(regionKey){
  if(!r.news.length)add(feed,'p',key==='global'?'No headlines available from the configured feeds. This does not mean no developments occurred.':'No clearly region-matched headlines were found in the current feeds. This does not mean there were no developments.');
  r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);});
  const status=document.getElementById('ai-source-status');status.replaceChildren();
- Object.entries(payload.sources).forEach(([key,s])=>{const row=add(status,'li');source(row,key);});
+ const entries=Object.entries(payload.sources);
+ const dates=[...new Set(entries.filter(([,s])=>s.status==='live'&&s.fetched_at).map(([,s])=>s.fetched_at.slice(0,10)))];
+ const dateLine=add(status,'p',dates.length===1?'Last refreshed: '+dates[0]:dates.length?'Retrieval dates vary by source; see details.':'Retrieval dates are shown in source details.');
+ dateLine.className='metric-desc';
+ const groups=new Map();
+ entries.forEach(([key,s])=>{
+  let name=s.name,description='Source information',url=s.url;
+  if(s.url.includes('imf.org/')){name='IMF';description='Economic growth and inflation';url='https://www.imf.org/en/Publications/WEO';}
+  else if(s.url.includes('fda.gov/')){name='FDA';description='US radiology AI devices';}
+  else if(s.url.includes('clinicaltrials.gov')){name='ClinicalTrials.gov';description='Registered research studies';}
+  else {description='Industry news';}
+  if(!groups.has(name))groups.set(name,{url,description,unavailable:false});
+  if(s.status!=='live')groups.get(name).unavailable=true;
+ });
+ const summaryList=add(status,'ul');summaryList.style.paddingLeft='20px';
+ groups.forEach((group,name)=>{const row=add(summaryList,'li');const link=add(row,'a',name);link.href=group.url;link.target='_blank';link.rel='noopener noreferrer';add(row,'span',': '+group.description+(group.unavailable?' — some data unavailable':''));});
+ const details=add(status,'details');details.style.marginTop='12px';
+ const toggle=add(details,'summary','Source details');toggle.style.cursor='pointer';
+ const fullList=add(details,'ul');fullList.style.paddingLeft='20px';
+ entries.forEach(([key,s])=>{const row=add(fullList,'li');source(row,key);});
+
 }
 const select=document.getElementById('regionSelect');
 select.addEventListener('change',()=>{const url=new URL(location.href);url.searchParams.set('region',select.value);try{history.pushState({},'',url);}catch(e){}update(select.value);});
@@ -1259,7 +1279,7 @@ def render_template(template, payload, fallback_theme=False):
         output = output.replace(f'<canvas id="{cid}"></canvas>', '<p class="metric-desc">Not available — no validated comparable dataset.</p>')
     output = output.replace('grid-template-columns: repeat(3, 1fr)', 'grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))')
     output = output.replace('While metrics and figures are sourced from public registers, APIs, and market estimates,', 'Available figures are linked to public sources; unsupported metrics are labelled unavailable. Geographic subsets and source limitations are disclosed. However,')
-    status = '<section class="card" style="margin-top:24px"><h2>Source status and retrieval dates</h2><ul id="ai-source-status"></ul></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
+    status = '<section class="card" style="margin-top:24px"><h2>Source status and retrieval dates</h2><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
     output = output.replace('</main>', status + '\n</main>')
 
     runtime = RUNTIME.replace('__DATA__', safe_json(payload))
