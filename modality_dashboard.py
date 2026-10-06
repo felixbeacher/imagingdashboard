@@ -74,7 +74,7 @@ CONFIGS = {
 for slug, config in CONFIGS.items():
     config['slug'] = slug
     config['metrics'] = COMMON[:3] + config['extra'] + COMMON[3:]
-    config['template'] = f"{config['number']}_{slug}.html"
+    config['template'] = f"{slug}.html"
 
 
 def normalise_measure(raw, definition, errors, path):
@@ -318,7 +318,7 @@ def site_handler(primary, primary_slug='ai'):
             if slug not in services:
                 data=root / ('dashboard_data.json' if slug=='ai' else f'{slug}_data.json')
                 data=data if data.exists() else None
-                if slug=='ai': services[slug]=ai.DashboardService(root/'1_ai.html',data,primary.offline,False,primary.cache_seconds)
+                if slug=='ai': services[slug]=ai.DashboardService(root/'ai.html',data,primary.offline,False,primary.cache_seconds)
                 else: services[slug]=ModalityService(slug,root/CONFIGS[slug]['template'],data,primary.offline,primary.cache_seconds)
             return services[slug]
     class Handler(ai.make_handler(primary)):
