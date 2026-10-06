@@ -919,6 +919,8 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                     'ignoring letter case and repeated whitespace. Subsidiaries and other name '
                     'variations may be counted separately. Not a count of corporate groups or global suppliers.',
                 reason='')
+    payload['registry_chart'] = {key: copy.deepcopy(block['metrics'].get('prospective_studies', {'value': None}))
+                                 for key, block in automatic.items()}
     payload['economic_outlook'] = fetch_economic_outlook(offline)
     payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
@@ -1077,11 +1079,11 @@ function plot(id,title,labels,values,note,key){
  const hasData=values.some(v=>typeof v==='number'&&Number.isFinite(v));
  canvas.hidden=!hasData||typeof Chart==='undefined';
  if(hasData&&typeof Chart!=='undefined'){
- charts[id]=new Chart(canvas.getContext('2d'),{type:'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:0,spanGaps:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:id==='macroChart'?'Percent per annum':'Listed authorisations'},beginAtZero:id!=='macroChart'}}}});
+ charts[id]=new Chart(canvas.getContext('2d'),{type:id==='approvalsChart'?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',fill:true,tension:0,spanGaps:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:id==='macroChart'?'Percent per annum':'Active registered studies'},beginAtZero:id!=='macroChart'}}}});
  }else if(hasData){add(caption,'p','Chart library could not load. Data are shown below.');}
  // Accessible numeric alternative, also works if the CDN is blocked.
  let table=card.querySelector('[data-chart-table]');if(table)table.remove();
- if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th','Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Listed authorisations');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
+ if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Active registered studies');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
 }
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
@@ -1097,7 +1099,7 @@ function update(regionKey){
  showFactors('ai-drivers',analysis.drivers);
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
- plot('approvalsChart',r.approvalTitle,r.years,r.approvals,r.approvalNote,r.approvalSource);
+ plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
  add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Global imaging-AI headlines; this feed does not change with the region selector.');
  if(!r.news.length)add(feed,'p','No headlines available from the configured feeds. This does not mean no developments occurred.');
@@ -1257,7 +1259,31 @@ def template_view(payload):
                                       status='live', fetched_at=payload['generated_at'])
             regions[key]['news'].append(dict(title=item['title'], url=item['url'],
                 date=item.get('published', ''), source=source_key))
-    return dict(generated_at=payload['generated_at'], regions=regions, sources=sources)
+    registry = payload.get('registry_chart', {})
+    labels = {'global': 'Worldwide', 'northAmerica': 'North America (sample)',
+              'europe': 'Europe (sample)', 'asia': 'Asia-Pacific (sample)',
+              'middleEast': 'Middle East (sample)', 'southAmerica': 'Latin America (sample)'}
+    chart_source = 'registry-chart'
+    observations = list(registry.values())
+    dates = sorted({item.get('as_of') for item in observations if item.get('as_of')})
+    sources[chart_source] = dict(name='ClinicalTrials.gov / NLM', url='https://clinicaltrials.gov',
+        status='live' if any(item.get('value') is not None for item in observations) else 'unavailable',
+        fetched_at=payload['generated_at'])
+    samples = '; '.join(labels[key] + ': ' + ', '.join(name for _, name in countries)
+                        for key, countries in COUNTRY_SAMPLES.items())
+    note = ('Active interventional registrations matching the imaging AI query; a research-activity proxy, '
+            'not approvals, commercial adoption or proven clinical benefit. ClinicalTrials.gov includes worldwide '
+            'studies but does not capture all research. Worldwide is counted directly; regional bars cover selected '
+            'countries only. Multinational studies can appear in several regional bars, so do not add the bars together. '
+            'Unavailable counts are not zeros. '
+            + ('Registry snapshot: ' + ', '.join(dates) + '. ' if dates else '')
+            + 'Country samples — ' + samples + '.')
+    chart = dict(title='Active Medical Imaging AI Studies — Worldwide and Regional Samples',
+                 labels=list(labels.values()),
+                 values=[registry.get(key, {}).get('value') for key in labels],
+                 note=note, source=chart_source)
+    return dict(generated_at=payload['generated_at'], regions=regions, sources=sources,
+                registryChart=chart)
 
 
 def render_dashboard(template, payload):
