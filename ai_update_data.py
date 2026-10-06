@@ -62,7 +62,7 @@ REGIONAL_NEWS_SEARCHES = {
     'southAmerica': '("Latin America" OR Brazil OR Mexico OR Argentina OR Chile OR Colombia OR Peru)',
 }
 for _region, _location in REGIONAL_NEWS_SEARCHES.items():
-    _query = ('(radiology OR "medical imaging" OR mammography OR "chest x-ray" OR MRI OR CT) '
+    _query = ('(radiology OR "medical imaging" OR mammography OR "chest x-ray" OR "magnetic resonance" OR "computed tomography") '
               '("artificial intelligence" OR "machine learning" OR "deep learning" OR AI) '
               + _location + ' when:90d')
     RSS_FEEDS['Regional search: ' + _region] = 'https://news.google.com/rss/search?' + urllib.parse.urlencode(
@@ -427,6 +427,20 @@ def fda_benchmark(source, classifications, errors):
             'retrieved_at': source.get('retrieved_at', ''), 'notice': 'US regulatory benchmark only. It does not represent global or regional adoption, unique commercial products or software-only AI.'}
 
 
+def imaging_ai_news_relevant(title):
+    """Require explicit imaging relevance; MRI/CT alone can name unrelated businesses."""
+    title = html.unescape(title)
+    ai = re.search(r'\b(ai|artificial intelligence|machine learning|deep learning)\b', title, re.I)
+    imaging = re.search(r'radiolog|medical imaging|diagnostic imaging|mammograph|radiograph|'
+                        r'x[\s-]?ray|computed tomography|magnetic resonance|positron emission|'
+                        r'ultrasound|sonograph|lung nodule|coronary calcium', title, re.I)
+    clinical_context = re.search(r'\b(patient|patients|scan|scans|scanning|hospital|hospitals|'
+                                 r'cancer|tumour|tumor|lung|brain|breast|diagnostic|diagnosis|'
+                                 r'body composition|bone age|coronary|pulmonary|clinical)\b', title, re.I)
+    qualified_abbreviation = clinical_context and re.search(r'\b(MRI|CT|PET)\b', title)
+    return bool(ai and (imaging or qualified_abbreviation))
+
+
 def parse_feed(content, source):
     root = ET.fromstring(content)
     rows = []
@@ -457,6 +471,8 @@ def parse_feed(content, source):
         region = source.split(': ', 1)[1] if source.startswith('Regional search: ') else None
         if region and publisher and title.endswith(' - ' + publisher):
             title = title[:-(len(publisher) + 3)]
+        if not imaging_ai_news_relevant(title):
+            continue
         if published and published > date.today().isoformat():
             continue
         rows.append({'title': title, 'url': safe_url(link),
@@ -1332,9 +1348,9 @@ function update(regionKey){
  }
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
  feed.closest('.card').querySelector('h2').textContent=key==='global'?'Latest Industry Headlines':r.name+' — Industry Headlines';
- add(feed,'p',key==='global'?'Imaging-AI news from multiple publishers and region-scoped searches; selected reports, not comprehensive coverage.':'Imaging-AI news matched to '+r.name+' using regional searches of indexed articles and explicit geographic references. Search matches are not independently verified regional classifications; coverage varies by language and publisher.');
+ add(feed,'p',key==='global'?'Imaging-AI news from multiple publishers and region-scoped searches; selected reports, not comprehensive coverage.':'Imaging-AI stories with an explicit '+r.name+' country, regional or institution reference in the headline. Broad search matches alone are excluded; coverage varies by language and publisher.');
  if(!r.news.length)add(feed,'p',key==='global'?'No headlines available from the configured feeds. This does not mean no developments occurred.':'No clearly region-matched headlines were found in the current feeds. This does not mean there were no developments.');
- r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);if(n.searchMatched)add(item,'span',' · Regional search match');});
+ r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);if(n.searchMatched)add(item,'span',' · Found through regional search');});
  const status=document.getElementById('ai-source-status');status.replaceChildren();
  const entries=Object.entries(payload.sources);
  const dates=[...new Set(entries.filter(([,s])=>s.status==='live'&&s.fetched_at).map(([,s])=>s.fetched_at.slice(0,10)))];
@@ -1448,7 +1464,7 @@ def regional_news_match(title, key):
     """Conservative title matching; do not infer geography from a vendor's origin."""
     if key == 'global':
         return True
-    return any(re.search(r'(?<!\w)' + re.escape(term) + r'(?!\w)', title, re.I)
+    return any(re.search(r'(?<!\w)' + re.escape(term) + r'(?!\w)', title, 0 if term in ('US', 'UK', 'EU') else re.I)
                for term in REGIONAL_NEWS_TERMS.get(key, []))
 
 
@@ -1562,8 +1578,10 @@ def template_view(payload):
             regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
             regions[key]['economicScope'] = 'Selected-country medians for ' + region['name'] + ', not regional totals or weighted averages.'
         for item in payload['news']:
-            if key != 'global' and key not in item.get('regions', []) and not regional_news_match(
-                    item['title'] + ' ' + item.get('summary', ''), key):
+            if not imaging_ai_news_relevant(item['title']):
+                continue
+            # Search membership is not proof of geographic relevance.
+            if key != 'global' and not regional_news_match(item['title'], key):
                 continue
             name = item.get('source', 'Industry feed')
             source_key = 'news:' + name
