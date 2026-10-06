@@ -1,4 +1,4 @@
-# Builds and publishes the AI, CT, MRI, PET and X-ray dashboards.
+# Refresh AI independently while the other modality updaters are being repaired.
 # Keep the source HTML templates and Python scripts in the repository root.
 # Publish the generated _site artifact directly; no generated-file commits or pushes.
 # Set Settings > Pages > Build and deployment > Source to GitHub Actions.
@@ -47,7 +47,7 @@ jobs:
 
       # These updaters use the Python standard library. Optional Gemini
       # commentary is not enabled, so requirements.txt is not needed.
-      - name: Fetch data and build all five dashboards
+      - name: Fetch data and build the AI dashboard
         shell: bash
         run: |
           set -euo pipefail
@@ -64,12 +64,8 @@ jobs:
           output = root / '_site'
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
-              ('CT', 'ct_update_data.py', 'ct.html'),
-              ('MRI', 'mri_update_data.py', 'mri.html'),
-              ('PET', 'pet_update_data.py', 'pet.html'),
-              ('X-ray', 'xray_update_data.py', 'xray.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'modality_dashboard.py']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -81,6 +77,10 @@ jobs:
           (output / 'images').mkdir(parents=True)
           for filename in ('index.html', 'styles.css', 'images/earth-hero.png'):
               shutil.copy2(root / filename, output / filename)
+          # Preserve the other source pages without running their unfinished updaters.
+          for filename in ('ct.html', 'mri.html', 'pet.html', 'xray.html'):
+              if (root / filename).is_file():
+                  shutil.copy2(root / filename, output / filename)
           (output / '.nojekyll').touch()
 
           summary = ['## Dashboard refresh', '', '| Dashboard | Core observations | Headlines | FDA benchmark |',
