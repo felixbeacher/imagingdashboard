@@ -1,7 +1,7 @@
 import importlib.util, unittest, copy, json
 from pathlib import Path
 from unittest.mock import patch
-spec=importlib.util.spec_from_file_location('public_ai',Path(__file__).parent/'1_update_data_ai.py')
+spec=importlib.util.spec_from_file_location('public_ai',Path(__file__).parent/'ai_update_data.py')
 m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 class PublicSourceTests(unittest.TestCase):
  def test_offline_never_contacts_public_sources(self):
