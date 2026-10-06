@@ -1065,7 +1065,7 @@ def render_template(template, payload, fallback_theme=False):
         i=counter[0];counter[0]+=1
         return f'<div class="{match.group(1)}" id="ai-metric-{i}">'
     output = re.sub(r'<div class="(ticker-card|card col-3)">', identify, output)
-    if counter[0] != 7: raise ValueError('Expected two context and five sector metric cards')
+    if counter[0] != 5: raise ValueError('Expected two context and three sector metric cards')
     mapping = {
         'REGIONAL_SUMMARY_PLACEHOLDER': html.escape(payload['regions']['global']['summary']),
         'DRIVERS_CARDS_PLACEHOLDER': '<p id="ai-drivers"></p>',
@@ -1131,14 +1131,13 @@ def template_view(payload):
         benchmark = payload['fda_benchmark']
         # The FDA benchmark is explicitly US-specific in every region view.
         observations = [context['policy_rate'], context['inflation'], benchmark['metric'],
-                        metrics['workforce_shortfall'], metrics['reimbursed_use'],
                         metrics['prospective_studies'], benchmark['annual_change']]
         cards = [card(m) for m in observations]
-        research_source = cards[5]['source']
+        research_source = cards[3]['source']
         if research_source:
             sources.pop(research_source, None)
-        cards[5]['source'] = None
-        cards[5]['description'] = (
+        cards[3]['source'] = None
+        cards[3]['description'] = (
             'Active registered imaging-AI studies. Counts indicate research activity, '
             'not completed studies or proven clinical benefit. Regional counts use selected countries '
             'and may overlap for multinational studies.')
