@@ -822,34 +822,38 @@ def fetch_economic_outlook(offline=False):
         if not forecast:
             raise ValueError('Comparable forward growth projections missing')
         a,y,b,z = forecast.groups()
-        inflation_match = re.search(r'(Global (?:disinflation|inflation) [^.]+\.)', plain, re.I)
-        inflation_summary = 'A current global inflation assessment could not be extracted from this IMF release.'
-        if inflation_match:
-            inflation_words = inflation_match.group(1).split()
-            inflation_excerpt = ' '.join(inflation_words[:5]) + ('…' if len(inflation_words) > 5 else '')
-            inflation_summary = 'IMF assessment: “' + inflation_excerpt + '” '
-            if 'disinflation has stalled' in inflation_match.group(1).lower():
-                inflation_summary += 'The decline in the pace of price rises has paused; this does not mean prices are falling. '
-            inflation_summary += 'The percentage above is a dated annual consumer-price forecast, not a measure of healthcare costs.'
-        # Interpret only signals explicitly present in this fetched release.
-        lower = plain.lower()
-        drivers, risks = [], []
-        if 'ai-driven demand' in lower or 'technology upcycle' in lower:
-            drivers.append('investment and demand linked to AI and the technology sector')
-        if 'war shock' in lower or 'headwinds from the war' in lower:
-            risks.append('conflict-related disruption, particularly for economies dependent on imported energy')
-        if 'renewed conflict' in lower:
-            risks.append('a further escalation of conflict')
-        if 'financial market repricing' in lower:
-            risks.append('sudden changes in financial-market valuations')
-        overview = f'The IMF expects global growth of {a}% in {y} and {b}% in {z}. '
-        if 'uneven' in assessment.lower():
-            overview += 'Economic performance differs considerably between countries. '
-        overview += ('Drivers include ' + '; '.join(drivers) + '. ' if drivers else
-                     'A summary of growth drivers could not be extracted from the latest release. ')
-        overview += ('Risks include ' + '; '.join(risks) + '.' if risks else
-                     'A summary of risks could not be extracted from the latest release.')
-        return dict(overview=overview, inflation_summary=inflation_summary, status='live', assessment=excerpt,
+        inflation_pairs = []
+        inflation_sentences = re.findall(r'(?:Global|Worldwide|World) (?:headline |consumer )?inflation[^!?]*?(?:\.(?=\s+[A-Z])|$)', plain, re.I)
+        for sentence in inflation_sentences:
+            inflation_pairs.extend(re.findall(r'(\d+(?:\.\d+)?)\s*(?:percent|%)\s*(?:for|in)\s*(20\d{2})', sentence, re.I))
+        inflation_summary = 'A current numerical global inflation forecast could not be extracted from this IMF release.'
+        if 'global disinflation has stalled' in plain.lower():
+            inflation_summary = 'The IMF reports that the decline in the pace of global price rises has paused. This does not mean prices are falling.'
+        if inflation_pairs:
+            inflation_summary += ' IMF consumer-price forecast: ' + '; '.join(
+                value + '% in ' + year for value, year in inflation_pairs) + '.'
+        inflation_summary += ' Consumer inflation is not a measure of healthcare costs.'
+        # Use fresh publisher passages rather than a fixed list of economic themes.
+        passages = []
+        for block in re.findall(r'<(?:li|p)\b[^>]*>((?:(?!<(?:li|ul|ol)\b).)*?)</(?:li|p)>', article, re.S | re.I):
+            text = ' '.join(html.unescape(re.sub(r'<[^>]+>', ' ', block)).split())
+            if text and len(text.split()) >= 4:
+                passages.append(text)
+        def brief(pattern):
+            match = next((text for text in passages if re.search(pattern, text, re.I)), None)
+            if not match:
+                return 'Not identified in the latest release; see the source for the full assessment.'
+            words = match.split()
+            return '“' + ' '.join(words[:12]) + ('…' if len(words) > 12 else '') + '”'
+        driver_excerpt = brief(r'AI-driven demand|tailwinds|growth drivers|drivers of growth|support(?:ing|s) growth|lift(?:ing|s)')
+        risk_excerpt = brief(r'downside risks|risks.*persist|risks.*include|risks.*remain|risk.*outlook')
+        overview = (f'The IMF expects global growth of {a}% in {y} and {b}% in {z}. '
+                    + 'Growth drivers (IMF excerpt): ' + driver_excerpt
+                    + ' Risks (IMF excerpt): ' + risk_excerpt)
+        return dict(growth_value=float(a), growth_year=y,
+                    inflation_value=float(inflation_pairs[0][0]) if inflation_pairs else None,
+                    inflation_year=inflation_pairs[0][1] if inflation_pairs else None,
+                    overview=overview, inflation_summary=inflation_summary, status='live', assessment=excerpt,
                     summary=f'The IMF forecasts world economic output to grow by {a}% in {y} and {b}% in {z}. These projections may change as economic conditions evolve.',
                     source_url=url, published=dates[0].replace('/', '-'), retrieved=date.today().isoformat())
     except Exception as exc:
@@ -1256,19 +1260,19 @@ def template_view(payload):
         context, metrics = region['context'], region['metrics']
         benchmark = payload['fda_benchmark']
         # The FDA benchmark is explicitly US-specific in every region view.
-        # Dated IMF disclosure snapshot; update when a new WEO release is verified.
-        economic_background = [
-            dict(label='Global economic growth', value=3.0, unit='%', period='2026 forecast · IMF July 2026',
-                 as_of='2026-07-08', source=None, geography='',
-                 methodology='Expected growth in world economic output.', reason=''),
-            dict(label='Global consumer inflation', value=4.7, unit='%', period='2026 forecast · IMF July 2026',
-                 as_of='2026-07-08', source=None, geography='',
-                 methodology='Expected rise in consumer prices worldwide; not healthcare-cost inflation.', reason=''),
-        ]
         outlook = payload.get('economic_outlook', {})
+        live = outlook.get('status') == 'live'
+        economic_background = [
+            dict(label='Global economic growth', value=outlook.get('growth_value') if live else None,
+                 unit='%', period=(outlook.get('growth_year', '') + ' forecast · IMF') if live else 'Not available',
+                 as_of=outlook.get('published'), source=None, geography='', methodology='', reason=''),
+            dict(label='Global consumer inflation', value=outlook.get('inflation_value') if live else None,
+                 unit='%', period=(outlook['inflation_year'] + ' forecast · IMF')
+                     if live and outlook.get('inflation_year') else 'Not available',
+                 as_of=outlook.get('published'), source=None, geography='', methodology='', reason=''),
+        ]
         economic_background[0]['methodology'] = (
-            ('IMF assessment: “' + outlook.get('assessment', '') + '” ' if outlook.get('status') == 'live' else '')
-            + outlook.get('summary', 'The latest IMF growth outlook is unavailable.'))
+            outlook.get('summary', 'The latest IMF growth outlook is unavailable.'))
         economic_background[1]['methodology'] = outlook.get(
             'inflation_summary', 'The latest IMF inflation assessment is unavailable.')
         if outlook.get('status') == 'live':
