@@ -62,8 +62,8 @@
 
         <!-- Top Macro Indicators Ticker (Dynamic) -->
         <section class="card" aria-labelledby="ai-context-title" style="margin-bottom: 20px;">
-            <h2 id="ai-context-title">Financial and Operational Context</h2>
-            <div class="ticker-banner">
+            <h2 id="ai-context-title">Financial Context</h2>
+            <div class="ticker-banner" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
                 <div class="ticker-card">
                     <div class="metric-label" id="ticker1-label">Central Bank Policy</div>
                     <div class="metric" id="ticker1-val"><!-- POLICY_RATE_PLACEHOLDER --></div>
@@ -75,24 +75,6 @@
                     <div class="metric" id="ticker2-val"><!-- HEALTHCARE_INFLATION_PLACEHOLDER --></div>
                     <div class="metric-sub" id="ticker2-sub"><!-- HEALTHCARE_INFLATION_BASIS_PLACEHOLDER --></div>
                     <p class="metric-desc" id="ticker2-desc">Measures operational expenditure pressure, pushing trusts to seek AI efficiency gains.</p>
-                </div>
-                <div class="ticker-card">
-                    <div class="metric-label" id="ticker3-label">MedTech Index <!-- MEDTECH_INDEX_NAME_PLACEHOLDER --></div>
-                    <div class="metric" id="ticker3-val"><!-- MEDTECH_INDEX_PLACEHOLDER --></div>
-                    <div class="metric-sub" id="ticker3-sub">Sector Benchmark</div>
-                    <p class="metric-desc" id="ticker3-desc">Reflects healthcare sector equity valuations and broader investment appetite.</p>
-                </div>
-                <div class="ticker-card">
-                    <div class="metric-label" id="ticker4-label">Imaging Demand Backlog</div>
-                    <div class="metric" id="ticker4-val"><!-- IMAGING_DEMAND_BACKLOG_PLACEHOLDER --></div>
-                    <div class="metric-sub" id="ticker4-sub"><!-- IMAGING_BACKLOG_BASIS_PLACEHOLDER --></div>
-                    <p class="metric-desc" id="ticker4-desc"><!-- IMAGING_BACKLOG_DESCRIPTION_PLACEHOLDER --></p>
-                </div>
-                <div class="ticker-card">
-                    <div class="metric-label" id="ticker5-label">Cloud Inference Index</div>
-                    <div class="metric" id="ticker5-val"><!-- CLOUD_INFERENCE_INDEX_PLACEHOLDER --></div>
-                    <div class="metric-sub" id="ticker5-sub">Compute Cost YoY</div>
-                    <p class="metric-desc" id="ticker5-desc"><!-- CLOUD_INFERENCE_ANALYSIS_PLACEHOLDER --></p>
                 </div>
             </div>
         </section>
@@ -157,6 +139,12 @@
                         <div class="metric"><!-- PROSPECTIVE_CLINICAL_VALIDATION_YTD_PLACEHOLDER --></div>
                         <div class="metric-sub">Peer-Reviewed Papers YTD</div>
                         <p class="metric-desc">Quantifies real-world clinical evidence publications needed to convince hospital procurement committees.</p>
+                    </div>
+                    <div class="card col-3">
+                        <div class="metric-label">US FDA-listed Radiology AI Authorisations — Annual Change</div>
+                        <div class="metric">Not available</div>
+                        <div class="metric-sub">Complete calendar years</div>
+                        <p class="metric-desc">Change in listed US regulatory activity; not global adoption.</p>
                     </div>
                 </div>
             </section>
