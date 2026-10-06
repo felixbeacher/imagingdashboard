@@ -789,6 +789,47 @@ def ai_coverage_report(payload):
     }
 
 
+def fetch_economic_outlook(offline=False):
+    """Retrieve the latest dated IMF WEO assessment and its growth projections."""
+    unavailable = dict(summary='The latest IMF economic outlook could not be retrieved. Please check again after the next data update.', status='unavailable')
+    if offline:
+        return unavailable
+    try:
+        def imf_read(url):
+            with urllib.request.urlopen(url, timeout=8) as response:
+                content = response.read(2_000_001)
+            if len(content) > 2_000_000:
+                raise ValueError('IMF response exceeded size limit')
+            return content.decode('utf-8')
+        landing = imf_read('https://www.imf.org/en/Publications/WEO')
+        candidates = re.findall(r'https://www\.imf\.org/en/publications/weo/issues/(\d{4}/\d{2}/\d{2})/[^"<>\s]+', landing, re.I)
+        dates = sorted({d for d in candidates if d.replace('/', '-') <= date.today().isoformat()}, reverse=True)
+        if not dates:
+            raise ValueError('No dated IMF outlook found')
+        pattern = r'https://www\.imf\.org/en/publications/weo/issues/' + dates[0] + r'/[^"<>\s]+'
+        url = html.unescape(re.search(pattern, landing, re.I).group(0))
+        article = imf_read(url)
+        description = re.search(r'<meta\s+name="description"\s+content="([^"]+)"', article, re.I)
+        if not description:
+            raise ValueError('IMF assessment missing')
+        assessment = ' '.join(html.unescape(description.group(1)).split())
+        # Keep the publisher excerpt short; forecast wording is generated from values.
+        words = assessment.split()
+        excerpt = ' '.join(words[:20]) + ('…' if len(words) > 20 else '')
+        plain = html.unescape(re.sub(r'<[^>]+>', ' ', article))
+        plain = re.sub(r'\s+', ' ', plain)
+        forecast = re.search(r'Global growth is projected (?:at|to be) (\d+(?:\.\d+)?) percent (?:for|in) (20\d{2}) and (\d+(?:\.\d+)?) percent (?:for|in) (20\d{2})', plain, re.I)
+        if not forecast:
+            raise ValueError('Comparable forward growth projections missing')
+        a,y,b,z = forecast.groups()
+        return dict(status='live', assessment=excerpt,
+                    summary=f'The IMF forecasts world economic output to grow by {a}% in {y} and {b}% in {z}. These projections may change as economic conditions evolve.',
+                    source_url=url, published=dates[0].replace('/', '-'), retrieved=date.today().isoformat())
+    except Exception as exc:
+        logging.warning('IMF economic outlook unavailable: %s', exc)
+        return unavailable
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
@@ -878,6 +919,7 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                     'ignoring letter case and repeated whitespace. Subsidiaries and other name '
                     'variations may be counted separately. Not a count of corporate groups or global suppliers.',
                 reason='')
+    payload['economic_outlook'] = fetch_economic_outlook(offline)
     payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
         logging.warning('Data validation: %s', error)
@@ -1046,7 +1088,7 @@ function update(regionKey){
  const r=payload.regions[key];document.getElementById('regionSelect').value=key;
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
  const available=r.metrics.filter(m=>m.value!==null).length;
- text('outlook-title',r.name+' Outlook');
+ text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
  text('outlook-badge',available+' / '+r.metrics.length+' metric cards populated');
  text('outlook-summary-text','Page built '+payload.generated_at.slice(0,10)+'.');
  const factors={"global":{"drivers":["Clinical capacity: interpretation and triage support can help teams manage imaging workloads.","Workflow efficiency: automation of repetitive tasks can reduce manual effort.","Access to expertise: decision support can extend specialist input where resources are limited.","Clinical evidence: validation in the intended care setting can strengthen confidence in adoption."],"headwinds":["Evidence requirements: performance must be validated across relevant patients and clinical settings.","Integration costs: deployment requires compatible imaging systems, staff training, and ongoing support.","Commercial viability: providers need a clear purchasing model and evidence of value.","Trust and governance: bias, cybersecurity, privacy, and accountability need sustained attention."]},"northAmerica":{"drivers":["Clinical productivity: interpretation and triage tools can support busy imaging services.","Workflow integration: existing digital imaging systems offer a route for introducing AI tools.","Clinical partnerships: provider-led evaluation can establish usefulness in routine care.","Commercial value: measurable time savings and service improvements can support purchasing decisions."],"headwinds":["Payment arrangements: a workable reimbursement or provider-funded model is needed.","Regulatory requirements: US and Canadian market-access requirements must be addressed separately.","Implementation costs: integration, training, and monitoring add to the purchase price.","Clinical trust: local validation and clear responsibility for decisions remain essential."]},"europe":{"drivers":["Service capacity: workflow support can help health services use available staff and imaging resources.","Clinical collaboration: evaluation with hospitals can establish relevance to local care pathways.","Digital infrastructure: interoperable imaging systems can support deployment across care settings.","Procurement evidence: demonstrated clinical and operational value can strengthen purchasing cases."],"headwinds":["Regulatory compliance: EU medical-device and AI requirements need coordinated planning.","Market fragmentation: procurement and funding differ between countries and healthcare systems.","Data governance: privacy and lawful health-data use constrain implementation choices.","Evidence and integration: local validation, staff training, and system compatibility require investment."]},"asia":{"drivers":["Clinical capacity: interpretation support can help services address workforce and resource constraints.","Access to expertise: AI-assisted workflows may extend specialist support to underserved settings.","Digital development: investment in health information systems can enable implementation.","Local evaluation: partnerships with providers can adapt tools to patients and workflows."],"headwinds":["Uneven infrastructure: connectivity and system readiness vary between care settings.","Country-specific requirements: regulatory and procurement routes differ across markets.","Data representativeness: tools need validation for local populations and clinical practice.","Affordability and skills: purchasing budgets, training, and ongoing support affect adoption."]},"middleEast":{"drivers":["Digital-health investment: smart-health initiatives create opportunities to evaluate imaging AI.","Infrastructure development: connected hospital systems can support implementation.","Clinical efficiency: interpretation and workflow support can improve use of available resources.","Provider partnerships: local evaluation can demonstrate clinical and operational value."],"headwinds":["Country-specific access: regulation and purchasing requirements vary across the region.","Data governance: cybersecurity, privacy, and permitted data sharing require careful planning.","Implementation capability: integration and workforce training are necessary for routine use.","Sustainable value: buyers need evidence that benefits justify ongoing costs."]},"southAmerica":{"drivers":["Clinical capacity: workflow support can help providers make better use of imaging resources.","Access to expertise: decision support may extend specialist input to underserved settings.","Digital transformation: stronger health information systems can support AI deployment.","Provider evaluation: local partnerships can demonstrate usefulness and guide implementation."],"headwinds":["Affordability: budgets and ongoing support costs can constrain purchasing.","Infrastructure gaps: connectivity and interoperability affect reliable deployment.","National requirements: regulatory, privacy, and procurement arrangements vary by country.","Clinical readiness: local validation, staff training, and monitoring require investment."]}};
@@ -1222,6 +1264,13 @@ def render_dashboard(template, payload):
     if '<!-- DASHBOARD_DATA_PLACEHOLDER -->' in template:
         return _render_data_template(template, payload)
     template = re.sub(r'<script[^>]*id="dashboard-data"[^>]*>.*?</script>', '', template, flags=re.S)
+    outlook = payload.get('economic_outlook', {})
+    summary = '<p class="metric-desc">' + html.escape(outlook.get('summary', 'Economic outlook unavailable.')) + '</p>'
+    if outlook.get('status') == 'live':
+        summary = '<p class="metric-desc">IMF assessment: “' + html.escape(outlook['assessment']) + '” ' + html.escape(outlook['summary']) + '</p>'
+        summary += '<p class="metric-desc"><a href="' + html.escape(outlook['source_url'], quote=True) + '" target="_blank" rel="noopener">IMF World Economic Outlook</a> · Published ' + html.escape(outlook['published']) + ' · Retrieved ' + html.escape(outlook['retrieved']) + '</p>'
+    template = re.sub(r'<div id="economic-outlook-summary">.*?</div>', '', template, flags=re.S)
+    template = template.replace('<h2 id="ai-context-title">Global Economic Background</h2>', '<h2 id="ai-context-title">Global Economic Background</h2>\n<div id="economic-outlook-summary">' + summary + '</div>')
     rendered = render_template(template, template_view(payload))
     # Keep the canonical payload available to the workflow's validation/summary.
     data = '<script id="dashboard-data" type="application/json">' + safe_json(payload) + '</script>'
