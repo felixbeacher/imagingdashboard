@@ -376,7 +376,7 @@ def fda_benchmark(source, classifications, errors):
         metric.update(meta, value=sum(x['date'].startswith(year) for x in rows), reason='')
         series.update(meta, points=annual_points(rows), reason='')
         series['period'] = 'Ten complete calendar years plus the current year to date; YTD is not comparable to a full year'
-        series['methodology'] += ' Zero means no listed entries in that covered year or YTD period; null means coverage cannot be established. The current-year point is partial and may lag today's date.'
+        series['methodology'] += ' Zero means no listed entries in that covered year or YTD period; null means coverage cannot be established. The current-year point is partial and may lag the current date.'
         if not isinstance(classifications, dict):
             errors.append('fda_classifications must be an object keyed by submission number.')
             classifications = {}
