@@ -879,7 +879,8 @@ def regional_economic_background(offline=False):
                     logging.warning('IMF regional %s unavailable: %s', code, exc)
                     data[code] = {}
     result = {}
-    for key, countries in COUNTRY_SAMPLES.items():
+    economic_samples = {'global': [('WEOWORLD', 'World')] , **COUNTRY_SAMPLES}
+    for key, countries in economic_samples.items():
         name = REGIONS[key]
         cards = []
         summaries = []
@@ -894,20 +895,21 @@ def regional_economic_background(offline=False):
                 values[current] = round(statistics.median(valid), 2) if len(valid) == len(countries) else None
                 details.append(str(current) + ': ' + (str(values[current]) + '%'
                                if values[current] is not None else 'unavailable'))
-            description = ('IMF WEO country-sample median for ' + name + '. '
-                           + '; '.join(details) + '. Unweighted median, not a regional aggregate. '
-                           + 'Countries: ' + ', '.join(n for _, n in countries) + '. '
+            description = ('IMF WEO world aggregate. ' if key == 'global' else 'IMF WEO country-sample median for ' + name + '. ')
+            description += (
+                           '; '.join(details) + ('. IMF-published world aggregate. ' if key == 'global' else '. Unweighted median, not a regional aggregate. ')
+                           + 'Coverage: ' + ', '.join(n for _, n in countries) + '. '
                            + 'Current-year estimates and forward projections may be revised.')
             source = {'name': 'IMF WEO / DataMapper', 'url':
                       'https://www.imf.org/external/datamapper/' + code + '@WEO/'
                       + '/'.join(country for country, _ in countries)}
-            cards.append(dict(label=name + ' ' + label.lower() + ' (country-sample median)',
+            cards.append(dict(label=name + ' ' + label.lower() + ('' if key == 'global' else ' (country-sample median)'),
                               value=values[year], unit='%', period=str(year) + ' · IMF WEO',
                               as_of=date.today().isoformat(), source=source, geography='',
                               methodology=description, reason=''))
             summaries.append(label + ' — ' + '; '.join(details) + '.')
-        result[key] = dict(cards=cards, overview=name + ' economic outlook for the selected country sample: '
-            + ' '.join(summaries) + ' These are unweighted country medians, not an IMF regional aggregate. '
+        result[key] = dict(cards=cards, overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
+            + ' '.join(summaries) + (' These are IMF-published world aggregates. ' if key == 'global' else ' These are unweighted country medians, not an IMF regional aggregate. ')
             + 'The source provides estimates and projections; regional risk and driver commentary is not supplied by this numerical feed.',
             source=cards[0]['source'], retrieved=date.today().isoformat())
     return result
@@ -1338,7 +1340,7 @@ def template_view(payload):
                 observation['methodology'] += (' IMF outlook published ' + outlook['published']
                                                + '; retrieved ' + outlook['retrieved'] + '.')
         regional_economy = payload.get('regional_economics', {}).get(key)
-        if key != 'global':
+        if key != 'global' or regional_economy:
             if regional_economy:
                 economic_background = regional_economy['cards']
             else:
@@ -1389,12 +1391,11 @@ def template_view(payload):
             rateSource=None, news=[])
         regions[key]['economicTitle'] = region['name'] + ' Economic Background'
         if key == 'global':
-            regions[key]['economicOverview'] = outlook.get('overview', outlook.get('summary', 'Global economic outlook unavailable.'))
-            regions[key]['economicSource'] = dict(name='IMF World Economic Outlook',
-                url=outlook.get('source_url', 'https://www.imf.org/en/Publications/WEO'))
-            regions[key]['economicDate'] = ('Published ' + outlook.get('published', 'unavailable')
-                + ' · Retrieved ' + outlook.get('retrieved', 'unavailable'))
-            regions[key]['economicScope'] = 'Worldwide IMF outlook; figures refresh during each dashboard update.'
+            regions[key]['economicOverview'] = (regional_economy or {}).get('overview',
+                'The IMF world economic data could not be retrieved; no fixed figures are substituted.')
+            regions[key]['economicSource'] = (regional_economy or {}).get('source')
+            regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
+            regions[key]['economicScope'] = 'IMF WEO world aggregates; figures refresh during each dashboard update. Database estimates and forecasts may differ from separately published outlook articles.'
         else:
             regions[key]['economicOverview'] = (regional_economy or {}).get('overview',
                 'Economic data for ' + region['name'] + ' are unavailable; global data are not substituted.')
