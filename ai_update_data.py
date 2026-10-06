@@ -915,6 +915,77 @@ def regional_economic_background(offline=False):
     return result
 
 
+def clinical_evidence_feed(offline=False):
+    """Recent PubMed-indexed imaging-AI clinical research, not a quality ranking."""
+    today = date.today()
+    start = date(today.year - 2, today.month, min(today.day, 28))
+    query = ('("artificial intelligence"[Title/Abstract] OR "deep learning"[Title/Abstract] '
+             'OR "machine learning"[Title/Abstract]) AND '
+             '(radiology[Title/Abstract] OR mammography[Title/Abstract] OR '
+             '"computed tomography"[Title/Abstract] OR "magnetic resonance"[Title/Abstract] OR '
+             '"chest radiograph"[Title/Abstract] OR "chest x-ray"[Title/Abstract] OR '
+             '"positron emission"[Title/Abstract] OR ultrasound[Title/Abstract]) AND '
+             '("Clinical Trial"[Publication Type] OR "Observational Study"[Publication Type] OR '
+             '(prospective[Title/Abstract] AND (patients[Title/Abstract] OR participants[Title/Abstract] '
+             'OR screening[Title/Abstract]))) NOT (review[Publication Type] OR protocol[Title])')
+    result = dict(items=[], retrieved=today.isoformat(), query=query,
+                  status='unavailable', reason='The PubMed evidence feed could not be retrieved.')
+    if offline:
+        result['reason'] = 'The PubMed evidence feed is unavailable in offline mode.'
+        return result
+    try:
+        base = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+        params = dict(db='pubmed', term=query, retmode='json', retmax=20, sort='pub date',
+                      datetype='pdat', mindate=start.strftime('%Y/%m/%d'), maxdate=today.strftime('%Y/%m/%d'))
+        ids = public_json(base + 'esearch.fcgi?' + urllib.parse.urlencode(params))['esearchresult']['idlist']
+        if not isinstance(ids, list) or any(not str(x).isdigit() for x in ids):
+            raise ValueError('Invalid PubMed identifiers')
+        if ids:
+            tree = ET.fromstring(read_url(base + 'efetch.fcgi?' + urllib.parse.urlencode(
+                dict(db='pubmed', id=','.join(ids), retmode='xml'))))
+            for article in tree.findall('PubmedArticle'):
+                def content(path):
+                    node = article.find(path)
+                    return ' '.join(''.join(node.itertext()).split()) if node is not None else ''
+                pmid = content('./MedlineCitation/PMID')
+                title = content('.//ArticleTitle')
+                if not pmid.isdigit() or not title or re.search(r'review|meta-analysis|protocol', title, re.I):
+                    continue
+                abstracts = article.findall('.//AbstractText')
+                results = next((node for node in abstracts if
+                    node.get('NlmCategory') == 'RESULTS' or node.get('Label', '').upper() == 'RESULTS'), None)
+                excerpt = ''
+                if results is not None:
+                    words = ' '.join(results.itertext()).split()
+                    excerpt = ' '.join(words[:20]) + ('…' if len(words) > 20 else '')
+                types = [node.text for node in article.findall('.//PublicationType') if node.text]
+                design = next((kind for kind in types if kind in (
+                    'Randomized Controlled Trial', 'Clinical Trial', 'Observational Study')), 'Clinical research; design not classified by this feed')
+                pubdate = article.find('.//JournalIssue/PubDate')
+                electronic = article.find('.//ArticleDate[@DateType="Electronic"]')
+                date_text = ''
+                if electronic is not None:
+                    try:
+                        published = date(int(electronic.findtext('Year')), int(electronic.findtext('Month')),
+                                         int(electronic.findtext('Day')))
+                        if not start <= published <= today:
+                            continue
+                        date_text = published.isoformat() + ' (online)'
+                    except (ValueError, TypeError):
+                        pass
+                if not date_text:
+                    date_text = 'Journal issue: ' + (' '.join(pubdate.itertext()).strip()
+                        if pubdate is not None else 'date unavailable')
+                result['items'].append(dict(title=title, url='https://pubmed.ncbi.nlm.nih.gov/' + pmid + '/',
+                    journal=content('.//Journal/Title'), published=date_text, design=design, excerpt=excerpt))
+        result['items'].sort(key=lambda item: item['published'] if '(online)' in item['published'] else '', reverse=True)
+        result['items'] = result['items'][:4]
+        result.update(status='live', reason='No matching recent studies found.' if not result['items'] else '')
+    except Exception as exc:
+        logging.warning('PubMed clinical evidence unavailable: %s', exc)
+    return result
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
@@ -1006,6 +1077,7 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                 reason='')
     payload['registry_chart'] = {key: copy.deepcopy(block['metrics'].get('prospective_studies', {'value': None}))
                                  for key, block in automatic.items()}
+    payload['clinical_evidence'] = clinical_evidence_feed(offline)
     payload['economic_outlook'] = fetch_economic_outlook(offline)
     payload['regional_economics'] = regional_economic_background(offline)
     payload['fda_benchmark']['company_count'] = company_count
@@ -1191,6 +1263,15 @@ function update(regionKey){
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
  plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
+ const evidence=document.getElementById('clinical-evidence-feed');
+ if(evidence){evidence.replaceChildren();const clinical=payload.clinicalEvidence||{};
+ const intro=add(evidence,'p','Recent PubMed-indexed clinical research from the past two years, ordered by publication date. This worldwide feed is shared across region views; it is not a systematic review or evidence-quality ranking.');intro.className='metric-desc';
+ if(!(clinical.items||[]).length){add(evidence,'p',clinical.reason||'Clinical evidence feed unavailable.');}
+ (clinical.items||[]).forEach(study=>{const article=add(evidence,'article');article.style.marginTop='16px';const heading=add(article,'h3');heading.style.fontSize='0.95rem';const link=add(heading,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
+ const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
+ const result=add(article,'p',study.excerpt?'Results excerpt: “'+study.excerpt+'”':'Read the linked paper for findings; this feed does not infer results from the title.');result.className='metric-desc';});
+ const note=add(evidence,'p','PubMed / NLM · '+(clinical.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(clinical.retrieved||'date unavailable')+'. Short excerpts may omit essential context. Read the full methods and results before applying findings; publication alone does not establish clinical benefit.');note.className='metric-desc';note.style.marginTop='16px';
+ }
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
  feed.closest('.card').querySelector('h2').textContent=key==='global'?'Latest Industry Headlines':r.name+' — Industry Headlines';
  add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Imaging-AI headlines explicitly mentioning '+r.name+' or countries and institutions associated with this view; title matching may miss relevant stories.');
@@ -1455,7 +1536,7 @@ def template_view(payload):
                  values=[registry.get(key, {}).get('value') for key in labels],
                  note=note, source=chart_source)
     return dict(generated_at=payload['generated_at'], regions=regions, sources=sources,
-                registryChart=chart)
+                registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}))
 
 
 def render_dashboard(template, payload):
