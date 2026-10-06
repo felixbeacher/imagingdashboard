@@ -915,7 +915,7 @@ def regional_economic_background(offline=False):
     return result
 
 
-def clinical_evidence_feed(offline=False):
+def clinical_evidence_feed(offline=False, extra_filter=None):
     """Recent PubMed-indexed imaging-AI clinical research, not a quality ranking."""
     today = date.today()
     start = date(today.year - 2, today.month, min(today.day, 28))
@@ -928,6 +928,8 @@ def clinical_evidence_feed(offline=False):
              '("Clinical Trial"[Publication Type] OR "Observational Study"[Publication Type] OR '
              '(prospective[Title/Abstract] AND (patients[Title/Abstract] OR participants[Title/Abstract] '
              'OR screening[Title/Abstract]))) NOT (review[Publication Type] OR protocol[Title])')
+    if extra_filter:
+        query += ' AND (' + extra_filter + ')'
     result = dict(items=[], retrieved=today.isoformat(), query=query,
                   status='unavailable', reason='The PubMed evidence feed could not be retrieved.')
     if offline:
@@ -950,6 +952,9 @@ def clinical_evidence_feed(offline=False):
                 pmid = content('./MedlineCitation/PMID')
                 title = content('.//ArticleTitle')
                 if not pmid.isdigit() or not title or re.search(r'review|meta-analysis|protocol', title, re.I):
+                    continue
+                if extra_filter and not re.search(
+                    r'radiolog|mammograph|radiograph|tomograph|ultrasound|sonograph|magnetic resonance|\\bMRI\\b|\\bCT\\b|X-ray|x ray|imaging', title, re.I):
                     continue
                 abstracts = article.findall('.//AbstractText')
                 results = next((node for node in abstracts if
@@ -1078,6 +1083,12 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     payload['registry_chart'] = {key: copy.deepcopy(block['metrics'].get('prospective_studies', {'value': None}))
                                  for key, block in automatic.items()}
     payload['clinical_evidence'] = clinical_evidence_feed(offline)
+    payload['deployment_evidence'] = clinical_evidence_feed(offline, extra_filter=
+        'implementation[Title/Abstract] OR deployment[Title/Abstract] OR adoption[Title/Abstract] '
+        'OR "real-world"[Title/Abstract] OR "routine clinical"[Title/Abstract]')
+    clinical_links = {item['url'] for item in payload['clinical_evidence'].get('items', [])}
+    payload['deployment_evidence']['items'] = [item for item in payload['deployment_evidence'].get('items', [])
+        if item['url'] not in clinical_links][:2]
     payload['economic_outlook'] = fetch_economic_outlook(offline)
     payload['regional_economics'] = regional_economic_background(offline)
     payload['fda_benchmark']['company_count'] = company_count
@@ -1263,6 +1274,15 @@ function update(regionKey){
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
  plot('approvalsChart',payload.registryChart.title,payload.registryChart.labels,payload.registryChart.values,payload.registryChart.note,payload.registryChart.source);
+ const deployment=document.getElementById('deployment-evidence-feed');
+ if(deployment){deployment.replaceChildren();const feed=payload.deploymentEvidence||{};
+ const heading=add(deployment,'h3','Recent Implementation Research');heading.style.fontSize='0.95rem';
+ if(!(feed.items||[]).length){const message=add(deployment,'p',feed.status==='live'?'No additional recent implementation papers matched this query. Relevant papers may appear in Clinical Evidence above.':feed.reason||'Implementation research feed unavailable.');message.className='metric-desc';}
+ (feed.items||[]).forEach(study=>{const article=add(deployment,'article');article.style.marginTop='12px';const link=add(article,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
+ const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
+ if(study.excerpt){const result=add(article,'p','Reported results excerpt: “'+study.excerpt+'”');result.className='metric-desc';}});
+ const note=add(deployment,'p','PubMed / NLM · '+(feed.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(feed.retrieved||'date unavailable')+'. Worldwide implementation research from the past two years; shared across regional views. Publication does not establish routine deployment or a regional adoption rate.');note.className='metric-desc';
+ }
  const evidence=document.getElementById('clinical-evidence-feed');
  if(evidence){evidence.replaceChildren();const clinical=payload.clinicalEvidence||{};
  const intro=add(evidence,'p','Recent PubMed-indexed clinical research from the past two years, ordered by publication date. This worldwide feed is shared across region views; it is not a systematic review or evidence-quality ranking.');intro.className='metric-desc';
@@ -1536,7 +1556,8 @@ def template_view(payload):
                  values=[registry.get(key, {}).get('value') for key in labels],
                  note=note, source=chart_source)
     return dict(generated_at=payload['generated_at'], regions=regions, sources=sources,
-                registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}))
+                registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}),
+                deploymentEvidence=payload.get('deployment_evidence', {}))
 
 
 def render_dashboard(template, payload):
