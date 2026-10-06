@@ -1040,7 +1040,6 @@ function update(regionKey){
  showFactors('ai-headwinds',analysis.headwinds);
  text('highlights-title','Regional Coverage Notes');text('ai-highlights',r.summary);
  plot('approvalsChart',r.approvalTitle,r.years,r.approvals,r.approvalNote,r.approvalSource);
- plot('macroChart',r.rateTitle,r.months,r.rateValues,r.rateNote,r.rateSource);
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
  add(feed,'p',key==='global'?'Selected imaging-AI headlines from global feeds; not comprehensive market coverage.':'Global imaging-AI headlines; this feed does not change with the region selector.');
  if(!r.news.length)add(feed,'p','No headlines available from the configured feeds. This does not mean no developments occurred.');
