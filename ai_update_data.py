@@ -861,6 +861,58 @@ def fetch_economic_outlook(offline=False):
         return unavailable
 
 
+def regional_economic_background(offline=False):
+    """Country-sample medians, never labelled as IMF regional aggregates."""
+    year = date.today().year
+    data = {}
+    if not offline:
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = {code: executor.submit(public_json,
+                'https://www.imf.org/external/datamapper/api/v1/' + code)
+                for code in ('NGDP_RPCH', 'PCPIPCH')}
+            for code, future in futures.items():
+                try:
+                    data[code] = future.result()['values'][code]
+                    if not isinstance(data[code], dict):
+                        raise ValueError('Invalid IMF indicator series')
+                except Exception as exc:
+                    logging.warning('IMF regional %s unavailable: %s', code, exc)
+                    data[code] = {}
+    result = {}
+    for key, countries in COUNTRY_SAMPLES.items():
+        name = REGIONS[key]
+        cards = []
+        summaries = []
+        for code, label in [('NGDP_RPCH', 'Economic growth'), ('PCPIPCH', 'Consumer inflation')]:
+            values = {}
+            details = []
+            for current in range(year, year + 3):
+                observations = [(country, data.get(code, {}).get(country, {}).get(str(current)))
+                                for country, _ in countries]
+                valid = [value for _, value in observations if finite_number(value)]
+                # A missing country must not silently change the defined sample.
+                values[current] = round(statistics.median(valid), 2) if len(valid) == len(countries) else None
+                details.append(str(current) + ': ' + (str(values[current]) + '%'
+                               if values[current] is not None else 'unavailable'))
+            description = ('IMF WEO country-sample median for ' + name + '. '
+                           + '; '.join(details) + '. Unweighted median, not a regional aggregate. '
+                           + 'Countries: ' + ', '.join(n for _, n in countries) + '. '
+                           + 'Current-year estimates and forward projections may be revised.')
+            source = {'name': 'IMF WEO / DataMapper', 'url':
+                      'https://www.imf.org/external/datamapper/' + code + '@WEO/'
+                      + '/'.join(country for country, _ in countries)}
+            cards.append(dict(label=name + ' ' + label.lower() + ' (country-sample median)',
+                              value=values[year], unit='%', period=str(year) + ' · IMF WEO',
+                              as_of=date.today().isoformat(), source=source, geography='',
+                              methodology=description, reason=''))
+            summaries.append(label + ' — ' + '; '.join(details) + '.')
+        result[key] = dict(cards=cards, overview=name + ' economic outlook for the selected country sample: '
+            + ' '.join(summaries) + ' These are unweighted country medians, not an IMF regional aggregate. '
+            + 'The source provides estimates and projections; regional risk and driver commentary is not supplied by this numerical feed.',
+            source=cards[0]['source'], retrieved=date.today().isoformat())
+    return result
+
+
 def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_source=None, news_source=None):
     errors = []
     curated = load_curated(data_path, errors)
@@ -953,6 +1005,7 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     payload['registry_chart'] = {key: copy.deepcopy(block['metrics'].get('prospective_studies', {'value': None}))
                                  for key, block in automatic.items()}
     payload['economic_outlook'] = fetch_economic_outlook(offline)
+    payload['regional_economics'] = regional_economic_background(offline)
     payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
         logging.warning('Data validation: %s', error)
@@ -1120,6 +1173,11 @@ function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
  const r=payload.regions[key];document.getElementById('regionSelect').value=key;
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
+ text('ai-context-title',r.economicTitle);
+ const economic=document.getElementById('economic-outlook-summary');
+ if(economic){economic.replaceChildren();const summary=add(economic,'p',r.economicOverview);summary.className='metric-desc';
+ if(r.economicSource){const attribution=add(economic,'p');attribution.className='metric-desc';const link=add(attribution,'a',r.economicSource.name);link.href=r.economicSource.url;link.target='_blank';link.rel='noopener noreferrer';add(attribution,'span',' · '+r.economicDate);}}
+ text('economic-scope-note',r.economicScope);
  const available=r.metrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
  text('outlook-badge',available+' / '+r.metrics.length+' metric cards populated');
@@ -1279,6 +1337,18 @@ def template_view(payload):
             for observation in economic_background:
                 observation['methodology'] += (' IMF outlook published ' + outlook['published']
                                                + '; retrieved ' + outlook['retrieved'] + '.')
+        regional_economy = payload.get('regional_economics', {}).get(key)
+        if key != 'global':
+            if regional_economy:
+                economic_background = regional_economy['cards']
+            else:
+                economic_background = [
+                    dict(label=region['name'] + ' economic growth', value=None, unit='%',
+                         period='Not available', as_of=None, source=None, geography='',
+                         methodology='Regional economic data could not be retrieved.', reason=''),
+                    dict(label=region['name'] + ' consumer inflation', value=None, unit='%',
+                         period='Not available', as_of=None, source=None, geography='',
+                         methodology='Regional economic data could not be retrieved.', reason='')]
         observations = [*economic_background, benchmark['metric'],
                         metrics['prospective_studies'], benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
@@ -1317,6 +1387,20 @@ def template_view(payload):
             rateTitle='Policy-rate trend — not available',
             rateNote='No comparable monthly regional policy-rate series is configured. The latest sourced rate is shown in the metric card.',
             rateSource=None, news=[])
+        regions[key]['economicTitle'] = region['name'] + ' Economic Background'
+        if key == 'global':
+            regions[key]['economicOverview'] = outlook.get('overview', outlook.get('summary', 'Global economic outlook unavailable.'))
+            regions[key]['economicSource'] = dict(name='IMF World Economic Outlook',
+                url=outlook.get('source_url', 'https://www.imf.org/en/Publications/WEO'))
+            regions[key]['economicDate'] = ('Published ' + outlook.get('published', 'unavailable')
+                + ' · Retrieved ' + outlook.get('retrieved', 'unavailable'))
+            regions[key]['economicScope'] = 'Worldwide IMF outlook; figures refresh during each dashboard update.'
+        else:
+            regions[key]['economicOverview'] = (regional_economy or {}).get('overview',
+                'Economic data for ' + region['name'] + ' are unavailable; global data are not substituted.')
+            regions[key]['economicSource'] = (regional_economy or {}).get('source')
+            regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
+            regions[key]['economicScope'] = 'Selected-country medians for ' + region['name'] + ', not regional totals or weighted averages.'
         for item in payload['news']:
             if not regional_news_match(item['title'], key):
                 continue
