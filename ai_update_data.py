@@ -339,6 +339,24 @@ def quarter_points(rows):
     return result
 
 
+def annual_points(rows):
+    """Ten complete calendar years plus the current year's listed decisions."""
+    current_year = date.today().year
+    cutoff = iso_date(max(row['date'] for row in rows))
+    earliest = iso_date(min(row['date'] for row in rows))
+    result = []
+    for year in range(current_year - 10, current_year + 1):
+        start = date(year, 1, 1)
+        is_ytd = year == current_year
+        end = min(cutoff, date.today()) if is_ytd else date(year, 12, 31)
+        covered = start >= earliest and end >= start and (is_ytd or end <= cutoff)
+        count = sum(start.isoformat() <= row['date'] <= end.isoformat() for row in rows) if covered else None
+        label = f'{year} YTD (through {end:%d %b})' if is_ytd and covered else (f'{year} YTD — unavailable' if is_ytd else str(year))
+        result.append(dict(start=start.isoformat(), end=end.isoformat() if end >= start else None,
+                           label=label, value=count))
+    return result
+
+
 def fda_benchmark(source, classifications, errors):
     metric = missing('US FDA-listed radiology AI authorisations', 'authorisations', source.get('reason', UNAVAILABLE))
     series = missing('US FDA-listed radiology AI authorisations', 'authorisations', source.get('reason', UNAVAILABLE))
@@ -356,9 +374,9 @@ def fda_benchmark(source, classifications, errors):
                 'as_of': cutoff, 'period': f'{year} YTD through {cutoff}',
                 'methodology': 'FDA AI list, Radiology lead panel, unique submission numbers. Includes AI-enabled hardware and software, and repeat submissions for product changes. List is non-comprehensive and periodically updated; latest decision date is a coverage marker, not a guaranteed reporting cutoff.'}
         metric.update(meta, value=sum(x['date'].startswith(year) for x in rows), reason='')
-        series.update(meta, points=quarter_points(rows), reason='')
-        series['period'] = 'Six quarters ending in the latest listed decision quarter; * = partial quarter'
-        series['methodology'] += ' Zero means no listed entries in that covered quarter; null means coverage cannot be established.'
+        series.update(meta, points=annual_points(rows), reason='')
+        series['period'] = 'Ten complete calendar years plus the current year to date; YTD is not comparable to a full year'
+        series['methodology'] += ' Zero means no listed entries in that covered year or YTD period; null means coverage cannot be established. The current-year point is partial and may lag today's date.'
         if not isinstance(classifications, dict):
             errors.append('fda_classifications must be an object keyed by submission number.')
             classifications = {}
