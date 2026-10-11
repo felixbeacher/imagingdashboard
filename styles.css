@@ -471,3 +471,6 @@ footer {
     .hero-banner p { font-size: 1rem; margin-bottom: 1.5rem; }
     .hero-stats-row { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Allow navigation to wrap with the Glob Econ tab. */
+.nav-tabs { flex-wrap: wrap; }

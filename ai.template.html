@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html lang="en-GB">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Medical Imaging AI</title>
+<!-- Browser Tab Icon (Favicon) -->
+<link href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E" rel="icon"/>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="styles.css" rel="stylesheet"/>
+<style id="ai-source-readability">
+.outlook-box .factor-list { grid-template-columns: minmax(0, 1fr); }
+#ai-drivers, #ai-headwinds { font-size: 0.9em; }
+.metric-desc a, #news-feed-container a, #ai-source-status a { color: #74c8ff; }
+.metric-desc, #ai-source-status { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<header>
+<div class="header-content">
+<div class="title-area">
+<h1>The Medical Imaging Dashboard</h1>
+<p class="author-bio">Created and managed by Felix Beacher, PhD.</p>
+</div>
+<!-- Modern Flashy Tab Navigation (Home First) -->
+<nav class="nav-tabs">
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
+<a class="tab-btn active" href="ai.html">AI</a>
+
+<a class="tab-btn" href="ct.html">CT</a>
+<a class="tab-btn" href="mri.html">MRI</a>
+<a class="tab-btn" href="pet.html">PET</a>
+<a class="tab-btn" href="xray.html">Xray</a>
+</nav>
+</div>
+</header>
+<main>
+<div class="region-filter-container">
+<label for="regionSelect">SELECT REGION:</label>
+<select id="regionSelect">
+<option value="global">Global</option>
+<option value="northAmerica">North America</option>
+<option value="europe">Europe</option>
+<option value="asia">Asia-Pacific</option>
+<option value="middleEast">Middle East</option>
+<option value="southAmerica">Latin America</option>
+</select>
+</div>
+<!-- Regional Summary Box Section -->
+<div class="card" style="margin-bottom: 25px;">
+<h2 id="regional-summary-title">Summary: Global Market for Imaging AI</h2>
+<p class="metric-desc" id="regional-summary-text" style="margin-top: 10px; font-size: 0.9rem;">
+<!-- REGIONAL_SUMMARY_PLACEHOLDER -->
+</p>
+</div>
+<p class="metric-desc" style="margin-bottom:20px">For growth, inflation and broader market pressures, see <a href="global-macro.html" id="macro-link">Glob Econ</a>.</p>
+<div class="dashboard-grid">
+<!-- Sector Outlook Summary Unit -->
+<div class="card col-12 outlook-box">
+<div class="outlook-header">
+<h2 id="outlook-title">Sector Outlook Summary <!-- OUTLOOK_PERIOD_PLACEHOLDER --></h2>
+<!-- OUTLOOK_BADGE_STYLE_PLACEHOLDER -->
+</div>
+<p class="outlook-summary" id="outlook-summary-text">
+<!-- OUTLOOK_SUMMARY_PLACEHOLDER -->
+</p>
+<div class="outlook-factors-grid">
+<!-- 4 Key Growth Drivers -->
+<div class="factor-column drivers-column">
+<h3>KEY DRIVERS</h3>
+<div class="factor-list">
+<!-- DRIVERS_CARDS_PLACEHOLDER -->
+</div>
+</div>
+<!-- 4 Key Headwinds -->
+<div class="factor-column headwinds-column">
+<h3>KEY HEADWINDS</h3>
+<div class="factor-list">
+<!-- HEADWINDS_CARDS_PLACEHOLDER -->
+</div>
+</div>
+</div>
+</div>
+<!-- Key Sector Metrics -->
+<section aria-labelledby="ai-sector-metrics-title" class="card col-12">
+<h2 id="ai-sector-metrics-title">AI Sector Metrics</h2>
+<div class="dashboard-grid">
+<div class="card col-3">
+<div class="metric-label">US FDA-listed Radiology AI Authorisations</div>
+<div class="metric" id="clearances-metric"><!-- FDA_LLZ_CLEARANCES_PLACEHOLDER --></div>
+<div class="metric-sub">US regulatory benchmark</div>
+<p class="metric-desc"><!-- FDA_CLEARANCES_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
+</div>
+<div class="card col-3">
+<div class="metric-label">Prospective Clinical Validation</div>
+<div class="metric"><!-- PROSPECTIVE_CLINICAL_VALIDATION_YTD_PLACEHOLDER --></div>
+<div class="metric-sub">Peer-Reviewed Papers YTD</div>
+<p class="metric-desc">Quantifies real-world clinical evidence publications needed to convince hospital procurement committees.</p>
+</div>
+<div class="card col-3">
+<div class="metric-label">US FDA-listed Radiology AI Authorisations — Annual Change</div>
+<div class="metric">Not available</div>
+<div class="metric-sub">Complete calendar years</div>
+<p class="metric-desc">Change in listed US regulatory activity; not global adoption.</p>
+</div>
+<div class="card col-3">
+<div class="metric-label">Companies with FDA-listed Radiology AI Devices</div>
+<div class="metric">Not available</div>
+<div class="metric-sub">Distinct listed company names</div>
+<p class="metric-desc">Subsidiaries and name variations may be counted separately.</p>
+</div>
+</div>
+</section>
+<!-- Automatically refreshed published clinical research -->
+<section aria-labelledby="clinical-evidence-title" class="card col-12">
+<h2 id="clinical-evidence-title">Clinical Evidence — Recent Published Studies</h2>
+<div id="clinical-evidence-feed"><p class="metric-desc">Loading recent clinical research from PubMed.</p></div>
+</section>
+<!-- Deployment and adoption context -->
+<section aria-labelledby="deployment-adoption-title" class="card col-12">
+<h2 id="deployment-adoption-title">Deployment and Adoption</h2>
+<p class="metric-desc">Adoption means integrating AI into clinical work, not simply obtaining regulatory authorisation or registering a study. Reports should distinguish paid routine use, research pilots and shadow-mode testing, where AI outputs do not guide care. This dashboard does not currently have a validated, comparable global adoption-rate dataset.</p>
+<p class="metric-desc"><strong>What determines successful deployment?</strong> Compatibility with imaging systems, local performance testing, staff training, clear clinical responsibility and continued monitoring. Institutional resources and patient populations differ, so implementation findings should be interpreted in their reported setting.</p>
+<p class="metric-desc">Qualitative context: <a href="https://www.rsna.org/-/media/files/rsna/government-relations/astprfiacceleratingai22326rsnaresponse.pdf" rel="noopener noreferrer" target="_blank">RSNA implementation and adoption recommendations, 23 February 2026</a>. This dated guidance is separate from the automatically refreshed research below.</p>
+<div id="deployment-evidence-feed" style="margin-top: 16px;"><p class="metric-desc">Loading recent implementation research.</p></div>
+</section>
+<!-- US regulatory trend, visible only in the North America view -->
+<section class="card col-12" hidden="" id="fda-trend-section">
+<h2>United States — Radiology AI Authorisations: Ten-Year Trend</h2>
+<canvas id="fdaTrendChart"></canvas>
+</section>
+<!-- Graph Unit 1: Approvals vs VC Funding -->
+<div class="card col-8">
+<h2>AI Approvals vs. MedTech Venture Capital Investment</h2>
+<canvas id="approvalsChart"></canvas>
+</div>
+<!-- Text Unit: Targeted News Feed -->
+<div class="card col-4">
+<h2>Latest Industry Headlines</h2>
+<div id="news-feed-container">
+<!-- NEWS_ITEMS_PLACEHOLDER -->
+</div>
+</div>
+<!-- Major imaging AI vendors -->
+<section aria-labelledby="vendor-revenues-title" class="card col-12">
+<h2 id="vendor-revenues-title">Major Imaging AI Vendors</h2>
+<p class="metric-desc">Selected specialist vendors and example products. This is not a ranking or a market-share comparison.</p>
+<div style="overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse; text-align: left;">
+<thead>
+<tr>
+<th scope="col" style="padding: 12px;">Vendor</th>
+<th scope="col" style="padding: 12px;">Example products</th>
+<th scope="col" style="padding: 12px;">Clinical applications</th>
+<th scope="col" style="padding: 12px;">Source</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">Heartflow</th>
+<td style="padding: 12px;">Heartflow One; FFRCT and Plaque Analysis</td>
+<td style="padding: 12px;">Coronary CT analysis for coronary artery disease assessment.</td>
+<td style="padding: 12px;"><a href="https://www.heartflow.com/heartflow-one/" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">Aidoc</th>
+<td style="padding: 12px;">Radiology AI solution</td>
+<td style="padding: 12px;">Imaging worklist prioritisation, findings alerts, and care-team coordination.</td>
+<td style="padding: 12px;"><a href="https://www.aidoc.com/solutions/radiology/" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">Lunit</th>
+<td style="padding: 12px;">INSIGHT CXR; INSIGHT MMG</td>
+<td style="padding: 12px;">Chest X-ray interpretation support and breast cancer detection on mammograms.</td>
+<td style="padding: 12px;"><a href="https://www.lunit.io/en/ai-radiology-software/insight-cxr/" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">Qure.ai</th>
+<td style="padding: 12px;">qXR; qER</td>
+<td style="padding: 12px;">Chest X-ray analysis and head CT analysis supporting neurocritical-care workflows.</td>
+<td style="padding: 12px;"><a href="https://www.qure.ai/product/qer" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">Viz.ai</th>
+<td style="padding: 12px;">Viz LVO</td>
+<td style="padding: 12px;">Large-vessel-occlusion identification and stroke care coordination.</td>
+<td style="padding: 12px;"><a href="https://www.viz.ai/large-vessel-occlusion" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+<tr style="border-top: 1px solid var(--border-color);">
+<th scope="row" style="padding: 12px;">RapidAI</th>
+<td style="padding: 12px;">Rapid ICH; Rapid LVO; Rapid CTA</td>
+<td style="padding: 12px;">Brain imaging analysis supporting stroke assessment and triage.</td>
+<td style="padding: 12px;"><a href="https://www.rapidai.com/hubfs/Events/RapidAI_Brochure_071822_A4.pdf" rel="noopener noreferrer" style="color: #74c8ff;" target="_blank">Product information</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="metric-desc" style="margin-top: 15px;">Product examples checked October 2026. Availability and authorised uses vary by country and product version. The vendor list remains the same for every region.</p>
+</section>
+</div>
+</main>
+<footer>
+<div>© 2026 Felix Beacher. All rights reserved.</div>
+<p class="footer-disclaimer">
+            Disclaimer: For informational purposes only. Not financial advice. Data is compiled from public sources without warranty of completeness or accuracy. Use at your own risk; the creator assumes no liability for actions taken based on this dashboard.
+        </p>
+</footer>
+<script>
+        const monthLabels = [/* MACRO_MONTH_LABELS_PLACEHOLDER */];
+
+        const regionData = {
+            global: {
+                summary: /* GLOBAL_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* GLOBAL_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* GLOBAL_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* GLOBAL_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* GLOBAL_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* GLOBAL_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* GLOBAL_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            europe: {
+                summary: /* EUROPE_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* EUROPE_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* EUROPE_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* EUROPE_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* EUROPE_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* EUROPE_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* EUROPE_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            northAmerica: {
+                summary: /* NORTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* NORTH_AMERICA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* NORTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* NORTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* NORTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* NORTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* NORTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            asia: {
+                summary: /* ASIA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* ASIA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* ASIA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* ASIA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* ASIA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* ASIA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* ASIA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            middleEast: {
+                summary: /* MIDDLE_EAST_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* MIDDLE_EAST_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* MIDDLE_EAST_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* MIDDLE_EAST_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* MIDDLE_EAST_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* MIDDLE_EAST_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* MIDDLE_EAST_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            },
+            southAmerica: {
+                summary: /* SOUTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
+                clearances: [/* SOUTH_AMERICA_CLEARANCES_PLACEHOLDER */],
+                vcFunding: [/* SOUTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
+                modalities: [/* SOUTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
+                indexName: /* SOUTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
+                indexData: [/* SOUTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
+                ratesData: [/* SOUTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
+            }
+        };
+
+        // Line Chart Initialization (Approvals vs VC Funding)
+        const ctxApprovals = document.getElementById('approvalsChart').getContext('2d');
+        const approvalsChart = new Chart(ctxApprovals, {
+            type: 'line',
+            data: {
+                labels: [/* APPROVALS_FUNDING_PERIOD_LABELS_PLACEHOLDER */],
+                datasets: [
+                    {
+                        label: 'AI Regulatory Clearances',
+                        data: regionData.global.clearances,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'VC Funding (£ Millions)',
+                        data: regionData.global.vcFunding,
+                        borderColor: '#34d399',
+                        tension: 0.3,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Clearances', color: '#9ca3af' },
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Funding (£M)', color: '#9ca3af' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+
+        // Doughnut Chart Initialization (Modalities)
+        const ctxModality = document.getElementById('modalityChart').getContext('2d');
+        const modalityChart = new Chart(ctxModality, {
+            type: 'doughnut',
+            data: {
+                labels: ['CT Scans', 'MRI', 'X-Ray / Mammography', 'Ultrasound', 'Pathology'],
+                datasets: [{
+                    data: regionData.global.modalities,
+                    backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } }
+            }
+        });
+
+        // Dual-Axis Line Chart Initialization (Index vs Interest Rate)
+        const ctxMacro = document.getElementById('macroChart').getContext('2d');
+        const macroChart = new Chart(ctxMacro, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'Stock Market Index',
+                        data: regionData.global.indexData,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Central Bank Policy Rate (%)',
+                        data: regionData.global.ratesData,
+                        borderColor: '#f87171',
+                        borderDash: [5, 5],
+                        tension: 0.2,
+                        fill: false,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Index Points', color: '#9ca3af' },
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Interest Rate (%)', color: '#9ca3af' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+
+        function updateView(regionKey) {
+            const selectedRegion = regionData[regionKey] || regionData.global;
+
+            document.getElementById('regional-summary-text').innerText = selectedRegion.summary || '';
+
+            approvalsChart.data.datasets[0].data = selectedRegion.clearances;
+            approvalsChart.data.datasets[1].data = selectedRegion.vcFunding;
+            approvalsChart.update();
+
+            modalityChart.data.datasets[0].data = selectedRegion.modalities;
+            modalityChart.update();
+
+            document.getElementById('macroChartTitle').innerText = `${selectedRegion.indexName || 'Stock Market Index'} & Interest Rates`;
+            macroChart.data.datasets[0].label = selectedRegion.indexName || 'Stock Market Index';
+            macroChart.data.datasets[0].data = selectedRegion.indexData;
+            macroChart.data.datasets[1].data = selectedRegion.ratesData;
+            macroChart.update();
+        }
+
+        document.getElementById('regionSelect').addEventListener('change', (e) => {
+            const region = e.target.value;
+            const url = new URL(window.location);
+            url.searchParams.set('region', region);
+            window.history.pushState({}, '', url);
+            updateView(region);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialRegion = urlParams.get('region') || 'global';
+            document.getElementById('regionSelect').value = initialRegion;
+            updateView(initialRegion);
+        });
+    
+        // Vendor Pie Charts Data
+        const vendorLabels = [/* VENDOR_NAMES_PLACEHOLDER */];
+        const vendorColors = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa'];
+        const commonPieOptions = { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } } };
+
+        new Chart(document.getElementById('totalVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* TOTAL_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('cardioVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* CARDIOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('pulmoVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* PULMONOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('neuroVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* NEUROLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('breastVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* BREAST_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+
+        new Chart(document.getElementById('oncologyVendorChart').getContext('2d'), {
+            type: 'pie',
+            data: { labels: vendorLabels, datasets: [{ data: [/* ONCOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
+            options: commonPieOptions
+        });
+    </script>
+</body>
+</html>

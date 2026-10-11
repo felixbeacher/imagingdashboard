@@ -1137,8 +1137,6 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     clinical_links = {item['url'] for item in payload['clinical_evidence'].get('items', [])}
     payload['deployment_evidence']['items'] = [item for item in payload['deployment_evidence'].get('items', [])
         if item['url'] not in clinical_links][:2]
-    payload['economic_outlook'] = fetch_economic_outlook(offline)
-    payload['regional_economics'] = regional_economic_background(offline)
     payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
         logging.warning('Data validation: %s', error)
@@ -1205,6 +1203,9 @@ class DashboardService:
 
 
 def make_handler(service):
+    from macro_dashboard import MacroService
+    macro = MacroService(service.template_path.parent, regional_economic_background,
+                         service.offline, service.cache_seconds)
     class DashboardRequestHandler(BaseHTTPRequestHandler):
         def send_content(self, status, content, content_type):
             encoded = content.encode('utf-8') if isinstance(content, str) else content
@@ -1223,16 +1224,21 @@ def make_handler(service):
                     self.send_content(200, '{"status":"ok"}', 'application/json; charset=utf-8')
                 elif path in ('/ai.html', '/1_ai.html', '/1_ai_6.html'):
                     self.send_content(200, service.html(), 'text/html; charset=utf-8')
+                elif path == '/global-macro.html':
+                    self.send_content(200, macro.html(), 'text/html; charset=utf-8')
+                elif path == '/api/macroeconomics':
+                    self.send_content(200, safe_json(macro.payload()), 'application/json; charset=utf-8')
                 elif path == '/api/dashboard':
                     self.send_content(200, safe_json(service.payload()), 'application/json; charset=utf-8')
                 elif path == '/api/fda-clearances':
                     self.send_content(200, safe_json(service.payload()['fda_benchmark']), 'application/json; charset=utf-8')
                 elif path in ('/', '/index.html', '/ct.html', '/2_ct.html', '/mri.html', '/3_mri.html',
                               '/pet.html', '/4_pet.html', '/xray.html', '/5_xray.html', '/styles.css',
-                              '/images/earth-hero.png'):
+                              '/images/earth-hero.png', '/risk.svg', '/risk-data.csv', '/global-risk-report.html'):
                     # Exact allowlist: serve the landing page and its assets without
                     # exposing arbitrary local files. Keep old modality URLs as aliases.
-                    aliases = {'/': 'index.html', '/index.html': 'index.html',
+                    aliases = {'/risk.svg': 'risk.svg', '/risk-data.csv': 'risk-data.csv',
+                               '/global-risk-report.html': 'global-risk-report.html', '/': 'index.html', '/index.html': 'index.html',
                                '/ct.html': '2_ct.html', '/2_ct.html': '2_ct.html',
                                '/mri.html': '3_mri.html', '/3_mri.html': '3_mri.html',
                                '/pet.html': '4_pet.html', '/4_pet.html': '4_pet.html',
@@ -1246,7 +1252,7 @@ def make_handler(service):
                         sibling = service.template_path.parent / fallbacks[relative]
                     if sibling.is_file():
                         kinds = {'.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8',
-                                 '.png': 'image/png'}
+                                 '.png': 'image/png', '.svg': 'image/svg+xml', '.csv': 'text/csv; charset=utf-8'}
                         self.send_content(200, sibling.read_bytes(), kinds[sibling.suffix])
                     else:
                         self.send_content(404, 'This page or asset is not installed on this server.', 'text/plain; charset=utf-8')
@@ -1305,11 +1311,12 @@ function plot(id,title,labels,values,note,key){
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
  const r=payload.regions[key];document.getElementById('regionSelect').value=key;
+ text('regional-summary-title',key==='global'?'Summary: Global Market for Imaging AI':'Summary: '+r.name+' Market for Imaging AI');
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
  // FDA observations concern US market access, not the selected overseas region.
  const usBenchmark=key==='northAmerica';
- [2,4,5].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=!usBenchmark;});
- const studyCard=document.getElementById('ai-metric-3');
+ [0,2,3].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=!usBenchmark;});
+ const studyCard=document.getElementById('ai-metric-1');
  if(studyCard)studyCard.style.gridColumn=usBenchmark?'':'span 12';
  text('ai-sector-metrics-title',usBenchmark?'North America — AI Sector Metrics':r.name+' — AI Research Activity');
  const sector=document.getElementById('ai-sector-metrics-title');
@@ -1319,12 +1326,8 @@ function update(regionKey){
  text('clinical-evidence-title','Worldwide Clinical Evidence — Recent Published Studies');
  text('deployment-adoption-title','Deployment and Adoption — Worldwide Context');
  text('vendor-revenues-title','Worldwide Imaging AI Vendors — Selected Examples');
- text('ai-context-title',r.economicTitle);
- const economic=document.getElementById('economic-outlook-summary');
- if(economic){economic.replaceChildren();const summary=add(economic,'p',r.economicOverview);summary.className='metric-desc';
- if(r.economicSource){const attribution=add(economic,'p');attribution.className='metric-desc';const link=add(attribution,'a',r.economicSource.name);link.href=r.economicSource.url;link.target='_blank';link.rel='noopener noreferrer';add(attribution,'span',' · '+r.economicDate);}}
- text('economic-scope-note',r.economicScope);
- const visibleMetrics=r.metrics.filter((m,i)=>usBenchmark||![2,4,5].includes(i));
+ const macroLink=document.getElementById('macro-link');if(macroLink)macroLink.href='global-macro.html?region='+encodeURIComponent(key);
+ const visibleMetrics=r.metrics.filter((m,i)=>usBenchmark||![0,2,3].includes(i));
  const available=visibleMetrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
  text('outlook-badge',available+' / '+visibleMetrics.length+' metric cards populated');
@@ -1425,7 +1428,7 @@ def render_template(template, payload, fallback_theme=False):
         i=counter[0];counter[0]+=1
         return f'<div class="{match.group(1)}" id="ai-metric-{i}">'
     output = re.sub(r'<div class="(ticker-card|card col-3)">', identify, output)
-    if counter[0] != 6: raise ValueError('Expected two context and four sector metric cards')
+    if counter[0] != 4: raise ValueError('Expected four AI sector metric cards; economic cards belong on global-macro.html')
     mapping = {
         'REGIONAL_SUMMARY_PLACEHOLDER': html.escape(payload['regions']['global']['summary']),
         'DRIVERS_CARDS_PLACEHOLDER': '<p id="ai-drivers"></p>',
@@ -1511,45 +1514,14 @@ def template_view(payload):
         context, metrics = region['context'], region['metrics']
         benchmark = payload['fda_benchmark']
         # Keep the US benchmark in the adapter; only North America displays it.
-        outlook = payload.get('economic_outlook', {})
-        live = outlook.get('status') == 'live'
-        economic_background = [
-            dict(label='Global economic growth', value=outlook.get('growth_value') if live else None,
-                 unit='%', period=(outlook.get('growth_year', '') + ' forecast · IMF') if live else 'Not available',
-                 as_of=outlook.get('published'), source=None, geography='', methodology='', reason=''),
-            dict(label='Global consumer inflation', value=outlook.get('inflation_value') if live else None,
-                 unit='%', period=(outlook['inflation_year'] + ' forecast · IMF')
-                     if live and outlook.get('inflation_year') else 'Not available',
-                 as_of=outlook.get('published'), source=None, geography='', methodology='', reason=''),
-        ]
-        economic_background[0]['methodology'] = (
-            outlook.get('summary', 'The latest IMF growth outlook is unavailable.'))
-        economic_background[1]['methodology'] = outlook.get(
-            'inflation_summary', 'The latest IMF inflation assessment is unavailable.')
-        if outlook.get('status') == 'live':
-            for observation in economic_background:
-                observation['methodology'] += (' IMF outlook published ' + outlook['published']
-                                               + '; retrieved ' + outlook['retrieved'] + '.')
-        regional_economy = payload.get('regional_economics', {}).get(key)
-        if key != 'global' or regional_economy:
-            if regional_economy:
-                economic_background = regional_economy['cards']
-            else:
-                economic_background = [
-                    dict(label=region['name'] + ' economic growth', value=None, unit='%',
-                         period='Not available', as_of=None, source=None, geography='',
-                         methodology='Regional economic data could not be retrieved.', reason=''),
-                    dict(label=region['name'] + ' consumer inflation', value=None, unit='%',
-                         period='Not available', as_of=None, source=None, geography='',
-                         methodology='Regional economic data could not be retrieved.', reason='')]
-        observations = [*economic_background, benchmark['metric'],
-                        metrics['prospective_studies'], benchmark['annual_change'], benchmark['company_count']]
+        observations = [benchmark['metric'], metrics['prospective_studies'],
+                        benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
-        research_source = cards[3]['source']
+        research_source = cards[1]['source']
         if research_source:
             sources.pop(research_source, None)
-        cards[3]['source'] = None
-        cards[3]['description'] = (
+        cards[1]['source'] = None
+        cards[1]['description'] = (
             'Active registered imaging-AI studies. Counts indicate research activity, '
             'not completed studies or proven clinical benefit. Regional counts use selected countries '
             'and may overlap for multinational studies.'
@@ -1576,23 +1548,10 @@ def template_view(payload):
         regions[key] = dict(name=region['name'], summary=summary, metrics=cards,
             years=[p['label'] for p in points], approvals=[p['value'] for p in points],
             approvalTitle=series['label'], approvalNote=benchmark['notice'] + ' ' + series.get('methodology', ''),
-            approvalSource=cards[2]['source'], months=[], rateValues=[],
+            approvalSource=cards[0]['source'], months=[], rateValues=[],
             rateTitle='Policy-rate trend — not available',
             rateNote='No comparable monthly regional policy-rate series is configured. The latest sourced rate is shown in the metric card.',
             rateSource=None, news=[])
-        regions[key]['economicTitle'] = region['name'] + ' Economic Background'
-        if key == 'global':
-            regions[key]['economicOverview'] = (regional_economy or {}).get('overview',
-                'The IMF world economic data could not be retrieved; no fixed figures are substituted.')
-            regions[key]['economicSource'] = (regional_economy or {}).get('source')
-            regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
-            regions[key]['economicScope'] = 'IMF WEO world aggregates; figures refresh during each dashboard update. Database estimates and forecasts may differ from separately published outlook articles.'
-        else:
-            regions[key]['economicOverview'] = (regional_economy or {}).get('overview',
-                'Economic data for ' + region['name'] + ' are unavailable; global data are not substituted.')
-            regions[key]['economicSource'] = (regional_economy or {}).get('source')
-            regions[key]['economicDate'] = 'Retrieved ' + (regional_economy or {}).get('retrieved', 'unavailable')
-            regions[key]['economicScope'] = 'Selected-country medians for ' + region['name'] + ', not regional totals or weighted averages.'
         for item in payload['news']:
             if not imaging_ai_news_relevant(item['title']):
                 continue
@@ -1651,17 +1610,6 @@ def render_dashboard(template, payload):
     if '<!-- DASHBOARD_DATA_PLACEHOLDER -->' in template:
         return _render_data_template(template, payload)
     template = re.sub(r'<script[^>]*id="dashboard-data"[^>]*>.*?</script>', '', template, flags=re.S)
-    template = re.sub(r'<div id="economic-outlook-summary">.*?</div>', '', template, flags=re.S)
-    outlook = payload.get('economic_outlook', {})
-    overview = '<p class="metric-desc">' + html.escape(outlook.get('overview',
-        'The latest global economic outlook could not be retrieved. Please check again after the next data update.')) + '</p>'
-    if outlook.get('status') == 'live':
-        overview += ('<p class="metric-desc">Source: <a href="' + html.escape(outlook['source_url'], quote=True)
-                     + '" target="_blank" rel="noopener">IMF World Economic Outlook</a> · Published '
-                     + html.escape(outlook['published']) + ' · Retrieved ' + html.escape(outlook['retrieved']) + '</p>')
-    template = template.replace('<h2 id="ai-context-title">Global Economic Background</h2>',
-        '<h2 id="ai-context-title">Global Economic Background</h2>\n<div id="economic-outlook-summary">'
-        + overview + '</div>')
     rendered = render_template(template, template_view(payload))
     # Keep the canonical payload available to the workflow's validation/summary.
     data = '<script id="dashboard-data" type="application/json">' + safe_json(payload) + '</script>'
@@ -1726,6 +1674,8 @@ def main():
                 parser.error('Existing template backup differs; use a separate --build output to preserve both templates.')
             if not backup.exists():
                 atomic_write(backup, template)
+        from macro_dashboard import publish_macro
+        publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline)
         atomic_write(destination, rendered)
         logging.info('Updated %s', destination)
     except (OSError, ValueError) as exc:

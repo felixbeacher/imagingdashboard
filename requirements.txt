@@ -1,4 +1,4 @@
-# This file lists the external Python libraries needed by your script 
+# This file lists the external Python libraries needed by your script
 # for parsing RSS feeds
 # for fetching financial data
 # This allows GitHub Actions to install them automatically before running
@@ -6,3 +6,6 @@ feedparser
 yfinance
 requests
 google-genai
+
+# Only needed when regenerating risk.svg from risk-data.csv.
+matplotlib

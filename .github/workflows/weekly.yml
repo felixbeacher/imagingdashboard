@@ -16,6 +16,8 @@ on:
       - '*.html'
       - '*.py'
       - '*.json'
+      - '*.csv'
+      - '*.svg'
       - 'styles.css'
       - 'images/**'
 
@@ -47,7 +49,7 @@ jobs:
 
       # These updaters use the Python standard library. Optional Gemini
       # commentary is not enabled, so requirements.txt is not needed.
-      - name: Fetch data and build the AI dashboard
+      - name: Fetch data and build AI and Glob Econ dashboards
         shell: bash
         run: |
           set -euo pipefail
@@ -65,7 +67,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -109,6 +111,8 @@ jobs:
                   print(f'::warning::{label}: {len(payload["quality_messages"])} curated data checks failed; affected observations were withheld.')
               if payload.get('news_failures'):
                   print(f'::warning::{label}: one or more headline feeds were unavailable.')
+          for filename in ('global-macro.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html'):
+              shutil.copy2(root / filename, output / filename)
           summary += ['', 'Blank measures require sourced curated observations. A successful build does not mean every external source is available.']
           if os.getenv('GITHUB_STEP_SUMMARY'):
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
