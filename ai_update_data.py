@@ -32,6 +32,8 @@ import threading
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
+import socket
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
@@ -287,13 +289,37 @@ def load_curated(path, errors):
         return {}
 
 
-def read_url(url, limit=8_000_000):
+_NCBI_LOCK = threading.Lock()
+_NCBI_LAST_REQUEST = 0.0
+
+
+def read_url(url, limit=8_000_000, timeout=8):
+    """Bounded retries for transient failures; pace NCBI below three requests/sec."""
+    global _NCBI_LAST_REQUEST
     request = urllib.request.Request(url, headers={'User-Agent': 'MedicalImagingDashboard/2.0', 'Accept': '*/*'})
-    with urllib.request.urlopen(request, timeout=8) as response:
-        content = response.read(limit + 1)
-    if len(content) > limit:
-        raise ValueError('Source exceeded the download size limit')
-    return content
+    for attempt in range(3):
+        if urllib.parse.urlsplit(url).hostname == 'eutils.ncbi.nlm.nih.gov':
+            with _NCBI_LOCK:
+                delay = max(0, .4 - (time.monotonic() - _NCBI_LAST_REQUEST))
+                if delay:
+                    time.sleep(delay)
+                _NCBI_LAST_REQUEST = time.monotonic()
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                content = response.read(limit + 1)
+            if len(content) > limit:
+                raise ValueError('Source exceeded the download size limit')
+            return content
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (429, 500, 502, 503, 504) or attempt == 2:
+                raise
+            retry_after = exc.headers.get('Retry-After', '') if exc.headers else ''
+            delay = min(15, max(2 ** attempt, int(retry_after))) if retry_after.isdigit() else 2 ** attempt
+        except (urllib.error.URLError, TimeoutError, socket.timeout):
+            if attempt == 2:
+                raise
+            delay = 2 ** attempt
+        time.sleep(delay)
 
 
 def parse_fda_csv(content):
@@ -581,12 +607,7 @@ def public_json(url):
             return cached['response']
     except (OSError, ValueError, KeyError, TypeError):
         pass
-    request = urllib.request.Request(url, headers={
-        'User-Agent': 'MedicalImagingDashboard/2.0', 'Accept': 'application/json'})
-    with urllib.request.urlopen(request, timeout=20) as response:
-        content = response.read(4_000_001)
-    if len(content) > 4_000_000:
-        raise ValueError('Public source response exceeded the size limit')
+    content = read_url(url, limit=4_000_000, timeout=20)
     result = json.loads(content)
     try:
         folder.mkdir(exist_ok=True)
@@ -913,6 +934,7 @@ def regional_economic_background(offline=False):
     """Country-sample medians, never labelled as IMF regional aggregates."""
     year = date.today().year
     data = {}
+    failures = {}
     if not offline:
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {code: executor.submit(public_json,
@@ -925,6 +947,7 @@ def regional_economic_background(offline=False):
                         raise ValueError('Invalid IMF indicator series')
                 except Exception as exc:
                     logging.warning('IMF regional %s unavailable: %s', code, exc)
+                    failures[code] = 'IMF indicator could not be retrieved or validated.'
                     data[code] = {}
     result = {}
     economic_samples = {'global': [('WEOWORLD', 'World')] , **COUNTRY_SAMPLES}
@@ -953,13 +976,17 @@ def regional_economic_background(offline=False):
                       + '/'.join(country for country, _ in countries)}
             cards.append(dict(label=name + ' ' + label.lower() + ('' if key == 'global' else ' (country-sample median)'),
                               value=values[year], unit='%', period=str(year) + ' · IMF WEO',
-                              as_of=date.today().isoformat(), source=source, geography='',
-                              methodology=description, reason=''))
+                              as_of=date.today().isoformat() if data.get(code) else None, source=source, geography='',
+                              status='available' if values[year] is not None else 'unavailable',
+                              retrieved=date.today().isoformat() if data.get(code) else None,
+                              attempted_at=date.today().isoformat(),
+                              methodology=description, reason=('Offline: sources were not requested.' if offline else failures.get(code, 'The complete country sample is unavailable.')) if values[year] is None else ''))
             summaries.append(label + ' — ' + '; '.join(details) + '.')
         result[key] = dict(cards=cards, overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
             + ' '.join(summaries) + (' These are IMF-published world aggregates. ' if key == 'global' else ' These are unweighted country medians, not an IMF regional aggregate. ')
             + 'The source provides estimates and projections; regional risk and driver commentary is not supplied by this numerical feed.',
-            source=cards[0]['source'], retrieved=date.today().isoformat())
+            source=cards[0]['source'], retrieved=date.today().isoformat() if all(c['retrieved'] for c in cards) else None,
+            attempted_at=date.today().isoformat(), status='available' if all(c['value'] is not None for c in cards) else 'partial' if any(c['value'] is not None for c in cards) else 'unavailable')
     return result
 
 
@@ -978,7 +1005,7 @@ def clinical_evidence_feed(offline=False, extra_filter=None):
              'OR screening[Title/Abstract]))) NOT (review[Publication Type] OR protocol[Title])')
     if extra_filter:
         query += ' AND (' + extra_filter + ')'
-    result = dict(items=[], retrieved=today.isoformat(), query=query,
+    result = dict(items=[], retrieved=None, attempted_at=today.isoformat(), query=query,
                   status='unavailable', reason='The PubMed evidence feed could not be retrieved.')
     if offline:
         result['reason'] = 'The PubMed evidence feed is unavailable in offline mode.'
@@ -993,6 +1020,8 @@ def clinical_evidence_feed(offline=False, extra_filter=None):
         if ids:
             tree = ET.fromstring(read_url(base + 'efetch.fcgi?' + urllib.parse.urlencode(
                 dict(db='pubmed', id=','.join(ids), retmode='xml'))))
+            if tree.tag != 'PubmedArticleSet' or tree.find('.//ERROR') is not None:
+                raise ValueError('Invalid PubMed article response')
             for article in tree.findall('PubmedArticle'):
                 def content(path):
                     node = article.find(path)
@@ -1002,7 +1031,7 @@ def clinical_evidence_feed(offline=False, extra_filter=None):
                 if not pmid.isdigit() or not title or re.search(r'review|meta-analysis|protocol', title, re.I):
                     continue
                 if extra_filter and not re.search(
-                    r'radiolog|mammograph|radiograph|tomograph|ultrasound|sonograph|magnetic resonance|\\bMRI\\b|\\bCT\\b|X-ray|x ray|imaging', title, re.I):
+                    r'radiolog|mammograph|radiograph|tomograph|ultrasound|sonograph|magnetic resonance|\bMRI\b|\bCT\b|X-ray|x ray|imaging', title, re.I):
                     continue
                 abstracts = article.findall('.//AbstractText')
                 results = next((node for node in abstracts if
@@ -1033,9 +1062,13 @@ def clinical_evidence_feed(offline=False, extra_filter=None):
                     journal=content('.//Journal/Title'), published=date_text, design=design, excerpt=excerpt))
         result['items'].sort(key=lambda item: item['published'] if '(online)' in item['published'] else '', reverse=True)
         result['items'] = result['items'][:4]
-        result.update(status='live', reason='No matching recent studies found.' if not result['items'] else '')
+        result.update(status='live', retrieved=today.isoformat(), reason='No matching recent studies found.' if not result['items'] else '')
     except Exception as exc:
         logging.warning('PubMed clinical evidence unavailable: %s', exc)
+        result['items'] = []
+        result['reason'] = ('PubMed retrieval failed after bounded retries (HTTP ' + str(exc.code) + ').'
+                            if isinstance(exc, urllib.error.HTTPError) else
+                            'PubMed could not be retrieved or validated after bounded retries; no absence of research is implied.')
     return result
 
 
@@ -1128,8 +1161,12 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
                     'ignoring letter case and repeated whitespace. Subsidiaries and other name '
                     'variations may be counted separately. Not a count of corporate groups or global suppliers.',
                 reason='')
-    payload['registry_chart'] = {key: copy.deepcopy(block['metrics'].get('prospective_studies', {'value': None}))
-                                 for key, block in automatic.items()}
+    payload['registry_chart'] = {key: copy.deepcopy(block['metrics']['prospective_studies'])
+                                 for key, block in regions.items()}
+    payload['research_is_curated'] = any(
+        block['metrics']['prospective_studies'].get('value') != automatic[key]['metrics'].get('prospective_studies', {}).get('value')
+        or block['metrics']['prospective_studies'].get('methodology') != automatic[key]['metrics'].get('prospective_studies', {}).get('methodology')
+        for key, block in regions.items() if block['metrics']['prospective_studies'].get('value') is not None)
     payload['clinical_evidence'] = clinical_evidence_feed(offline)
     payload['deployment_evidence'] = clinical_evidence_feed(offline, extra_filter=
         'implementation[Title/Abstract] OR deployment[Title/Abstract] OR adoption[Title/Abstract] '
@@ -1137,6 +1174,8 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
     clinical_links = {item['url'] for item in payload['clinical_evidence'].get('items', [])}
     payload['deployment_evidence']['items'] = [item for item in payload['deployment_evidence'].get('items', [])
         if item['url'] not in clinical_links][:2]
+    if payload['deployment_evidence']['status'] == 'live' and not payload['deployment_evidence']['items']:
+        payload['deployment_evidence']['reason'] = 'No additional distinct implementation studies remain after filtering and removing papers already shown above.'
     payload['fda_benchmark']['company_count'] = company_count
     for error in errors:
         logging.warning('Data validation: %s', error)
@@ -1283,7 +1322,7 @@ function source(parent,key,observed){
  const s=payload.sources[key];if(!s)return;
  const line=add(parent,'div');line.className='metric-desc';
  const a=add(line,'a',s.name);a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';
- add(line,'span',` · ${s.status==='cached'?'CACHED — refresh failed/offline':s.status==='live'?'Retrieved':'Unavailable'}${s.fetched_at?' '+s.fetched_at.slice(0,10):''}${observed?' · Observation: '+observed:''}`);
+ add(line,'span',` · ${s.status==='cached'?'CACHED — refresh failed/offline':s.status==='live'?'Retrieved':s.status==='supplied'?'Supplied observation dated':'Unavailable'}${s.fetched_at?' '+s.fetched_at.slice(0,10):''}${observed?' · Observation: '+observed:''}`);
 }
 function metric(i,m){
  const box=document.getElementById('ai-metric-'+i);
@@ -1302,11 +1341,11 @@ function plot(id,title,labels,values,note,key){
  const hasData=values.some(v=>typeof v==='number'&&Number.isFinite(v));
  canvas.hidden=!hasData||typeof Chart==='undefined';
  if(hasData&&typeof Chart!=='undefined'){
- charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Active registered studies'},beginAtZero:id!=='macroChart'}}}});
+ charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Research study count'},beginAtZero:id!=='macroChart'}}}});
  }else if(hasData){add(caption,'p','Chart library could not load. Data are shown below.');}
  // Accessible numeric alternative, also works if the CDN is blocked.
  let table=card.querySelector('[data-chart-table]');if(table)table.remove();
- if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Rate (%)':'Active registered studies');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
+ if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Rate (%)':'Research study count');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
 }
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
@@ -1331,8 +1370,14 @@ function update(regionKey){
  const available=visibleMetrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
  text('outlook-badge',available+' / '+visibleMetrics.length+' metric cards populated');
- text('outlook-summary-text','Page built '+payload.generated_at.slice(0,10)+'.');
- const factors={"global":{"drivers":["Clinical capacity: interpretation and triage support can help teams manage imaging workloads.","Workflow efficiency: automation of repetitive tasks can reduce manual effort.","Access to expertise: decision support can extend specialist input where resources are limited.","Clinical evidence: validation in the intended care setting can strengthen confidence in adoption."],"headwinds":["Evidence requirements: performance must be validated across relevant patients and clinical settings.","Integration costs: deployment requires compatible imaging systems, staff training, and ongoing support.","Commercial viability: providers need a clear purchasing model and evidence of value.","Trust and governance: bias, cybersecurity, privacy, and accountability need sustained attention."]},"northAmerica":{"drivers":["Clinical productivity: interpretation and triage tools can support busy imaging services.","Workflow integration: existing digital imaging systems offer a route for introducing AI tools.","Clinical partnerships: provider-led evaluation can establish usefulness in routine care.","Commercial value: measurable time savings and service improvements can support purchasing decisions."],"headwinds":["Payment arrangements: a workable reimbursement or provider-funded model is needed.","Regulatory requirements: US and Canadian market-access requirements must be addressed separately.","Implementation costs: integration, training, and monitoring add to the purchase price.","Clinical trust: local validation and clear responsibility for decisions remain essential."]},"europe":{"drivers":["Service capacity: workflow support can help health services use available staff and imaging resources.","Clinical collaboration: evaluation with hospitals can establish relevance to local care pathways.","Digital infrastructure: interoperable imaging systems can support deployment across care settings.","Procurement evidence: demonstrated clinical and operational value can strengthen purchasing cases."],"headwinds":["Regulatory compliance: EU medical-device and AI requirements need coordinated planning.","Market fragmentation: procurement and funding differ between countries and healthcare systems.","Data governance: privacy and lawful health-data use constrain implementation choices.","Evidence and integration: local validation, staff training, and system compatibility require investment."]},"asia":{"drivers":["Clinical capacity: interpretation support can help services address workforce and resource constraints.","Access to expertise: AI-assisted workflows may extend specialist support to underserved settings.","Digital development: investment in health information systems can enable implementation.","Local evaluation: partnerships with providers can adapt tools to patients and workflows."],"headwinds":["Uneven infrastructure: connectivity and system readiness vary between care settings.","Country-specific requirements: regulatory and procurement routes differ across markets.","Data representativeness: tools need validation for local populations and clinical practice.","Affordability and skills: purchasing budgets, training, and ongoing support affect adoption."]},"middleEast":{"drivers":["Digital-health investment: smart-health initiatives create opportunities to evaluate imaging AI.","Infrastructure development: connected hospital systems can support implementation.","Clinical efficiency: interpretation and workflow support can improve use of available resources.","Provider partnerships: local evaluation can demonstrate clinical and operational value."],"headwinds":["Country-specific access: regulation and purchasing requirements vary across the region.","Data governance: cybersecurity, privacy, and permitted data sharing require careful planning.","Implementation capability: integration and workforce training are necessary for routine use.","Sustainable value: buyers need evidence that benefits justify ongoing costs."]},"southAmerica":{"drivers":["Clinical capacity: workflow support can help providers make better use of imaging resources.","Access to expertise: decision support may extend specialist input to underserved settings.","Digital transformation: stronger health information systems can support AI deployment.","Provider evaluation: local partnerships can demonstrate usefulness and guide implementation."],"headwinds":["Affordability: budgets and ongoing support costs can constrain purchasing.","Infrastructure gaps: connectivity and interoperability affect reliable deployment.","National requirements: regulatory, privacy, and procurement arrangements vary by country.","Clinical readiness: local validation, staff training, and monitoring require investment."]}};
+ text('outlook-summary-text','Data build: '+payload.generated_at.slice(0,10)+'. Editorial context reviewed 12 October 2026; it is not an automatically refreshed market forecast.');
+ const intro=document.getElementById('regional-summary-text');
+ let editorialNote=document.getElementById('editorial-provenance');
+ if(!editorialNote){editorialNote=document.createElement('p');editorialNote.id='editorial-provenance';editorialNote.className='metric-desc';intro.after(editorialNote);}
+ editorialNote.replaceChildren();add(editorialNote,'span','Qualitative editorial context; reviewed '+r.editorialDate+'. Source: ');
+ const guidance=add(editorialNote,'a',r.editorialSource.name);
+ guidance.href=r.editorialSource.url;guidance.target='_blank';guidance.rel='noopener noreferrer';
+ const factors={"global": {"drivers": ["Workflow support: assess whether a tool addresses a defined clinical task.", "Local evaluation: test performance in the intended care setting.", "Implementation readiness: plan integration, staff training and oversight."], "headwinds": ["Validation: performance can vary across settings and populations.", "Monitoring: ongoing checks are needed as tools and clinical practice change.", "Purchasing: establish who funds deployment and continued support."]}};
  const analysis=factors[key]||factors.global;
  function showFactors(id,items){const box=document.getElementById(id);if(!box)return;box.replaceChildren();const list=add(box,'ul');items.forEach(item=>add(list,'li',item));}
  showFactors('ai-drivers',analysis.drivers);
@@ -1354,7 +1399,7 @@ function update(regionKey){
  (feed.items||[]).forEach(study=>{const article=add(deployment,'article');article.style.marginTop='12px';const link=add(article,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
  const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
  if(study.excerpt){const result=add(article,'p','Reported results excerpt: “'+study.excerpt+'”');result.className='metric-desc';}});
- const note=add(deployment,'p','PubMed / NLM · '+(feed.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(feed.retrieved||'date unavailable')+'. Worldwide implementation research from the past two years; shared across regional views. Publication does not establish routine deployment or a regional adoption rate.');note.className='metric-desc';
+ const note=add(deployment,'p','PubMed / NLM · '+(feed.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(feed.retrieved||feed.attempted_at||'date unavailable')+'. Worldwide implementation research from the past two years; shared across regional views. Publication does not establish routine deployment or a regional adoption rate.');note.className='metric-desc';
  }
  const evidence=document.getElementById('clinical-evidence-feed');
  if(evidence){evidence.replaceChildren();const clinical=payload.clinicalEvidence||{};
@@ -1363,15 +1408,17 @@ function update(regionKey){
  (clinical.items||[]).forEach(study=>{const article=add(evidence,'article');article.style.marginTop='16px';const heading=add(article,'h3');heading.style.fontSize='0.95rem';const link=add(heading,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
  const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
  const result=add(article,'p',study.excerpt?'Results excerpt: “'+study.excerpt+'”':'Read the linked paper for findings; this feed does not infer results from the title.');result.className='metric-desc';});
- const note=add(evidence,'p','PubMed / NLM · '+(clinical.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(clinical.retrieved||'date unavailable')+'. Short excerpts may omit essential context. Read the full methods and results before applying findings; publication alone does not establish clinical benefit.');note.className='metric-desc';note.style.marginTop='16px';
+ const note=add(evidence,'p','PubMed / NLM · '+(clinical.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(clinical.retrieved||clinical.attempted_at||'date unavailable')+'. Short excerpts may omit essential context. Read the full methods and results before applying findings; publication alone does not establish clinical benefit.');note.className='metric-desc';note.style.marginTop='16px';
  }
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
- feed.closest('.card').querySelector('h2').textContent=key==='global'?'Latest Industry Headlines':r.name+' — Industry Headlines';
- add(feed,'p',key==='global'?'Imaging-AI news from multiple publishers and region-scoped searches; selected reports, not comprehensive coverage.':'Imaging-AI stories with an explicit '+r.name+' country, regional or institution reference in the headline. Broad search matches alone are excluded; coverage varies by language and publisher.');
+ feed.closest('.card').querySelector('h2').textContent=key==='global'?'Industry Headlines — Past 30 Days':r.name+' — Industry Headlines';
+ add(feed,'p',key==='global'?'Imaging-AI reports published in the past 30 days. Commercial market-report promotions and likely duplicate events are excluded; coverage is selective.':'Past 30 days: imaging-AI stories with an explicit '+r.name+' country, regional or institution reference in the headline. Broad search matches alone are excluded; coverage varies by language and publisher.');
  if(!r.news.length)add(feed,'p',key==='global'?'No headlines available from the configured feeds. This does not mean no developments occurred.':'No clearly region-matched headlines were found in the current feeds. This does not mean there were no developments.');
  r.news.forEach(n=>{const item=add(feed,'article');item.style.marginBottom='16px';const a=add(item,'a',n.title);a.href=n.url;a.target='_blank';a.rel='noopener noreferrer';source(item,n.source,n.date);if(n.searchMatched)add(item,'span',' · Found through regional search');});
  const status=document.getElementById('ai-source-status');status.replaceChildren();
  const entries=Object.entries(payload.sources);
+ const health=add(status,'ul');
+ (payload.sourceHealth||[]).forEach(s=>{const item=add(health,'li',s.name+': '+s.status+(s.attempted?' · checked '+s.attempted:'')+(s.reason?' — '+s.reason:''));});
  const dates=[...new Set(entries.filter(([,s])=>s.status==='live'&&s.fetched_at).map(([,s])=>s.fetched_at.slice(0,10)))];
  const dateLine=add(status,'p',dates.length===1?'Last refreshed: '+dates[0]:dates.length?'Retrieval dates vary by source; see details.':'Retrieval dates are shown in source details.');
  dateLine.className='metric-desc';
@@ -1383,7 +1430,7 @@ function update(regionKey){
   else if(s.url.includes('clinicaltrials.gov')){name='ClinicalTrials.gov';description='Registered research studies';}
   else {name='Industry news';description='Reports from multiple publishers';}
   if(!groups.has(name))groups.set(name,{url,description,unavailable:false});
-  if(s.status!=='live')groups.get(name).unavailable=true;
+  if(!['live','supplied'].includes(s.status))groups.get(name).unavailable=true;
  });
  const summaryList=add(status,'ul');summaryList.style.paddingLeft='20px';
  groups.forEach((group,name)=>{const row=add(summaryList,'li');const link=add(row,'a',name);link.href=group.url;link.target='_blank';link.rel='noopener noreferrer';add(row,'span',': '+group.description+(group.unavailable?' — some data unavailable':''));});
@@ -1487,6 +1534,59 @@ def regional_news_match(title, key):
                for term in REGIONAL_NEWS_TERMS.get(key, []))
 
 
+def select_recent_news(items, today=None):
+    """A bounded recent window; conservative promotional and event duplicate filters."""
+    today = today or date.today()
+    selected = []
+    for item in sorted(items, key=lambda x: x.get('published', ''), reverse=True):
+        try:
+            age = (today - date.fromisoformat(item.get('published', ''))).days
+        except (ValueError, TypeError):
+            continue
+        if not 0 <= age <= 30:
+            continue
+        title = item['title']
+        if re.search(r'market (?:size|report)|growth analysis report|market.*(?:forecast|CAGR)|marketsandmarkets|researchandmarkets', title + ' ' + item.get('source', ''), re.I):
+            continue
+        normalized = re.sub(r'[^a-z0-9 ]', ' ', title.casefold())
+        tokens = set(normalized.split()) - {'the','a','an','in','to','for','and','of','with','its','ai','imaging','medical'}
+        duplicate = False
+        for previous in selected:
+            other = re.sub(r'[^a-z0-9 ]', ' ', previous['title'].casefold())
+            other_tokens = set(other.split()) - {'the','a','an','in','to','for','and','of','with','its','ai','imaging','medical'}
+            same_event_date = previous.get('published') == item.get('published')
+            overlap = len(tokens & other_tokens) / max(1, min(len(tokens), len(other_tokens)))
+            funding = re.search(r'funding|raises|bags|series [abc]', normalized) and re.search(r'funding|raises|bags|series [abc]', other)
+            company = normalized.split()[0] if normalized.split() else ''
+            funding_duplicate = same_event_date and funding and len(company) >= 3 and company in other_tokens and bool(re.search(r'\b\d+\b', normalized)) and set(re.findall(r'\b\d+\b',normalized)) == set(re.findall(r'\b\d+\b',other))
+            if item['url'] == previous['url'] or normalized == other or (same_event_date and overlap >= .75) or funding_duplicate:
+                duplicate = True
+                break
+        if not duplicate:
+            selected.append(item)
+    return selected
+
+
+def source_health(payload):
+    checked = payload['generated_at'][:10]
+    result = [dict(name='FDA', status='available' if payload['fda_benchmark']['metric'].get('value') is not None else 'unavailable',
+                   attempted=checked, reason=payload['fda_benchmark']['metric'].get('reason', ''))]
+    for key, region in payload['regions'].items():
+        observation = region['metrics']['prospective_studies']
+        result.append(dict(name=region['name'] + ' research count', status='available' if observation.get('value') is not None else 'unavailable', attempted=checked, reason=observation.get('reason', '')))
+    for key, name in [('clinical_evidence','PubMed clinical evidence'),('deployment_evidence','PubMed implementation research')]:
+        feed = payload.get(key, {})
+        result.append(dict(name=name, status=feed.get('status','unavailable'), attempted=feed.get('attempted_at',checked), reason=feed.get('reason','')))
+    for key, observation in payload.get('public_context', {}).items():
+        if observation.get('value') is None:
+            result.append(dict(name='Background collector: '+observation['label'],status='unavailable',attempted=checked,reason=observation.get('reason','')))
+    failures = payload.get('news_failures', [])
+    result.append(dict(name='News feeds', status='partial' if failures and payload.get('news') else 'unavailable' if failures else 'available', attempted=checked, reason=' '.join(failures)))
+    for error in payload.get('quality_messages', []):
+        result.append(dict(name='Supplied data validation', status='failed', attempted=checked, reason=error))
+    return result
+
+
 def template_view(payload):
     """Project validated observations onto the supplied nine-card AI template."""
     sources = {}
@@ -1517,16 +1617,12 @@ def template_view(payload):
         observations = [benchmark['metric'], metrics['prospective_studies'],
                         benchmark['annual_change'], benchmark['company_count']]
         cards = [card(m) for m in observations]
-        research_source = cards[1]['source']
-        if research_source:
-            sources.pop(research_source, None)
-        cards[1]['source'] = None
-        cards[1]['description'] = (
-            'Active registered imaging-AI studies. Counts indicate research activity, '
-            'not completed studies or proven clinical benefit. Regional counts use selected countries '
-            'and may overlap for multinational studies.'
-            + (' Worldwide registry query.' if key == 'global' else ' Country sample: '
-               + ', '.join(name for _, name in COUNTRY_SAMPLES[key]) + '.'))
+        automatic_research = payload.get('data_collection', {}).get('automatic_sources', {}).get(key, {}).get('metrics', {}).get('prospective_studies', {})
+        if cards[1]['source'] and metrics['prospective_studies'].get('methodology') != automatic_research.get('methodology'):
+            sources[cards[1]['source']].update(status='supplied', fetched_at=metrics['prospective_studies'].get('as_of'))
+        # The exact query remains a clickable source, without a long raw URL in the prose.
+        if cards[1]['source'] and 'clinicaltrials.gov/api/' in cards[1]['source']:
+            cards[1]['description'] = cards[1]['description'].split(' Exact API query: ')[0]
         series = benchmark['series']
         points = series.get('points', [])
         editorial = region['editorial']
@@ -1535,24 +1631,24 @@ def template_view(payload):
             'FDA figures are a US regulatory benchmark. Headlines are a global feed. '
             'Missing values require validated source data and are not zeros.')
         if key == 'global':
-            summary = "The global market for medical imaging AI is expanding rapidly, driven by rising diagnostic volumes and advanced health IT infrastructure worldwide. Regional hubs serve as key commercial proving grounds, with North America leading in market share, followed by fast-growing adoption across Europe and the Asia-Pacific region. International regulatory bodies significantly shape the landscape, with various software-as-a-medical-device (SaMD) algorithms deployed globally in radiology, cardiology, and emergency triage. Major hospital networks increasingly rely on enterprise platforms and vendor-neutral marketplaces to integrate these tools into clinical workflows. Despite strong urban adoption, widespread global growth faces ongoing friction regarding fragmented compliance, complex reimbursement pathways, and varying insurance payout models for AI-assisted scans across different healthcare systems."
-        regional_descriptions = {
-            "northAmerica": "North America provides an established commercial setting for medical imaging AI, with the United States and Canada offering different routes into hospital and outpatient care. Imaging platforms can support interpretation, prioritisation, and workflow efficiency, but successful deployment depends on fitting local clinical practice and demonstrating value to healthcare providers. In the United States, FDA oversight is central to market access for regulated products; Canadian requirements and purchasing arrangements must be considered separately. Across the region, clinical validation, integration with existing imaging systems, data protection, and sustainable payment arrangements shape the path from pilot projects to routine use.",
-            "europe": "Europe offers a diverse setting for medical imaging AI, spanning national health services, university hospitals, and private providers with different procurement and funding arrangements. Imaging tools can help clinicians interpret examinations and organise workflows, but adoption requires evidence that they are useful within the intended care setting. In the European Union, medical-device requirements interact with the AI Act, while countries outside the EU follow their own frameworks. Clinical validation, health-data protection, interoperability, and local reimbursement decisions are key considerations. Suppliers therefore need to plan for country-specific implementation rather than treating Europe as a single uniform market.",
-            "asia": "Asia-Pacific encompasses a wide range of healthcare systems, digital infrastructure, and regulatory environments, creating varied opportunities for medical imaging AI. Tools for interpretation support, examination prioritisation, and workflow management may be valuable where imaging services face pressure on staff and capacity. Deployment strategies must reflect differences between countries and between major urban centres and less connected settings. Local clinical validation, representative patient data, integration with hospital systems, and workforce training are essential considerations. Sustainable growth depends on clear governance and purchasing arrangements, alongside evidence that the technology improves care in the settings where it is used.",
-            "middleEast": "The Middle East presents a varied landscape for medical imaging AI, with healthcare investment and digital-health priorities differing substantially across countries. The UAE's work on smart health services illustrates interest in AI applications, digital infrastructure, and stronger health-data governance. Imaging tools can support interpretation and workflow management, but a successful deployment requires alignment with the needs and capabilities of each healthcare organisation. Country-specific medical-device requirements, cybersecurity, data-sharing rules, and clinical validation must be addressed. Long-term adoption also depends on staff training, reliable integration with existing systems, and a clear case for clinical and operational value.",
-            "southAmerica": "Latin America offers opportunities for medical imaging AI across public health services and private provider networks, with considerable variation in resources and digital readiness. Tools that support interpretation and workflow management may help healthcare teams make better use of available imaging capacity, provided they are validated for the intended patients and care settings. Regional digital-health efforts emphasise stronger information systems, responsible AI governance, and workforce capabilities. Deployment must account for national regulatory and data-protection requirements, local procurement arrangements, and interoperability with existing hospital systems. Affordability, connectivity, training, and measurable clinical value are central considerations for sustainable adoption.",
-        }
-        if key in regional_descriptions:
-            summary = regional_descriptions[key]
+            summary = "Imaging AI includes tools for image analysis, prioritisation and clinical workflow support. Its usefulness depends on the intended task, validation in the relevant care setting, integration and a sustainable purchasing model. Regulatory authorisation, registered research and routine clinical adoption are different measures; the indicators below should be read separately."
+        if key != 'global':
+            summary = (region['name'] + ': assess imaging AI at the country and provider level. '
+                'The research count below covers the named country sample; it does not measure adoption or market size. '
+                'When comparable local commercial or regulatory data are unavailable, no numerical estimate is substituted. '
+                'The implementation considerations below are general guidance, not measured regional trends.')
+        if editorial.get('summary'):
+            summary = editorial['summary']
         regions[key] = dict(name=region['name'], summary=summary, metrics=cards,
+            editorialDate=editorial.get('as_of') if editorial.get('summary') else '2026-10-12',
+            editorialSource=editorial.get('source') if editorial.get('summary') else {'name':'RSNA implementation guidance (23 February 2026)', 'url':'https://www.rsna.org/-/media/files/rsna/government-relations/astprfiacceleratingai22326rsnaresponse.pdf'},
             years=[p['label'] for p in points], approvals=[p['value'] for p in points],
             approvalTitle=series['label'], approvalNote=benchmark['notice'] + ' ' + series.get('methodology', ''),
             approvalSource=cards[0]['source'], months=[], rateValues=[],
             rateTitle='Policy-rate trend — not available',
             rateNote='No comparable monthly regional policy-rate series is configured. The latest sourced rate is shown in the metric card.',
             rateSource=None, news=[])
-        for item in payload['news']:
+        for item in select_recent_news(payload['news']):
             if not imaging_ai_news_relevant(item['title']):
                 continue
             # Search membership is not proof of geographic relevance.
@@ -1578,7 +1674,7 @@ def template_view(payload):
             if len(selected) >= (12 if key == 'global' else 8):
                 break
         regions[key]['news'] = selected
-    registry = payload.get('registry_chart', {})
+    registry = {key: block['metrics']['prospective_studies'] for key, block in payload['regions'].items()}
     labels = {'global': 'Worldwide', 'northAmerica': 'North America (sample)',
               'europe': 'Europe (sample)', 'asia': 'Asia-Pacific (sample)',
               'middleEast': 'Middle East (sample)', 'southAmerica': 'Latin America (sample)'}
@@ -1597,12 +1693,17 @@ def template_view(payload):
             'Unavailable counts are not zeros. '
             + ('Registry snapshot: ' + ', '.join(dates) + '. ' if dates else '')
             + 'Country samples — ' + samples + '.')
-    chart = dict(title='Active Medical Imaging AI Studies — Worldwide and Regional Samples',
+    if payload.get('research_is_curated'):
+        note = 'Supplied research counts are included. Definitions and observation periods can differ: do not rank or sum these counts without checking their sources. ' + ' '.join(
+            REGIONS[k] + ': ' + str(v.get('period', '')) + ' — ' + str(v.get('methodology', 'Unavailable')) for k, v in registry.items())
+    chart = dict(title=('Research Study Counts — Check Scope and Definitions' if payload.get('research_is_curated') else 'Active Medical Imaging AI Studies — Worldwide and Regional Samples'),
                  labels=list(labels.values()),
                  values=[registry.get(key, {}).get('value') for key in labels],
-                 note=note, source=chart_source)
+                 note=note, source=None if payload.get('research_is_curated') else chart_source)
+    if payload.get('research_is_curated'):
+        sources.pop(chart_source, None)
     return dict(generated_at=payload['generated_at'], regions=regions, sources=sources,
-                registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}),
+                sourceHealth=source_health(payload), registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}),
                 deploymentEvidence=payload.get('deployment_evidence', {}))
 
 
@@ -1675,7 +1776,10 @@ def main():
             if not backup.exists():
                 atomic_write(backup, template)
         from macro_dashboard import publish_macro
-        publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline)
+        macro_payload = publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline)
+        for region, economy in macro_payload['economics'].items():
+            if economy['status'] != 'available':
+                logging.warning('IMF %s: %s', region, economy['status'])
         atomic_write(destination, rendered)
         logging.info('Updated %s', destination)
     except (OSError, ValueError) as exc:

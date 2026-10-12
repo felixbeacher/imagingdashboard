@@ -47,6 +47,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Validate collectors and rendering
+        run: python -m unittest discover -p 'test_*.py'
+
       # These updaters use the Python standard library. Optional Gemini
       # commentary is not enabled, so requirements.txt is not needed.
       - name: Fetch data and build AI and Glob Econ dashboards
@@ -109,6 +112,9 @@ jobs:
                   print(f'::warning::{label}: FDA benchmark unavailable; see the source notice on the published page.')
               if payload.get('quality_messages'):
                   print(f'::warning::{label}: {len(payload["quality_messages"])} curated data checks failed; affected observations were withheld.')
+              for feed_key in ('clinical_evidence', 'deployment_evidence'):
+                  if payload.get(feed_key, {}).get('status') != 'live':
+                      print(f'::warning::{feed_key}: retrieval unavailable; see page source status.')
               if payload.get('news_failures'):
                   print(f'::warning::{label}: one or more headline feeds were unavailable.')
           for filename in ('global-macro.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html'):
