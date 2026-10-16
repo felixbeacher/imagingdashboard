@@ -6,6 +6,7 @@ must be regenerated when risk-data.csv changes; its fingerprint is checked here.
 """
 from pathlib import Path
 from datetime import datetime, timezone
+from macro_briefing import briefings
 import csv
 import hashlib
 import html
@@ -59,11 +60,14 @@ def read_risk(root):
 
 
 def build_payload(root, fetch_economics, offline=False, fetch_financing=None):
-    return dict(generated_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),
+    payload = dict(generated_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),
                 economics=fetch_economics(offline), risk=read_risk(root),
                 financing=fetch_financing(offline) if fetch_financing else [],
                 economic_mode='offline' if offline else 'source_refresh',
                 risk_notice='Supplied historical snapshot; economic refreshes do not update this risk dataset.')
+
+    payload["briefing"] = briefings(payload, offline)
+    return payload
 
 
 def render(template, payload):

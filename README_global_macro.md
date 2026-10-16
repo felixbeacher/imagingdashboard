@@ -33,3 +33,11 @@ Glob Econ now connects its historical risk chart and IMF outlook to financing, h
 The macro builder accepts an optional financing callback. The AI updater supplies US EFFR and US medical-care CPI collection, preserving observation periods, source links and failure states. These US benchmarks do not change with regional economic selection. Routine weekly builds and the local macro API use the same implementation. No extra library is required.
 
 Validation: 32 Python tests, an offline CLI publication check, a live macro build, desktop/mobile browser checks, region switching and calculator valid/empty-input checks.
+
+
+## Gemini economic briefing
+The economic-outlook panel now contains a region-specific briefing. `macro_briefing.py` sends only the collected economic observations, the dated risk snapshot and (for global/North America coverage) explicitly US-only financing observations to Gemini. One build-time request covers all regions. No API credentials or browser-side requests are published. Existing explanatory and methodology text remains editorial.
+
+Add an Actions repository secret named `GEMINI_API_KEY` under Settings → Secrets and variables → Actions, then run Weekly Dashboard Update. Optionally set the Actions variable `MACRO_GEMINI_MODEL` (default `gemini-3.8-flash`). Local builds use the same environment variables. Never put keys in HTML or commit them.
+
+Without a key, in offline mode, on a provider error, or if response validation fails, the page shows a clearly labelled deterministic data summary. The workflow reports the status. Generated interpretation displays the model, generation time and links to supplied inputs; these links identify evidence, not independent verification of the model's interpretation. Numeric claims remain in the sourced indicator cards; generated prose cannot contain digits, percentages, currency symbols or HTML. Missing observations are never imputed. The risk cutoff remains visible regardless of generation date. Scheduled builds refresh the briefing; merely opening the page does not.
