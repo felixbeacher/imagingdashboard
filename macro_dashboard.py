@@ -58,9 +58,10 @@ def read_risk(root):
                 csv_sha256=digest)
 
 
-def build_payload(root, fetch_economics, offline=False):
+def build_payload(root, fetch_economics, offline=False, fetch_financing=None):
     return dict(generated_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),
                 economics=fetch_economics(offline), risk=read_risk(root),
+                financing=fetch_financing(offline) if fetch_financing else [],
                 economic_mode='offline' if offline else 'source_refresh',
                 risk_notice='Supplied historical snapshot; economic refreshes do not update this risk dataset.')
 
@@ -80,9 +81,9 @@ def atomic_write(path, content):
         if os.path.exists(tmp):os.unlink(tmp)
 
 
-def publish_macro(destination, root, fetch_economics, offline=False):
+def publish_macro(destination, root, fetch_economics, offline=False, fetch_financing=None):
     root=Path(root);destination=Path(destination)
-    payload=build_payload(root, fetch_economics, offline)
+    payload=build_payload(root, fetch_economics, offline, fetch_financing)
     page=render((root/'global-macro.template.html').read_text(encoding='utf-8'),payload)
     destination.mkdir(parents=True,exist_ok=True)
     for name in ['risk.svg','risk-data.csv','global-risk-report.html']:
@@ -92,13 +93,14 @@ def publish_macro(destination, root, fetch_economics, offline=False):
 
 
 class MacroService:
-    def __init__(self,root,fetch_economics,offline=False,cache_seconds=900):
+    def __init__(self,root,fetch_economics,offline=False,cache_seconds=900,fetch_financing=None):
         self.root=Path(root);self.fetch=fetch_economics;self.offline=offline;self.seconds=cache_seconds
+        self.financing=fetch_financing
         self.cached=None;self.updated=0;self.lock=threading.Lock()
     def payload(self):
         with self.lock:
             if self.cached is None or time.monotonic()-self.updated>=self.seconds:
-                self.cached=build_payload(self.root,self.fetch,self.offline);self.updated=time.monotonic()
+                self.cached=build_payload(self.root,self.fetch,self.offline,self.financing);self.updated=time.monotonic()
             return self.cached
     def html(self):
         return render((self.root/'global-macro.template.html').read_text(encoding='utf-8'),self.payload())

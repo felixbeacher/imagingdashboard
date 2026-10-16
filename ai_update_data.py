@@ -930,6 +930,25 @@ def fetch_economic_outlook(offline=False):
         return unavailable
 
 
+def financing_background(offline=False):
+    """Country-specific context; failures never acquire a success timestamp."""
+    items=[]
+    for label, fetch, source in [
+        ('US effective federal funds rate', us_financing, {'name':'Federal Reserve Bank of New York', 'url':'https://www.newyorkfed.org/markets/reference-rates/effr'}),
+        ('US medical-care CPI — annual change', us_medical_inflation, {'name':'US Bureau of Labor Statistics', 'url':'https://data.bls.gov/timeseries/CUUR0000SAM'})]:
+        item=dict(label=label,value=None,period='',as_of=None,retrieved=None,attempted_at=date.today().isoformat(),source=source,reason='Offline: source was not requested.')
+        if not offline:
+            try:
+                observation=fetch()
+                if not finite_number(observation.get('value')):raise ValueError('Invalid financing observation')
+                item.update(observation,label=label,retrieved=date.today().isoformat(),reason='')
+            except Exception as exc:
+                logging.warning('%s unavailable: %s',label,exc)
+                item['reason']='Source could not be retrieved or validated; no substitute estimate is used.'
+        items.append(item)
+    return items
+
+
 def regional_economic_background(offline=False):
     """Country-sample medians, never labelled as IMF regional aggregates."""
     year = date.today().year
@@ -1244,7 +1263,7 @@ class DashboardService:
 def make_handler(service):
     from macro_dashboard import MacroService
     macro = MacroService(service.template_path.parent, regional_economic_background,
-                         service.offline, service.cache_seconds)
+                         service.offline, service.cache_seconds, financing_background)
     class DashboardRequestHandler(BaseHTTPRequestHandler):
         def send_content(self, status, content, content_type):
             encoded = content.encode('utf-8') if isinstance(content, str) else content
@@ -1776,7 +1795,7 @@ def main():
             if not backup.exists():
                 atomic_write(backup, template)
         from macro_dashboard import publish_macro
-        macro_payload = publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline)
+        macro_payload = publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline, financing_background)
         for region, economy in macro_payload['economics'].items():
             if economy['status'] != 'available':
                 logging.warning('IMF %s: %s', region, economy['status'])

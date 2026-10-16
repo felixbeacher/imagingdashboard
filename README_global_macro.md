@@ -25,3 +25,11 @@ The invalid placeholder dashboard_data.json was removed. The updater uses automa
 ## Glob Econ refinement
 
 The navigation label is now Glob Econ. The new page is headed Global Economic Background and loads risk.svg. The AI regional introduction is now Summary: Global Market for Imaging AI in the global view and changes with the selected region. Economic projection and country-coverage detail is expandable to keep the new page concise. Existing dated observations were retained; this presentation update does not claim a new source refresh.
+
+## Valuation and financing integration — 16 October 2026
+
+Glob Econ now connects its historical risk chart and IMF outlook to financing, healthcare cost pressure and a qualitative valuation guide. The FTSE reference file supplied fixed series and a simulated refresh, so its figures and bubble scores were not imported. The new guide corrects scope and interpretation issues and links to primary reference sources. A clearly labelled, user-input purchasing-power calculator uses (1 + nominal growth) / (1 + inflation) - 1.
+
+The macro builder accepts an optional financing callback. The AI updater supplies US EFFR and US medical-care CPI collection, preserving observation periods, source links and failure states. These US benchmarks do not change with regional economic selection. Routine weekly builds and the local macro API use the same implementation. No extra library is required.
+
+Validation: 32 Python tests, an offline CLI publication check, a live macro build, desktop/mobile browser checks, region switching and calculator valid/empty-input checks.
