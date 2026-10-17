@@ -7,6 +7,7 @@ must be regenerated when risk-data.csv changes; its fingerprint is checked here.
 from pathlib import Path
 from datetime import datetime, timezone
 from macro_briefing import briefings
+from ftse_reference import render_reference
 import csv
 import hashlib
 import html
@@ -72,7 +73,7 @@ def build_payload(root, fetch_economics, offline=False, fetch_financing=None):
 
 def render(template, payload):
     raw=json.dumps(payload, ensure_ascii=False, allow_nan=False).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
-    return template.replace('<!-- MACRO_DATA -->', raw)
+    return template.replace('<!-- MACRO_DATA -->', raw).replace('<!-- FTSE_REFERENCE -->', render_reference())
 
 
 def atomic_write(path, content):

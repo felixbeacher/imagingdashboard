@@ -1,0 +1,46 @@
+{
+  "status": "illustrative_unverified",
+  "source_file": "ftse_100_valuation_bubble_analysis_dashboard.html",
+  "source_period": "5Y view, labelled 2022\u20132026",
+  "imported_on": "2026-10-17",
+  "labels": [
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "2026"
+  ],
+  "series": {
+    "cape": [
+      13.8,
+      14.2,
+      15.0,
+      15.7,
+      16.2
+    ],
+    "buffett": [
+      72.0,
+      76.0,
+      82.0,
+      85.0,
+      88.0
+    ],
+    "pe": [
+      9.8,
+      10.4,
+      11.1,
+      11.5,
+      11.8
+    ],
+    "pb": [
+      1.45,
+      1.52,
+      1.62,
+      1.7,
+      1.75
+    ]
+  },
+  "standard_score": 34,
+  "source_classification": "Undervalued",
+  "methodology": "The supplied page contains fixed arrays and a fixed gauge value, without underlying observations or a reproducible scoring formula. Not a live or independently verified market assessment."
+}
