@@ -51,6 +51,14 @@ class CTDashboardTests(unittest.TestCase):
         self.assertNotIn('An automated refresh does not make annual observations monthly data',t)
         self.assertIn('Where CT fits in to clinical care',t)
         self.assertIn('ct-region-primary',t)
+        self.assertIn('United Imaging Healthcare',t)
+        self.assertIn('global.united-imaging.com/en/product-service/products/ct',t)
+        self.assertIn('id="ct-comparison-warning"',t)
+        self.assertIn("function reportRegionalAnalysis(regionKey)",t)
+        self.assertIn('.ct-page .ct-chart svg{display:block;width:100%;min-width:700px',t)
+        self.assertIn("Source observation years range from",t)
+        self.assertIn("latestPoint=items=>",t)
+        self.assertIn("signals.push(name+",t)
         self.assertLess(t.index('id="ct-market"'), t.index('id="ct-industry"'))
         self.assertLess(t.index('id="ct-industry"'), t.index('Global CT manufacturer shares · DBS estimate'))
         self.assertLess(t.index('Global CT manufacturer shares · DBS estimate'), t.index('Selected CT product portfolios'))
@@ -86,22 +94,23 @@ class CTDashboardTests(unittest.TestCase):
                     oecd_fetch=bad,pubmed_fetch=self.fake_pubmed)
 
     def test_2025_2026_2027_ct_scenario_from_2024_actuals(self):
-        points=[{'year':2022,'value':20},{'year':2023,'value':21.5},
-                {'year':2024,'value':23}]
+        points=[{'year':2021,'value':20},{'year':2022,'value':21.5},
+                {'year':2023,'value':22},{'year':2024,'value':24.2}]
         forecast=ct.ct_trend_scenario(points,'equipment',through=2027)
         self.assertEqual(forecast['status'],'illustrative')
         self.assertEqual([x['year'] for x in forecast['points']],[2025,2026,2027])
         self.assertTrue(forecast['capped'])  # 2022-2024 annualised growth exceeds 5%
         self.assertAlmostEqual(forecast['annual_rate'],0.05,places=4)
-        self.assertAlmostEqual(forecast['points'][0]['value'],24.15)
+        self.assertAlmostEqual(forecast['points'][0]['value'],25.41)
+        self.assertLessEqual(forecast['backtest_error_pct'],10.0)
         self.assertTrue(all(x['low'] < x['value'] < x['high'] for x in forecast['points']))
         self.assertGreater(forecast['points'][2]['high']-forecast['points'][2]['low'],
                            forecast['points'][0]['high']-forecast['points'][0]['low'])
         self.assertEqual(points[-1]['year'],2024)  # actual history remains unchanged
 
     def test_actual_2025_supersedes_projected_2025_and_sparse_history_does_not_infer(self):
-        points=[{'year':2023,'value':100},{'year':2024,'value':104},
-                {'year':2025,'value':107}]
+        points=[{'year':2022,'value':98},{'year':2023,'value':100},
+                {'year':2024,'value':104},{'year':2025,'value':107}]
         forecast=ct.ct_trend_scenario(points,'exams',through=2027)
         self.assertEqual([x['year'] for x in forecast['points']],[2026,2027])
         self.assertFalse(ct.ct_trend_scenario(points[:2],'exams')['points'])
@@ -111,6 +120,47 @@ class CTDashboardTests(unittest.TestCase):
         self.assertFalse(ct.ct_trend_scenario([
             {'year':2021,'value':0},{'year':2023,'value':2},
             {'year':2024,'value':4}],'exams')['points'])
+
+    def test_ct_scenarios_require_consecutive_years_and_good_holdout(self):
+        sample=[{'year':2021,'value':20},{'year':2022,'value':20},
+                {'year':2023,'value':20},{'year':2024,'value':40}]
+        error=ct.ct_trend_scenario(sample,'equipment')
+        self.assertEqual(error['status'],'unavailable')
+        self.assertGreater(error['backtest_error_pct'],10)
+        self.assertEqual(error['points'],[])
+        with_gap=[{'year':2020,'value':20},{'year':2021,'value':21},
+                  {'year':2023,'value':22},{'year':2024,'value':23}]
+        self.assertEqual(ct.ct_trend_scenario(with_gap,'equipment')['status'],'unavailable')
+        stale=[{'year':2019,'value':19},{'year':2020,'value':20},
+               {'year':2021,'value':21},{'year':2022,'value':22}]
+        self.assertEqual(ct.ct_trend_scenario(stale,'equipment')['status'],'unavailable')
+
+    def test_pubmed_screen_case_reports_and_diversify_topics(self):
+        xml=b'''<PubmedArticleSet>
+        <PubmedArticle><MedlineCitation><PMID>111</PMID><Article>
+        <ArticleTitle>Cardiac computed tomography assessment</ArticleTitle>
+        <Journal><Title>Radiology</Title></Journal>
+        <PublicationTypeList><PublicationType>Comparative Study</PublicationType></PublicationTypeList>
+        <ArticleDate><Year>2026</Year><Month>03</Month><Day>08</Day></ArticleDate>
+        </Article></MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>222</PMID><Article>
+        <ArticleTitle>A rare case of coronary CT angiography diagnosis</ArticleTitle>
+        <Journal><Title>Case Reports</Title></Journal>
+        <PublicationTypeList><PublicationType>Case Reports</PublicationType></PublicationTypeList>
+        </Article></MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>333</PMID><Article>
+        <ArticleTitle>Photon-counting CT spectral imaging in patients</ArticleTitle>
+        <Journal><Title>European Radiology</Title></Journal>
+        <PublicationTypeList><PublicationType>Clinical Trial</PublicationType></PublicationTypeList>
+        <ArticleDate><Year>2026</Year><Month>04</Month><Day>07</Day></ArticleDate>
+        </Article></MedlineCitation></PubmedArticle>
+        </PubmedArticleSet>'''
+        articles=ct.parse_pubmed(xml,['111','222','333'])
+        self.assertEqual({x['category'] for x in articles},
+                         {'Cardiac / vascular CT','Photon-counting CT'})
+        self.assertTrue(all(x['url']!='https://pubmed.ncbi.nlm.nih.gov/222/' for x in articles))
+        self.assertIn('Verified indexed study type:',articles[0]['selection_basis'])
+        self.assertLess(articles[0]['priority'],30)
 
     def test_ct_market_estimates_are_dated_and_source_backed(self):
         import ct_market
