@@ -90,7 +90,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -197,6 +197,29 @@ jobs:
           summary.append('MRI: '+str(mri_coverage['equipment'])+' scanner and '+
                          str(mri_coverage['exams'])+' examination observations; PubMed '+
                          mri_data['pubmed']['status'])
+
+          # MRI mirrors the CT hierarchy with MRI-specific measurements and sources.
+          mri_command = [sys.executable, 'mri_dashboard.py',
+                         '--template', 'mri.template.html',
+                         '--output', str(output / 'mri.html')]
+          subprocess.run(mri_command, check=True, timeout=180)
+          mri_html = (output / 'mri.html').read_text(encoding='utf-8')
+          mri_match = re.search(r'<script id="mri-data" type="application/json">([\\s\\S]*?)</script>', mri_html)
+          if not mri_match:
+              raise SystemExit('MRI dashboard source data missing')
+          mri_data = json.loads(mri_match.group(1))
+          if not mri_data.get('market', {}).get('size', {}).get('entries'):
+              raise SystemExit('MRI market reference missing')
+          if round(sum(x['value'] for x in mri_data['market']['shares']['entries']), 4) != 100:
+              raise SystemExit('MRI shares do not sum to 100')
+          mri_scanners = sum(len(c['equipment']['series']['MRI']) for c in mri_data['oecd']['countries'].values())
+          mri_exams = sum(len(c['exams']['series']['MRI']) for c in mri_data['oecd']['countries'].values())
+          print('::notice::MRI: OECD scanner observations='+str(mri_scanners)+
+                ', examinations='+str(mri_exams)+', PubMed='+mri_data['pubmed']['status'])
+          summary.append('MRI: '+str(mri_scanners)+' scanner and '+str(mri_exams)+
+                         ' examination observations; PubMed '+mri_data['pubmed']['status'])
+          if not mri_scanners or not mri_exams:
+              print('::warning::Some OECD MRI observations are unavailable; no values imputed.')
 
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
@@ -420,6 +443,45 @@ jobs:
           node --check _site/mri-runtime.validate.js
           rm _site/mri-runtime.validate.js
 
+      - name: Validate MRI dashboard and browser JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import re
+          from html.parser import HTMLParser
+          from pathlib import Path
+          html=Path('_site/mri.html').read_text(encoding='utf-8')
+          class Check(HTMLParser):
+              def __init__(self):super().__init__();self.ids=[]
+              def handle_starttag(self,tag,attrs):
+                  self.ids.extend(v for k,v in attrs if k=='id')
+          parser=Check();parser.feed(html)
+          if len(parser.ids)!=len(set(parser.ids)):
+              raise SystemExit('Duplicate MRI HTML IDs')
+          for needed in ('mri-overview','mri-market','mri-research','mri-clinical','mri-industry',
+                         'mri-region','mri-share-bars','mri-data'):
+              if needed not in parser.ids:raise SystemExit('MRI section missing: '+needed)
+          for forbidden in ('AI Approvals vs. MedTech Venture Capital Investment',
+                            'DBS estimate','photon-counting CT'):
+              if forbidden in html:raise SystemExit('Obsolete MRI text: '+forbidden)
+          m=re.search(r'<script id="mri-data" type="application/json">([\\s\\S]*?)</script>',html)
+          if not m:raise SystemExit('MRI source JSON missing')
+          d=json.loads(m.group(1))
+          if d['market']['shares']['reference_year']!=2022:
+              raise SystemExit('MRI market share year mismatch')
+          if not all('MRI' in c['equipment']['series'] and 'MRI' in c['exams']['series']
+                     for c in d['oecd']['countries'].values()):
+              raise SystemExit('MRI modality data missing')
+          scripts=re.findall(r'<script>([\\s\\S]*?)</script>',html)
+          if len(scripts)!=1:raise SystemExit('MRI JavaScript missing')
+          Path('_site/mri.validate.js').write_text(scripts[0],encoding='utf-8')
+          print('MRI source, dates, navigation and DOM verified')
+          PY
+          node --check _site/mri.validate.js
+          rm _site/mri.validate.js
+
       - name: Archive validated iShares valuation readings
         # The public provider exposes current ratios, not a historical download.
         # Preserve only verified source-dated observations for future charting.
@@ -475,6 +537,19 @@ jobs:
             git add mri.html
             git commit -m 'Refresh published MRI observations [skip ci]'
             git push origin HEAD:main || echo '::warning::MRI snapshot not archived; deployed page unaffected'
+          fi
+
+      - name: Archive refreshed MRI page in source repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp _site/mri.html mri.html
+          if ! git diff --quiet -- mri.html; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add mri.html
+            git commit -m 'Refresh published MRI observations [skip ci]'
+            git push origin HEAD:main || echo '::warning::MRI snapshot could not be archived; deployed page is current.'
           fi
 
       - name: Configure GitHub Pages
