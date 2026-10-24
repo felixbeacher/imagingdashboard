@@ -327,7 +327,7 @@ def render(template,payload):
     marker='<!-- MRI_DATA -->'
     if template.count(marker)!=1:
         raise ValueError('MRI template must have exactly one source-backed data slot')
-    if 'ct-overview' not in template or 'ct-papers' not in template:
+    if 'mri-overview' not in template or 'mri-papers' not in template:
         raise ValueError('MRI template missing required dashboard sections')
     return template.replace(marker,safe_json(payload))
 
