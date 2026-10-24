@@ -35,7 +35,7 @@ class ReviewFixTests(unittest.TestCase):
   self.assertNotIn('For growth, inflation and broader market pressures, see',rendered)
   self.assertNotIn('id="macro-link"',rendered)
   self.assertIn("if(hasData&&id!=='fdaTrendChart')",rendered)
-  self.assertNotIn("id==='fdaTrendChart'?'Listed US authorisations'",rendered)
+  self.assertNotIn("add(tr,'th',id==='fdaTrendChart'?",rendered)
   self.assertLess(rendered.index('id="ai-overview-section"'),rendered.index('id="fda-trend-section"'))
   self.assertLess(rendered.index('id="fda-trend-section"'),rendered.index('id="ai-research-section"'))
   self.assertLess(rendered.index('id="ai-research-section"'),rendered.index('id="ai-evidence-section"'))
