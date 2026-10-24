@@ -15,6 +15,39 @@
 #ai-drivers, #ai-headwinds { font-size: 0.9em; }
 .metric-desc a, #news-feed-container a, #ai-source-status a { color: #74c8ff; }
 .metric-desc, #ai-source-status { overflow-wrap: anywhere; }
+
+/* Evidence-first imaging AI dashboard; scoped to this tab only. */
+.ai-section-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.ai-section-nav a{border:1px solid #35546c;border-radius:8px;padding:10px 12px;color:#c6e6f8;text-decoration:none;background:#122034;font-size:.84rem;min-height:44px;display:inline-flex;align-items:center}
+.ai-section-nav a:hover,.ai-section-nav a:focus-visible{color:#fff;border-color:#7fd4ff;background:#193149}
+.ai-section-intro,.ai-section-coverage,.ai-data-gap{font-size:.9rem;line-height:1.65;color:#b9ccda;margin:0 0 15px}
+.ai-section-coverage{color:#a9d8ee}
+.ai-overview-section .dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:0}
+.ai-overview-section .dashboard-grid>.card{grid-column:span 1;padding:17px;min-width:0}
+.ai-overview-section .metric-label{font-size:.91rem}
+.ai-overview-section .metric{font-size:1.6rem;line-height:1.25;overflow-wrap:anywhere}
+.ai-overview-section .metric-desc{font-size:.82rem;line-height:1.55;overflow-wrap:anywhere}
+.ai-summary-strips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 20px}
+.ai-mini-stat{border:1px solid #34536b;background:#101c2b;padding:14px;border-radius:9px;display:flex;flex-direction:column;gap:5px}
+.ai-mini-stat strong{font-size:.85rem;color:#c1d7e6}
+.ai-mini-stat span{font-size:1.05rem;color:#e9f8ff;font-weight:700}
+.ai-mini-stat small{color:#aabbcc;line-height:1.5}
+.ai-chart-wrap{position:relative;min-height:260px;max-height:390px;margin:10px 0;overflow-x:auto}
+.ai-chart-wrap canvas{max-height:380px;min-height:235px}
+.ai-evidence-stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}
+.ai-evidence-stages article{background:#101f30;border:1px solid #36536a;border-radius:9px;padding:14px;min-width:0}
+.ai-evidence-stages article>span{color:#75c6ea;font-size:.78rem;font-weight:700}
+.ai-evidence-stages h3{font-size:.94rem;line-height:1.4;margin:8px 0;color:#eaf6ff}
+.ai-evidence-stages p{font-size:.82rem;line-height:1.6;color:#bfceda}
+.ai-study-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.ai-study{background:#101f30;border:1px solid #34536b;border-radius:9px;padding:15px;min-width:0}
+.ai-study h3{font-size:.95rem;line-height:1.5;margin:0 0 8px}
+.ai-study p{margin:6px 0;font-size:.82rem;line-height:1.6;color:#c2d6e4}
+.ai-study details{margin-top:10px;font-size:.84rem}
+.ai-study summary{cursor:pointer;color:#a3d9ee;min-height:38px;display:flex;align-items:center}
+#ai-overview-section,#fda-trend-section,#ai-research-section,#ai-evidence-section,#ai-adoption-section,#ai-industry-section,#ai-news-section,#ai-source-status-section{scroll-margin-top:22px}
+@media(max-width:1080px){.ai-overview-section .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-evidence-stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:690px){.ai-overview-section .dashboard-grid,.ai-evidence-stages,.ai-summary-strips,.ai-study-list{grid-template-columns:minmax(0,1fr)}.ai-chart-wrap{min-height:200px}.ai-chart-wrap canvas{max-height:320px}.ai-section-nav a{font-size:.79rem}.ai-overview-section .dashboard-grid>.card{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -48,44 +81,31 @@
 <option value="southAmerica">Latin America</option>
 </select>
 </div>
+<nav class="ai-section-nav" aria-label="On this page">
+<a href="#ai-overview-section">At a glance</a>
+<a href="#fda-trend-section">Regulation</a>
+<a href="#ai-research-section">Research</a>
+<a href="#ai-evidence-section">Clinical evidence</a>
+<a href="#ai-adoption-section">Adoption</a>
+<a href="#ai-industry-section">Companies</a>
+<a href="#ai-news-section">News</a>
+<a href="#ai-source-status-section">Sources</a>
+</nav>
 <!-- Regional Summary Box Section -->
 <div class="card" style="margin-bottom: 25px;">
-<h2 id="regional-summary-title">Summary: Global Market for Imaging AI</h2>
+<h2 id="regional-summary-title">Imaging AI · evidence and market context</h2>
 <p class="metric-desc" id="regional-summary-text" style="margin-top: 10px; font-size: 0.9rem;">
 <!-- REGIONAL_SUMMARY_PLACEHOLDER -->
 </p>
 </div>
 <p class="metric-desc" style="margin-bottom:20px">For growth, inflation and broader market pressures, see <a href="global-macro.html" id="macro-link">Glob Econ</a>.</p>
 <div class="dashboard-grid">
-<!-- Sector Outlook Summary Unit -->
-<div class="card col-12 outlook-box">
-<div class="outlook-header">
-<h2 id="outlook-title">Sector Outlook Summary <!-- OUTLOOK_PERIOD_PLACEHOLDER --></h2>
-<!-- OUTLOOK_BADGE_STYLE_PLACEHOLDER -->
-</div>
-<p class="outlook-summary" id="outlook-summary-text">
-<!-- OUTLOOK_SUMMARY_PLACEHOLDER -->
-</p>
-<div class="outlook-factors-grid">
-<!-- 4 Key Growth Drivers -->
-<div class="factor-column drivers-column">
-<h3>KEY DRIVERS</h3>
-<div class="factor-list">
-<!-- DRIVERS_CARDS_PLACEHOLDER -->
-</div>
-</div>
-<!-- 4 Key Headwinds -->
-<div class="factor-column headwinds-column">
-<h3>KEY HEADWINDS</h3>
-<div class="factor-list">
-<!-- HEADWINDS_CARDS_PLACEHOLDER -->
-</div>
-</div>
-</div>
-</div>
 <!-- Key Sector Metrics -->
-<section aria-labelledby="ai-sector-metrics-title" class="card col-12">
-<h2 id="ai-sector-metrics-title">AI Sector Metrics</h2>
+<section id="ai-overview-section" aria-labelledby="ai-sector-metrics-title" class="card col-12 ai-overview-section">
+<h2 id="ai-sector-metrics-title">Imaging AI at a glance</h2>
+<p class="ai-section-intro">Sourced indicators of US regulatory activity and registered research. The figures below are not global adoption or proof of clinical benefit.</p>
+<p class="ai-section-coverage" id="ai-overview-coverage">Source dates and scope appear beneath each reading.</p>
+<div id="ai-summary-strips" class="ai-summary-strips" aria-label="Latest research evidence and adoption data"><div class="ai-mini-stat"><strong>Recent clinical research</strong><span id="ai-pubmed-count">Loading evidence…</span><small>Selected PubMed papers in this feed, not all published trials</small></div><div class="ai-mini-stat"><strong>Routine clinical deployment</strong><span>Comparable rate unavailable</span><small>No verified worldwide adoption denominator</small></div></div>
 <div class="dashboard-grid">
 <div class="card col-3">
 <div class="metric-label">US FDA-listed Radiology AI Authorisations</div>
@@ -94,10 +114,10 @@
 <p class="metric-desc"><!-- FDA_CLEARANCES_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
 </div>
 <div class="card col-3">
-<div class="metric-label">Prospective Clinical Validation</div>
+<div class="metric-label">Active registered imaging AI studies</div>
 <div class="metric"><!-- PROSPECTIVE_CLINICAL_VALIDATION_YTD_PLACEHOLDER --></div>
-<div class="metric-sub">Peer-Reviewed Papers YTD</div>
-<p class="metric-desc">Quantifies real-world clinical evidence publications needed to convince hospital procurement committees.</p>
+<div class="metric-sub">ClinicalTrials.gov · active studies</div>
+<p class="metric-desc">Active interventional registrations matching the defined search, not completed studies or evidence of clinical benefit.</p>
 </div>
 <div class="card col-3">
 <div class="metric-label">US FDA-listed Radiology AI Authorisations — Annual Change</div>
@@ -113,40 +133,72 @@
 </div>
 </div>
 </section>
-<!-- Automatically refreshed published clinical research -->
-<section aria-labelledby="clinical-evidence-title" class="card col-12">
-<h2 id="clinical-evidence-title">Clinical Evidence — Recent Published Studies</h2>
-<div id="clinical-evidence-feed"><p class="metric-desc">Loading recent clinical research from PubMed.</p></div>
+
+<!-- US regulatory trend, visible only in the North America view -->
+<section class="card col-12" id="fda-trend-section">
+<h2>Regulatory activity · US FDA-listed radiology AI devices</h2>
+<p class="ai-section-intro">A historical US regulatory benchmark. Earlier bars are complete calendar years; the current year-to-date is partial and should never be compared as though it were a full year.</p><div class="ai-chart-wrap"><canvas id="fdaTrendChart"></canvas></div>
 </section>
+
+<!-- Graph Unit 1: Approvals vs VC Funding -->
+<section id="ai-research-section" class="card col-12" aria-labelledby="ai-research-title">
+<h2 id="ai-research-title">Research pipeline · active registered imaging AI studies</h2>
+<p class="ai-section-intro">Compare the worldwide count with selected-country regional samples. Studies spanning regions may be counted more than once. These counts measure registered research activity, not regulatory approvals, adoption or proven effectiveness.</p>
+<div class="ai-chart-wrap"><canvas id="approvalsChart"></canvas></div>
+</section>
+
+<!-- Automatically refreshed published clinical research -->
+<section id="ai-evidence-section" aria-labelledby="clinical-evidence-title" class="card col-12">
+<h2 id="clinical-evidence-title">Clinical evidence · recent published studies</h2>
+<p class="ai-section-intro">A selected feed of recent PubMed publications. Study design and results matter more than paper counts; a study's publication does not establish safety, effectiveness or clinical impact.</p><div id="clinical-evidence-feed"><p class="metric-desc">Loading recent clinical research from PubMed.</p></div>
+</section>
+
 <!-- Deployment and adoption context -->
-<section aria-labelledby="deployment-adoption-title" class="card col-12">
-<h2 id="deployment-adoption-title">Deployment and Adoption</h2>
+<section id="ai-adoption-section" aria-labelledby="deployment-adoption-title" class="card col-12">
+<h2 id="deployment-adoption-title">From regulatory authorisation to clinical impact</h2>
 <p class="metric-desc">Adoption means integrating AI into clinical work, not simply obtaining regulatory authorisation or registering a study. Reports should distinguish paid routine use, research pilots and shadow-mode testing, where AI outputs do not guide care. This dashboard does not currently have a validated, comparable global adoption-rate dataset.</p>
 <p class="metric-desc"><strong>What determines successful deployment?</strong> Compatibility with imaging systems, local performance testing, staff training, clear clinical responsibility and continued monitoring. Institutional resources and patient populations differ, so implementation findings should be interpreted in their reported setting.</p>
 <p class="metric-desc">Qualitative context: <a href="https://www.rsna.org/-/media/files/rsna/government-relations/astprfiacceleratingai22326rsnaresponse.pdf" rel="noopener noreferrer" target="_blank">RSNA implementation and adoption recommendations, 23 February 2026</a>. This dated guidance is separate from the automatically refreshed research below.</p>
+<div class="ai-evidence-stages" aria-label="Four stages of clinical adoption">
+<article><span>01</span><h3>Regulatory authorisation</h3><p>Whether a product is authorised for a specific intended use; not proof of routine use.</p></article>
+<article><span>02</span><h3>Clinical validation</h3><p>Performance, generalisability and prospective evaluation in the intended clinical population.</p></article>
+<article><span>03</span><h3>Hospital implementation</h3><p>Integration, workflow acceptance, safety monitoring and sustained routine deployment.</p></article>
+<article><span>04</span><h3>Demonstrated benefit</h3><p>Measured improvements in patient outcomes, quality, timeliness or resources.</p></article></div>
+<p class="ai-data-gap">No verified, comparable worldwide routine-deployment rate is available. This is a conceptual evidence pathway, not a measured funnel or conversion rate.</p>
 <div id="deployment-evidence-feed" style="margin-top: 16px;"><p class="metric-desc">Loading recent implementation research.</p></div>
 </section>
-<!-- US regulatory trend, visible only in the North America view -->
-<section class="card col-12" hidden="" id="fda-trend-section">
-<h2>United States — Radiology AI Authorisations: Ten-Year Trend</h2>
-<canvas id="fdaTrendChart"></canvas>
+
+<!-- Sector Outlook Summary Unit -->
+<section id="ai-outlook-section" class="card col-12 outlook-box">
+<div class="outlook-header">
+<h2 id="outlook-title">What could accelerate or hinder adoption <!-- OUTLOOK_PERIOD_PLACEHOLDER --></h2>
+<!-- OUTLOOK_BADGE_STYLE_PLACEHOLDER -->
+</div>
+<p class="outlook-summary" id="outlook-summary-text">
+<!-- OUTLOOK_SUMMARY_PLACEHOLDER -->
+</p>
+<div class="outlook-factors-grid">
+<!-- 4 Key Growth Drivers -->
+<div class="factor-column drivers-column">
+<h3>POTENTIAL ENABLERS</h3>
+<div class="factor-list">
+<!-- DRIVERS_CARDS_PLACEHOLDER -->
+</div>
+</div>
+<!-- 4 Key Headwinds -->
+<div class="factor-column headwinds-column">
+<h3>IMPLEMENTATION RISKS</h3>
+<div class="factor-list">
+<!-- HEADWINDS_CARDS_PLACEHOLDER -->
+</div>
+</div>
+</div>
 </section>
-<!-- Graph Unit 1: Approvals vs VC Funding -->
-<div class="card col-8">
-<h2>AI Approvals vs. MedTech Venture Capital Investment</h2>
-<canvas id="approvalsChart"></canvas>
-</div>
-<!-- Text Unit: Targeted News Feed -->
-<div class="card col-4">
-<h2>Latest Industry Headlines</h2>
-<div id="news-feed-container">
-<!-- NEWS_ITEMS_PLACEHOLDER -->
-</div>
-</div>
+
 <!-- Major imaging AI vendors -->
-<section aria-labelledby="vendor-revenues-title" class="card col-12">
-<h2 id="vendor-revenues-title">Major Imaging AI Vendors</h2>
-<p class="metric-desc">Selected specialist vendors and example products. This is not a ranking or a market-share comparison.</p>
+<section id="ai-industry-section" aria-labelledby="vendor-revenues-title" class="card col-12">
+<h2 id="vendor-revenues-title">Selected imaging AI companies</h2>
+<p class="metric-desc">Examples of specialist companies, products and clinical applications. This is not a complete market map, investment ranking or measured market-share comparison.</p>
 <div style="overflow-x: auto;">
 <table style="width: 100%; border-collapse: collapse; text-align: left;">
 <thead>
@@ -198,6 +250,14 @@
 </table>
 </div>
 <p class="metric-desc" style="margin-top: 15px;">Product examples checked October 2026. Availability and authorised uses vary by country and product version. The vendor list remains the same for every region.</p>
+</section>
+
+<!-- Text Unit: Targeted News Feed -->
+<section id="ai-news-section" class="card col-12">
+<h2>Imaging AI industry developments</h2>
+<div id="news-feed-container">
+<!-- NEWS_ITEMS_PLACEHOLDER -->
+</div>
 </section>
 </div>
 </main>
