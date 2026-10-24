@@ -78,6 +78,26 @@ class CTDashboardTests(unittest.TestCase):
         self.assertIn('not verified',res[0]['design'])
         self.assertEqual(res[0]['url'],'https://pubmed.ncbi.nlm.nih.gov/123/')
 
+    def test_newest_first_and_exclude_non_xray_tomography(self):
+        xml=b'''<PubmedArticleSet>
+        <PubmedArticle><MedlineCitation><PMID>101</PMID><Article><ArticleTitle>
+        Computed tomography for abdominal assessment</ArticleTitle><ArticleDate>
+        <Year>2026</Year><Month>02</Month><Day>10</Day></ArticleDate></Article>
+        </MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>102</PMID><Article><ArticleTitle>
+        Photon-counting CT for lung disease</ArticleTitle><ArticleDate>
+        <Year>2026</Year><Month>10</Month><Day>12</Day></ArticleDate></Article>
+        </MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>103</PMID><Article><ArticleTitle>
+        Photoacoustic computed tomography for animal tissue</ArticleTitle><ArticleDate>
+        <Year>2026</Year><Month>10</Month><Day>20</Day></ArticleDate></Article>
+        </MedlineCitation></PubmedArticle>
+        </PubmedArticleSet>'''
+        items=ct.parse_pubmed(xml,['101','102','103'])
+        self.assertEqual([i['title'] for i in items],
+            ['Photon-counting CT for lung disease','Computed tomography for abdominal assessment'])
+        self.assertEqual(items[0]['date'],'2026-10-12')
+
     def test_escape_script_data_and_build(self):
         payload=ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
             oecd_fetch=self.fake_oecd,pubmed_fetch=self.fake_pubmed)
