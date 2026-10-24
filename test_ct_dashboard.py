@@ -66,6 +66,32 @@ class CTDashboardTests(unittest.TestCase):
                 ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
                     oecd_fetch=bad,pubmed_fetch=self.fake_pubmed)
 
+    def test_ct_market_estimates_are_dated_and_source_backed(self):
+        import ct_market
+        catalog=ct_market.read_reference()
+        self.assertEqual(catalog['size']['year'],2025)
+        self.assertGreaterEqual(len(catalog['size']['entries']),3)
+        for entry in catalog['size']['entries']:
+            self.assertTrue(entry['source'].startswith('https://'))
+            self.assertTrue(entry['publication_date'])
+        self.assertEqual(sum(e['value'] for e in catalog['shares']['entries']),100)
+        self.assertTrue(any(e.get('derived') for e in catalog['shares']['entries']))
+        snap=ct_market.refresh(catalog,offline=True)
+        self.assertEqual([x['value'] for x in snap['size']['entries']],
+                         [x['value'] for x in catalog['size']['entries']])
+        self.assertTrue(all('published reference' in x['check_status'] for x in snap['size']['entries']))
+
+    def test_commercial_estimates_survive_embedded_render(self):
+        payload=ct.generate(offline=True)
+        rendered=ct.render((ROOT/'ct.template.html').read_text(encoding='utf-8'),payload)
+        self.assertIn('id="ct-market"',rendered)
+        self.assertIn('function renderMarket()',rendered)
+        self.assertIn('CT manufacturer shares',rendered)
+        self.assertIn('DBS CIO Industry Guide',rendered)
+        import re
+        obj=json.loads(re.search(r'<script id="ct-data" type="application/json">([\s\S]*?)</script>',rendered).group(1))
+        self.assertEqual(sum(x['value'] for x in obj['market']['shares']['entries']),100)
+
     def test_pubmed_does_not_invent_design(self):
         xml=b'''<PubmedArticleSet><PubmedArticle><MedlineCitation><PMID>123</PMID>
         <Article><ArticleTitle>Photon-counting CT for vascular imaging</ArticleTitle>
