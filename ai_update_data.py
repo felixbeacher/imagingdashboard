@@ -1025,16 +1025,25 @@ def regional_economic_background(offline=False):
         cards = []
         summaries = []
         for code, label in [('NGDP_RPCH', 'Economic growth'), ('PCPIPCH', 'Consumer inflation')]:
+            # IMF publishes a single dated annual series covering earlier years
+            # and the current/future outlook. Keep incomplete country-years blank;
+            # do not let a changing sample create a false trend.
             values = {}
-            details = []
-            for current in range(year, year + 3):
-                observations = [(country, data.get(code, {}).get(country, {}).get(str(current)))
+            history = []
+            for current in range(year - 10, year + 3):
+                observations = [data.get(code, {}).get(country, {}).get(str(current))
                                 for country, _ in countries]
-                valid = [value for _, value in observations if finite_number(value)]
-                # A missing country must not silently change the defined sample.
+                valid = [float(value) for value in observations if finite_number(value)]
                 values[current] = round(statistics.median(valid), 2) if len(valid) == len(countries) else None
-                details.append(str(current) + ': ' + (str(values[current]) + '%'
-                               if values[current] is not None else 'unavailable'))
+                history.append(dict(year=current, value=values[current],
+                                    kind='earlier' if current < year else
+                                    'estimate' if current == year else 'projection'))
+            # Keep the chart empty if no valid points are available. A zero is valid.
+            if not any(point['value'] is not None for point in history):
+                history = []
+            details = [str(current) + ': ' + (str(values[current]) + '%'
+                       if values[current] is not None else 'unavailable')
+                       for current in range(year, year + 3)]
             description = ('IMF estimate for the world as a whole. ' if key == 'global' else 'Middle value across the selected countries in ' + name + '. ')
             description += (
                            '; '.join(details) + ('. Published world figure from the IMF. ' if key == 'global' else '. Each country counts equally; this is not a figure for the entire region. ')
@@ -1049,6 +1058,10 @@ def regional_economic_background(offline=False):
                               status='available' if values[year] is not None else 'unavailable',
                               retrieved=date.today().isoformat() if data.get(code) else None,
                               attempted_at=date.today().isoformat(),
+                              history=history, history_note=(
+                                  'Annual IMF World Economic Outlook figures from one published release. '
+                                  'Earlier years may include revised estimates; the current year is an estimate '
+                                  'and later years are forecasts. Missing country observations are not filled.'),
                               methodology=description, reason=('Offline: sources were not requested.' if offline else failures.get(code, 'The complete country sample is unavailable.')) if values[year] is None else ''))
             summaries.append(label + ' — ' + '; '.join(details) + '.')
         result[key] = dict(cards=cards, overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
