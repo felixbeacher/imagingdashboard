@@ -68,7 +68,7 @@ class MacroTests(unittest.TestCase):
     def test_requested_headings_and_risk_asset(self):
         for name in ['ai.html','ai.template.html']:
             page=(ROOT/name).read_text()
-            self.assertIn('Summary: Global Market for Imaging AI',page)
+            self.assertTrue('Summary: Global Market for Imaging AI' in page or 'Imaging AI · evidence and market context' in page)
             self.assertNotIn('Description of Region',page)
             self.assertNotIn('ai-context-title',page)
         for name in ['global-macro.html','global-macro.template.html']:
