@@ -280,7 +280,7 @@ jobs:
           if len(inspector.ids)!=len(set(inspector.ids)):
               raise SystemExit('Duplicate CT dashboard IDs')
           sections=('ct-overview','ct-activity','ct-interpretation','ct-research',
-                    'ct-clinical','ct-technology','ct-sources')
+                    'ct-clinical','ct-technology','ct-industry','ct-sources')
           if not all(key in inspector.ids for key in sections):
               raise SystemExit('CT sections missing in generated page')
           if any(x in page for x in (
@@ -329,6 +329,21 @@ jobs:
             git add valuation-history.json
             git commit -m 'Archive verified iShares valuation readings [skip ci]'
             git push origin HEAD:main || echo '::warning::Could not persist valuation archive to main; website build is unaffected.'
+          fi
+
+      - name: Archive refreshed CT page in the source repository
+        # Keep ct.html aligned with the website, while ct.template.html remains
+        # the authoritative editable template. No values are fabricated on failure.
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp _site/ct.html ct.html
+          if ! git diff --quiet -- ct.html; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add ct.html
+            git commit -m 'Refresh published CT observations [skip ci]'
+            git push origin HEAD:main || echo '::warning::CT snapshot could not be archived to main; deployed page is current.'
           fi
 
       - name: Configure GitHub Pages
