@@ -119,9 +119,18 @@ jobs:
                       print(f'::warning::{feed_key}: retrieval unavailable; see page source status.')
               if payload.get('news_failures'):
                   print(f'::warning::{label}: one or more headline feeds were unavailable.')
-          for filename in ('global-macro.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html'):
-              shutil.copy2(root / filename, output / filename)
-          macro = json.loads(re.search(r'<script id="macro-data" type="application/json">(.*?)</script>', (output / 'global-macro.html').read_text(), re.S).group(1))
+          # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
+          # Independent source failures remain clearly unavailable on the page.
+          from ai_update_data import regional_economic_background, financing_background
+          from macro_dashboard import publish_macro
+          macro = publish_macro(output, root, regional_economic_background,
+                                offline=False, fetch_financing=financing_background)
+          for series in macro.get('financing', []):
+              count = len(series.get('history') or [])
+              summary.append(f"{series.get('label', 'US financing')}: {count} verified monthly trend points")
+              if count < 12:
+                  print(f"::warning::{series.get('label', 'US financing')}: historical chart unavailable or incomplete; no substituted values.")
+
           for source, observation in macro.get('valuation', {}).items():
               if isinstance(observation, dict) and observation.get('status') == 'unavailable':
                   print(f'::warning::Global valuation {source}: unavailable; see published source status.')
