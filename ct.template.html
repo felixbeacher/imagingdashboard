@@ -89,6 +89,15 @@
 .ct-industry-share{max-width:900px;margin:18px 0 22px}
 .ct-industry-products-title{padding-top:20px;border-top:1px solid #39546a;font-size:1.08rem}
 .ct-forecast-method{border-left:3px dashed #efbb6d;padding:9px 12px;margin:12px 0;color:#e4d2b4;font-size:.79rem;line-height:1.6;background:#2b251c}
+
+.ct-control.ct-region-primary{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 24px;margin:24px 0 14px;border:1px solid #659db8;border-radius:13px;background:linear-gradient(100deg,#1a364a,#102638)}
+.ct-region-primary label{font-size:1.3rem;font-weight:850;letter-spacing:.065em;color:#c6edff;white-space:nowrap}
+.ct-region-primary select{font-size:1.08rem;font-weight:720;min-height:48px;min-width:255px;border:2px solid #8cd7ff;border-radius:9px;background:#081b2b;color:#f4faff}
+.ct-region-series-legend{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}
+.ct-region-series-legend span{display:flex;gap:7px;align-items:center;font-size:.83rem;color:#d0e4f3}
+.ct-region-series-legend i{height:4px;width:19px;display:inline-block;border-radius:2px}
+.ct-region-chart-note{font-size:.81rem;color:#b9cfdb;line-height:1.6;margin:9px 0}
+@media(max-width:650px){.ct-control.ct-region-primary{flex-direction:column;align-items:stretch;padding:16px}.ct-region-primary label{font-size:1.12rem}.ct-region-primary select{width:100%;min-width:0}}
 </style>
 </head>
 <body>
@@ -102,10 +111,8 @@
 <h2 id="ct-page-heading">CT: capacity, use and innovation</h2>
 <h3 class="ct-aim-title">Aim of this page</h3>
 <p>To understand CT as a clinical imaging modality and an equipment market: track scanner availability and examination activity, compare regional reporting, follow technology developments and research, and assess competitive industry data using original sources and clearly identified assumptions.</p>
-<p>Computed tomography uses X-rays and computer reconstruction to produce cross-sectional images. The reported figures and modelled scenarios are kept visibly separate.</p>
-<p class="ct-muted">Based on official annual healthcare statistics and current indexed research. An automated refresh does not make annual observations monthly data. <span id="ct-updated"></span></p>
-<div class="ct-control"><label for="ct-region">Explore regional data</label>
-<select id="ct-region" aria-label="Select a CT data region"></select>
+<div class="ct-control ct-region-primary"><label for="ct-region">SELECT REGION</label>
+<select id="ct-region" aria-label="Select region for CT data"></select>
 </div>
 <p class="ct-muted" id="ct-region-scope">Select a region to compare its available OECD country observations. These are country samples, not a complete regional dataset or calculated regional aggregate.</p>
 </section>
@@ -151,14 +158,13 @@
 </section>
 <section class="ct-card" id="ct-activity" aria-labelledby="ct-activity-heading">
 <h2 id="ct-activity-heading">Scanner availability and examination activity</h2>
-<p class="ct-muted">Inspect published annual histories for a country <strong>within the selected region</strong>. Two different denominators describe CT services; neither establishes capacity adequacy, clinical need or equipment sales.</p>
-<div class="ct-control ct-detail-picker"><label for="ct-country">Country detail within this region</label><select id="ct-country" aria-label="Country history within selected region"></select></div>
+<p class="ct-muted">View the OECD histories for countries within your selected region, displayed together. Each series is a published country observation, not a constructed regional average.</p>
 <div class="ct-grid">
 <article class="ct-indicator" id="ct-scanners"></article>
 <article class="ct-indicator" id="ct-exams"></article>
 </div>
 <div class="ct-lag-note" id="ct-data-lag" aria-live="polite"></div>
-<div class="ct-projection-legend"><span><i class="ct-key-actual"></i> OECD observed</span><span><i class="ct-key-forecast"></i> Modelled trend (2025–2027, where applicable)</span><span><i class="ct-key-band"></i> Sensitivity range, not a confidence interval</span></div>
+<div class="ct-projection-legend"><span><i class="ct-key-actual"></i> Solid lines: observed OECD figures</span><span><i class="ct-key-forecast"></i> Dashed lines: modelled scenarios</span><span><i class="ct-key-band"></i> Shading: sensitivity, not confidence limits</span></div>
 <p class="ct-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
 <div id="ct-interpretation" class="ct-activity-implications" aria-labelledby="ct-interpretation-heading">
 <h3 id="ct-interpretation-heading">From CT trends to imaging decisions</h3>
@@ -175,7 +181,7 @@
 <p class="ct-source" id="ct-pubmed-source"></p>
 </section>
 <section class="ct-card" id="ct-clinical" aria-labelledby="ct-clinical-heading">
-<h2 id="ct-clinical-heading">Where CT fits in clinical care</h2>
+<h2 id="ct-clinical-heading">Where CT fits in to clinical care</h2>
 <p class="ct-muted">A concise clinical orientation, not a recommendation for an individual patient. Indications and technique depend on appropriateness criteria, radiation considerations and local protocols.</p>
 <div class="ct-topic-grid">
 <article class="ct-topic"><h3>Emergency and trauma</h3><p><strong>What it measures:</strong> CT depicts acute injuries, haemorrhage and relevant anatomy rapidly.</p><p><strong>Why it matters for imaging:</strong> emergency access depends on scanner availability, staffing, protocols and reporting capacity.</p></article>
@@ -221,7 +227,7 @@
 <div class="ct-source-list" id="ct-source-list"></div>
 <details><summary>Detailed interpretation and update rules</summary><div class="ct-method"><ul>
 <li>OECD capacity is CT scanners per million people. Examination activity is CT examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
-<li>Published observations are plotted as blue solid lines; modelled extensions to 2027, where evidence is sufficient, use dashed amber lines with a sensitivity band. Missing observed years remain gaps. The country selector is not a validated regional aggregate.</li>
+<li>Each country in the selected region has its own colour. Published observations are shown as solid lines; sufficiently supported modelled extensions are dashed in the same colour, with sensitivity shading. Gaps remain gaps, and no regional mean or total is calculated.</li>
 <li>Trend extensions use the three latest actual observations, annualised endpoint change (cap ±5% for scanner density, ±8% for examination rates), compounded from the latest observed year. Bounds use a ±2-percentage-point annual-rate sensitivity and widen over time; they are illustrative scenarios, not statistical confidence intervals or OECD forecasts. Projections are withheld where records are too sparse or stale. Published 2025 observations, where available, always supersede a forecast for 2025.</li>
 <li>PubMed updates use a transparent CT-specific search and the publication index. Search matches are not a systematic review, market share, CT examination volumes or proof of clinical utility.</li>
 <li>Data are retrieved at automated rebuild time; "retrieved" is not the date that a study or annual CT observation was recorded. Any unavailable source is labelled as such.</li>
