@@ -90,7 +90,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -103,7 +103,7 @@ jobs:
           for filename in ('index.html', 'styles.css', 'images/earth-hero.png'):
               shutil.copy2(root / filename, output / filename)
           # Preserve the other source pages without running their unfinished updaters.
-          for filename in ('mri.html', 'pet.html', 'xray.html'):
+          for filename in ('pet.html', 'xray.html'):
               if (root / filename).is_file():
                   shutil.copy2(root / filename, output / filename)
           (output / '.nojekyll').touch()
@@ -171,6 +171,32 @@ jobs:
               print('::warning::CT: one or both OECD CT feeds are incomplete; unavailable points stay blank.')
           if ct['pubmed']['status'] != 'live':
               print('::warning::CT: live PubMed research feed unavailable.')
+
+          # MRI is a separate, source-backed modality page using the completed
+          # CT visual hierarchy. OECD observations remain country-specific;
+          # commercial MRI estimates and 2022 manufacturer shares are distinct.
+          mri_command = [sys.executable, 'mri_dashboard.py',
+                         '--template', 'mri.template.html',
+                         '--output', str(output / 'mri.html')]
+          subprocess.run(mri_command, check=True, timeout=180)
+          mri_html = (output / 'mri.html').read_text(encoding='utf-8')
+          mri_payload = re.search(r'<script id="mri-data" type="application/json">([\s\S]*?)</script>',mri_html)
+          if not mri_payload:
+              raise SystemExit('MRI data payload missing from live build')
+          mri_data = json.loads(mri_payload.group(1))
+          mri_coverage = {
+              mode: sum(len(c[mode]['series']['MRI'])
+                        for c in mri_data['oecd']['countries'].values())
+              for mode in ('equipment','exams')
+          }
+          if not all(mri_coverage.values()):
+              print('::warning::MRI OECD published observations unavailable in at least one feed')
+          print('::notice::MRI scanner points = '+str(mri_coverage['equipment'])+
+                '; exam points = '+str(mri_coverage['exams'])+
+                '; selected PubMed studies = '+str(len(mri_data['pubmed']['items'])))
+          summary.append('MRI: '+str(mri_coverage['equipment'])+' scanner and '+
+                         str(mri_coverage['exams'])+' examination observations; PubMed '+
+                         mri_data['pubmed']['status'])
 
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
@@ -342,6 +368,58 @@ jobs:
           node --check _site/ct-runtime.validate.js
           rm _site/ct-runtime.validate.js
 
+      - name: Validate MRI dashboard source and browser runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import re
+          from html.parser import HTMLParser
+          from pathlib import Path
+          page=Path('_site/mri.html').read_text(encoding='utf-8')
+          class IDs(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.ids=[]
+              def handle_starttag(self,tag,attrs):
+                  self.ids.extend([val for key,val in attrs if key=='id'])
+          inspector=IDs();inspector.feed(page)
+          if len(set(inspector.ids))!=len(inspector.ids):
+              raise SystemExit('Duplicate MRI HTML IDs')
+          required=('mri-overview','mri-regional-comparison','mri-market','mri-activity',
+                    'mri-interpretation','mri-research','mri-clinical','mri-technology',
+                    'mri-industry','mri-sources','mri-region','mri-share-bars')
+          if any(x not in inspector.ids for x in required):
+              raise SystemExit('MRI structural sections missing')
+          if 'SELECT REGION' not in page or 'id="mri-country"' in page:
+              raise SystemExit('MRI region controls not CT-consistent')
+          if 'Vendor AI Revenue Breakdown' in page:
+              raise SystemExit('Legacy MRI content remains')
+          match=re.search(r'<script id="mri-data" type="application/json">([\s\S]*?)</script>',page)
+          if not match: raise SystemExit('MRI source JSON missing')
+          obj=json.loads(match.group(1))
+          if not obj.get('oecd',{}).get('countries') or len(obj.get('regional_groups',{}))<3:
+              raise SystemExit('MRI OECD coverage not present')
+          if sum(x['value'] for x in obj['market']['shares']['entries'])!=100:
+              raise SystemExit('MRI share source percentages do not sum to 100')
+          if obj['market']['shares']['reference_year']!=2022:
+              raise SystemExit('MRI shares must be labelled with original 2022 year')
+          if len(obj['market']['size']['entries'])<2:
+              raise SystemExit('MRI publisher estimates missing')
+          for country in obj['oecd']['countries'].values():
+              for kind in ('equipment','exams'):
+                  historical=country[kind]['series'].get('MRI',[])
+                  projections=country[kind]['projection']['points']
+                  if historical and projections and min(p['year'] for p in projections)<=max(p['year'] for p in historical):
+                      raise SystemExit('MRI estimates overlap observed source years')
+          scripts=re.findall(r'<script>([\s\S]*?)</script>',page)
+          if len(scripts)!=1:raise SystemExit('MRI browser script missing or duplicated')
+          Path('_site/mri-runtime.validate.js').write_text(scripts[0],encoding='utf-8')
+          print('::notice::MRI sections, source metadata, historical shares and projection separation verified')
+          PY
+          node --check _site/mri-runtime.validate.js
+          rm _site/mri-runtime.validate.js
+
       - name: Archive validated iShares valuation readings
         # The public provider exposes current ratios, not a historical download.
         # Preserve only verified source-dated observations for future charting.
@@ -384,6 +462,19 @@ jobs:
             git add ct.html
             git commit -m 'Refresh published CT observations [skip ci]'
             git push origin HEAD:main || echo '::warning::CT snapshot could not be archived to main; deployed page is current.'
+          fi
+
+      - name: Archive refreshed MRI page in the source repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp _site/mri.html mri.html
+          if ! git diff --quiet -- mri.html; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add mri.html
+            git commit -m 'Refresh published MRI observations [skip ci]'
+            git push origin HEAD:main || echo '::warning::MRI snapshot not archived; deployed page unaffected'
           fi
 
       - name: Configure GitHub Pages
