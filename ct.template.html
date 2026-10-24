@@ -306,38 +306,22 @@ function renderMarket(){
  const chart=$('ct-market-estimate-chart');chart.replaceChildren();
  if(!entries.length){$('ct-market-size-value').textContent='Market estimates unavailable';return;}
  const values=entries.map(x=>x.value),lo=Math.min(...values),hi=Math.max(...values);
- $('ct-market-size-value').textContent='US
-</script>
-</body>
-</html>
-+fmt(lo,2)+'–'+fmt(hi,2)+'bn';
+ $('ct-market-size-value').textContent='US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn';
  $('ct-market-size-subtitle').textContent=market.size.year+' market · '+entries.length+' independent publisher estimates · not a statistical confidence interval';
  for(const record of [...entries].sort((a,b)=>a.value-b.value)){
   const row=el('div','ct-market-size-row'),label=el('div','ct-market-size-name');
   label.append(el('div','',record.publisher),el('small','ct-market-source','Published '+record.publication_date));
   const track=el('div','ct-market-size-track'),bar=el('div','ct-market-size-fill');
   bar.style.width=(100*record.value/hi).toFixed(2)+'%';
-  bar.title=record.publisher+': US
-</script>
-</body>
-</html>
-+fmt(record.value,2)+' billion';
-  track.append(bar);row.append(label,track,el('span','ct-market-size-number','
-</script>
-</body>
-</html>
-+fmt(record.value,2)+'bn'));
+  bar.title=record.publisher+': US$'+fmt(record.value,2)+' billion';
+  track.append(bar);row.append(label,track,el('span','ct-market-size-number','$'+fmt(record.value,2)+'bn'));
   chart.append(row);
   const source=el('p','ct-source');appendLink(source,record.source,'Source: '+record.publisher);
   source.append(document.createTextNode(' · '+(record.check_status||'dated published reference')));
   chart.append(source);
  }
  const spread=hi-lo;
- $('ct-market-variance').textContent='Difference between these published estimates: US
-</script>
-</body>
-</html>
-+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
+ $('ct-market-variance').textContent='Difference between these published estimates: US$'+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
  const stacked=$('ct-share-stack'),legend=$('ct-share-legend');
  stacked.replaceChildren();legend.replaceChildren();
  const shares=market.shares.entries;
@@ -357,15 +341,7 @@ function renderMarket(){
  appendLink(source,market.shares.source,'Original DBS vendor-share table');
  source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
  const four=shares.filter(x=>!x.derived).slice(0,4).reduce((sum,item)=>sum+item.value,0);
- $('ct-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US
-</script>
-</body>
-</html>
-+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US
-</script>
-</body>
-</html>
-+fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed CT vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor CT revenues.';
+ $('ct-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed CT vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor CT revenues.';
  const sl=$('ct-source-list');
  const research=el('article');research.append(el('h3','','Published CT market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
  for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
