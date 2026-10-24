@@ -171,7 +171,7 @@
 <details><summary>Source definitions, dates and estimate limitations</summary>
 <div class="mri-method">
 <p>The market-size figures are published by independent commercial research firms; their segment boundaries, reporting periods and proprietary calculations are not necessarily identical. Their variation is a publisher comparison, not a statistically calculated confidence interval. Forecasts have not been mixed with historical estimates.</p>
-<p>The DBS market-share table is sourced from its May 2024 report (page 29) and gives no clear measurement basis or source observation year. “Other manufacturers” is calculated as the unlisted remainder to 100%. Neither table can establish individual MRI sales revenue, scanner placements or geographic market shares.</p>
+<p>The 2022 global MRI manufacturer shares are reproduced as Figure 1 in a May 2024 Digital Power China report, attributed to Next Move Strategy Consulting. “Other manufacturers” is a published 17% category, not a calculated residual. Measurement basis and methodology are not disclosed. Historical shares cannot be applied to 2025 market-size estimates.</p>
 <p>Source checks run on publication builds; a source that cannot be accessed continues to show its original publication date and is not relabelled as new market data. MRI research and OECD data are collected separately.</p>
 </div></details>
 </section>
@@ -226,12 +226,12 @@
 </section>
 <section class="mri-card" id="mri-industry" aria-labelledby="mri-industry-heading">
 <h2 id="mri-industry-heading">Selected MRI equipment manufacturers</h2>
-<p class="mri-muted">Manufacturer share estimates and examples of established MRI product portfolios are shown together for context. The DBS estimates are global, historical and based on an undisclosed denominator; product links are not endorsements or live sales rankings.</p>
+<p class="mri-muted">Manufacturer share estimates and examples of established MRI product portfolios are shown together for context. The 2022 share estimates are historical, global and based on an undisclosed denominator; product links are not endorsements or live sales rankings.</p>
 <div class="mri-industry-share"><article class="mri-indicator">
-<h3>Global MRI manufacturer shares · DBS estimate</h3>
-<p class="mri-definition"><strong>What it measures</strong>MRI manufacturer shares reported in DBS's May 2024 industry guide. The public table does not disclose whether the figures refer to sales revenue, shipments or installed base.</p>
+<h3>Global MRI manufacturer shares · 2022 benchmark</h3>
+<p class="mri-definition"><strong>What it measures</strong>Historical global MRI manufacturer shares for 2022 attributed to Next Move Strategy Consulting and reproduced in a May 2024 public report. Their denominator is not specified.</p>
 <p class="mri-definition"><strong>Why it matters for imaging</strong>Shows the estimated competitive concentration of major MRI suppliers. It is not a comparison of innovation, equipment performance or MRI systems in any selected country.</p>
-<div id="mri-share-bars" class="mri-share-bars" role="list" aria-label="DBS reported MRI manufacturer shares, descending order"></div>
+<div id="mri-share-bars" class="mri-share-bars" role="list" aria-label="Global MRI manufacturer shares for 2022, attributed to Next Move Strategy Consulting"></div>
 <div id="mri-share-axis" class="mri-share-axis" aria-hidden="true"></div>
 <p class="mri-source" id="mri-share-citation"></p>
 </article></div>
@@ -261,7 +261,7 @@
 </section>
 </main>
 <footer><div>© 2026 Felix Beacher. All rights reserved.</div><p class="footer-disclaimer">Information for industry and clinical context; not individual medical advice, an investment recommendation or a validated forecast. Follow local clinical guidelines and review the original sources.</p></footer>
-<script id="mri-data" type="application/json"><!-- CT_DATA --></script>
+<script id="mri-data" type="application/json"><!-- MRI_DATA --></script>
 <script>
 'use strict';
 const mriData=JSON.parse(document.getElementById('mri-data').textContent);
@@ -570,18 +570,18 @@ function renderMarket(){
  for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
  axis.append(spacer,ticks,axisUnit);
  const source=$('mri-share-citation');source.replaceChildren(document.createTextNode(
-  'DBS CIO Industry Guide · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
+  'Digital Power China / Next Move · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
   ));
  appendLink(source,market.shares.source,'Original 2022 MRI manufacturer-share figure');
  source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
- const four=shares.filter(x=>!x.derived).slice(0,4).reduce((sum,item)=>sum+item.value,0);
- $('mri-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed MRI vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor MRI revenues.';
+ const four=shares.filter(x=>['Siemens Healthineers','GE HealthCare','Philips'].includes(x.name)).reduce((sum,item)=>sum+item.value,0);
+ $('mri-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the 2022 historical source, Siemens Healthineers, GE HealthCare and Philips together account for '+fmt(four,0)+'% of the published global MRI manufacturer share. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor MRI revenues.';
  const sl=$('mri-source-list');
  const research=el('article');research.append(el('h3','','Published MRI market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
  for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
  sl.append(research);
- const dbs=el('article');dbs.append(el('h3','','MRI manufacturer shares · historical benchmark'),el('p','','Published May 2024, page 29; basis of share percentages not specified.'));
- const p=el('p');appendLink(p,market.shares.source,'Original DBS share table');dbs.append(p);sl.append(dbs);
+ const dbs=el('article');dbs.append(el('h3','','MRI manufacturer shares · 2022 benchmark'),el('p','','Next Move 2022 shares reproduced in Digital Power China May 2024, Figure 1; denominator unspecified.'));
+ const p=el('p');appendLink(p,market.shares.source,'Original 2022 MRI manufacturer-share figure');dbs.append(p);sl.append(dbs);
 }
 
 renderPapers();renderSources();renderMarket();
