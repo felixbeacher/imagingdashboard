@@ -374,6 +374,97 @@ regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
 countrySelect.addEventListener('change',()=>{if(countrySelect.value)setCountryDetail(countrySelect.value)});
 if(startingRegion)chooseRegion(startingRegion,oldCountry);
 else $('ct-stat-grid').textContent='No regional data samples configured.';
+const CT_SHARE_COLOURS=['#79c9ef','#9ad7c6','#edc68a','#d0afed','#f4a9ab','#8195a9'];
+function renderMarket(){
+ const market=ctData.market;
+ if(!market||!market.size||!market.shares){
+  $('ct-market-size-value').textContent='Market estimates unavailable';
+  $('ct-share-citation').textContent='No verified CT manufacturer share figures are available.';
+  return;
+ }
+ const entries=market.size.entries.filter(x=>Number.isFinite(x.value)&&x.value>0);
+ const chart=$('ct-market-estimate-chart');chart.replaceChildren();
+ if(!entries.length){$('ct-market-size-value').textContent='Market estimates unavailable';return;}
+ const values=entries.map(x=>x.value),lo=Math.min(...values),hi=Math.max(...values);
+ $('ct-market-size-value').textContent='US
+</script>
+</body>
+</html>
++fmt(lo,2)+'–'+fmt(hi,2)+'bn';
+ $('ct-market-size-subtitle').textContent=market.size.year+' market · '+entries.length+' independent publisher estimates · not a statistical confidence interval';
+ for(const record of [...entries].sort((a,b)=>a.value-b.value)){
+  const row=el('div','ct-market-size-row'),label=el('div','ct-market-size-name');
+  label.append(el('div','',record.publisher),el('small','ct-market-source','Published '+record.publication_date));
+  const track=el('div','ct-market-size-track'),bar=el('div','ct-market-size-fill');
+  bar.style.width=(100*record.value/hi).toFixed(2)+'%';
+  bar.title=record.publisher+': US
+</script>
+</body>
+</html>
++fmt(record.value,2)+' billion';
+  track.append(bar);row.append(label,track,el('span','ct-market-size-number','
+</script>
+</body>
+</html>
++fmt(record.value,2)+'bn'));
+  chart.append(row);
+  const source=el('p','ct-source');appendLink(source,record.source,'Source: '+record.publisher);
+  source.append(document.createTextNode(' · '+(record.check_status||'dated published reference')));
+  chart.append(source);
+ }
+ const spread=hi-lo;
+ $('ct-market-variance').textContent='Difference between these published estimates: US
+</script>
+</body>
+</html>
++fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
+ const bars=$('ct-share-bars'),axis=$('ct-share-axis');
+ bars.replaceChildren();axis.replaceChildren();
+ const shares=[...market.shares.entries].filter(x=>Number.isFinite(x.value)&&x.value>=0)
+   .sort((a,b)=>b.value-a.value || a.name.localeCompare(b.name));
+ // Scale is a percentage axis, not a share of the maximum supplier.
+ // A rounded upper bound leaves headroom and keeps small vendors legible.
+ const maxShare=Math.max(1,...shares.map(x=>x.value));
+ const scale=Math.max(10,Math.ceil(maxShare/10)*10);
+ for(const [i,item] of shares.entries()){
+  const colour=CT_SHARE_COLOURS[i%CT_SHARE_COLOURS.length];
+  const row=el('div','ct-share-row');row.setAttribute('role','listitem');
+  const name=el('span','ct-share-name',item.name);
+  const track=el('div','ct-share-track'),bar=el('div','ct-share-bar');
+  bar.style.width=(100*item.value/scale).toFixed(2)+'%';
+  bar.style.backgroundColor=colour;
+  bar.title=item.name+': '+fmt(item.value,0)+'%';
+  bar.setAttribute('aria-hidden','true');
+  track.append(bar);
+  row.append(name,track,el('strong','ct-share-percent',fmt(item.value,0)+'%'));
+  bars.append(row);
+ }
+ const spacer=el('span'),ticks=el('div','ct-share-axis-scale'),axisUnit=el('span','ct-share-axis-unit','%');
+ for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
+ axis.append(spacer,ticks,axisUnit);
+ const source=$('ct-share-citation');source.replaceChildren(document.createTextNode(
+  'DBS CIO Industry Guide · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
+  ));
+ appendLink(source,market.shares.source,'Original DBS vendor-share table');
+ source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
+ const four=shares.filter(x=>!x.derived).slice(0,4).reduce((sum,item)=>sum+item.value,0);
+ $('ct-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US
+</script>
+</body>
+</html>
++fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US
+</script>
+</body>
+</html>
++fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed CT vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor CT revenues.';
+ const sl=$('ct-source-list');
+ const research=el('article');research.append(el('h3','','Published CT market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
+ for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
+ sl.append(research);
+ const dbs=el('article');dbs.append(el('h3','','DBS CT manufacturer-share estimates'),el('p','','Published August 2025, page 29; basis of share percentages not specified.'));
+ const p=el('p');appendLink(p,market.shares.source,'Original DBS share table');dbs.append(p);sl.append(dbs);
+}
+
 renderPapers();renderSources();renderMarket();
 </script>
 </body>
