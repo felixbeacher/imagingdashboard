@@ -90,7 +90,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -103,7 +103,7 @@ jobs:
           for filename in ('index.html', 'styles.css', 'images/earth-hero.png'):
               shutil.copy2(root / filename, output / filename)
           # Preserve the other source pages without running their unfinished updaters.
-          for filename in ('ct.html', 'mri.html', 'pet.html', 'xray.html'):
+          for filename in ('mri.html', 'pet.html', 'xray.html'):
               if (root / filename).is_file():
                   shutil.copy2(root / filename, output / filename)
           (output / '.nojekyll').touch()
@@ -137,6 +137,36 @@ jobs:
                       print(f'::warning::{feed_key}: retrieval unavailable; see page source status.')
               if payload.get('news_failures'):
                   print(f'::warning::{label}: one or more headline feeds were unavailable.')
+          # The CT modality page is built from verified OECD CT-specific annual
+          # observations and recent PubMed metadata. This refreshes on the
+          # existing weekly schedule (faster than the proposed monthly cadence).
+          # A failed external feed is visibly unavailable, never invented.
+          ct_command = [sys.executable, 'ct_dashboard.py',
+                        '--template', 'ct.template.html',
+                        '--output', str(output / 'ct.html')]
+          subprocess.run(ct_command, check=True, timeout=180)
+          html = (output / 'ct.html').read_text(encoding='utf-8')
+          ct_match = re.search(r'<script id="ct-data" type="application/json">([\s\S]*?)</script>', html)
+          if not ct_match:
+              raise SystemExit('CT dashboard source data are missing')
+          ct = json.loads(ct_match.group(1))
+          ct_coverage = {
+              mode: sum(len(country[mode]['series']['CT'])
+                        for country in ct['oecd']['countries'].values())
+              for mode in ('equipment','exams')
+          }
+          print('::notice::CT: OECD CT scanner observations = '
+                + str(ct_coverage['equipment']) + '; examinations = '
+                + str(ct_coverage['exams']) + '; PubMed status = '
+                + ct['pubmed']['status'])
+          summary.append('CT: '+str(ct_coverage['equipment'])+' scanner and '
+                         +str(ct_coverage['exams'])+' examination observations; PubMed '
+                         +ct['pubmed']['status'])
+          if not all(ct_coverage.values()):
+              print('::warning::CT: one or both OECD CT feeds are incomplete; unavailable points stay blank.')
+          if ct['pubmed']['status'] != 'live':
+              print('::warning::CT: live PubMed research feed unavailable.')
+
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
           from ai_update_data import regional_economic_background, financing_background
@@ -230,6 +260,47 @@ jobs:
           PY
           node --check _site/ai-dashboard.validate.js
           rm _site/ai-dashboard.validate.js
+
+      - name: Validate CT data and browser code
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          from html.parser import HTMLParser
+          page=Path('_site/ct.html').read_text(encoding='utf-8')
+          class Inspector(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.ids=[]
+              def handle_starttag(self,tag,attrs):
+                  self.ids.extend([value for name,value in attrs if name=='id'])
+          inspector=Inspector();inspector.feed(page)
+          if len(inspector.ids)!=len(set(inspector.ids)):
+              raise SystemExit('Duplicate CT dashboard IDs')
+          sections=('ct-overview','ct-activity','ct-interpretation','ct-research',
+                    'ct-clinical','ct-technology','ct-sources')
+          if not all(key in inspector.ids for key in sections):
+              raise SystemExit('CT sections missing in generated page')
+          if any(x in page for x in (
+                  'AI Approvals vs. MedTech Venture Capital Investment',
+                  'Vendor AI Revenue Breakdown','Radiologist Vacancy Rate')):
+              raise SystemExit('Old AI-sector component remains on CT page')
+          match=re.search(r'<script id="ct-data" type="application/json">([\s\S]*?)</script>',page)
+          if not match:
+              raise SystemExit('CT data payload missing')
+          obj=json.loads(match.group(1))
+          if not obj.get('oecd',{}).get('countries') or 'pubmed' not in obj:
+              raise SystemExit('Invalid CT data payload')
+          scripts=re.findall(r'<script>([\s\S]*?)</script>',page)
+          if len(scripts)!=1:
+              raise SystemExit('CT runtime script missing or duplicated')
+          Path('_site/ct-runtime.validate.js').write_text(scripts[0],encoding='utf-8')
+          print('::notice::CT page DOM, source schema and original-source links verified')
+          PY
+          node --check _site/ct-runtime.validate.js
+          rm _site/ct-runtime.validate.js
 
       - name: Archive validated iShares valuation readings
         # The public provider exposes current ratios, not a historical download.
