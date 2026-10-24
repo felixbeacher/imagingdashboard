@@ -724,6 +724,38 @@ def who_capacity(slug):
         return {r: {'value': None, 'reason': 'WHO equipment data could not be retrieved or validated.'} for r in REGIONS}
 
 
+def us_funds_history():
+    """Monthly average of published daily EFFR rates; a trend, not today's EFFR."""
+    today = date.today()
+    start = date(today.year - 3, today.month, 1)
+    url = 'https://markets.newyorkfed.org/api/rates/unsecured/effr/search.json?' + urllib.parse.urlencode(
+        {'startDate': start.isoformat(), 'endDate': today.isoformat()})
+    raw = public_json(url).get('refRates')
+    if not isinstance(raw, list):
+        raise ValueError('New York Fed historical rates missing')
+    months = {}
+    seen = set()
+    for row in raw:
+        if row.get('type') != 'EFFR':
+            raise ValueError('Unexpected historical rate type')
+        day = iso_date(row['effectiveDate'])
+        rate = row.get('percentRate')
+        if day < start or day > today or not finite_number(rate) or day in seen:
+            raise ValueError('Invalid or repeated historical rate observation')
+        seen.add(day)
+        key = day.strftime('%Y-%m')
+        months.setdefault(key, []).append(float(rate))
+    history = [{'month': key, 'value': round(statistics.mean(values), 4)}
+               for key, values in sorted(months.items())][-36:]
+    if len(history) < 12:
+        raise ValueError('Too few months of verified federal funds history')
+    # Refuse a truncated or stale time series rather than presenting it as recent.
+    if max(seen) < date(today.year if today.month > 1 else today.year - 1,
+                         today.month - 1 if today.month > 1 else 12, 1):
+        raise ValueError('Federal funds historical series is not recent')
+    return history
+
+
 def us_financing():
     url = 'https://markets.newyorkfed.org/api/rates/unsecured/effr/last/1.json'
     data = public_json(url)['refRates']
@@ -731,18 +763,26 @@ def us_financing():
     value, day = row['percentRate'], row['effectiveDate']
     if row.get('type') != 'EFFR' or not finite_number(value) or iso_date(day) > date.today():
         raise ValueError('Invalid effective federal funds observation')
-    return sourced(value, 'US overnight financing rate proxy', '%', 'United States', day,
+    observation = sourced(value, 'US overnight financing rate proxy', '%', 'United States', day,
         'Federal Reserve Bank of New York — EFFR', 'https://www.newyorkfed.org/markets/reference-rates/effr',
         'The US effective federal funds rate shows what financial institutions typically pay to borrow '
         'money overnight. It gives a sense of US financing conditions: higher rates can make borrowing '
         'more expensive for hospitals and imaging businesses planning to buy scanners or expand '
         'facilities. This is a US benchmark, not the actual loan rate a provider would pay.', as_of=day)
+    observation['history'] = []
+    observation['history_note'] = 'Monthly average of daily federal funds rates. Latest card shows the most recent daily rate.'
+    try:
+        observation['history'] = us_funds_history()
+    except Exception as exc:
+        logging.warning('Historical federal funds trend unavailable: %s', exc)
+        observation['history_note'] = 'Historical interest-rate trend could not be checked. The latest rate is shown separately.'
+    return observation
 
 
 def us_medical_inflation():
     year = date.today().year
     url = 'https://api.bls.gov/publicAPI/v2/timeseries/data/CUUR0000SAM?' + urllib.parse.urlencode(
-        {'startyear': year - 2, 'endyear': year})
+        {'startyear': year - 4, 'endyear': year})
     response = public_json(url)
     if response.get('status') != 'REQUEST_SUCCEEDED':
         raise ValueError('BLS request was not successful: ' + str(response.get('message')))
@@ -765,13 +805,22 @@ def us_medical_inflation():
         raise ValueError('Matching prior-year CPI month is missing; no alternative period substituted')
     value = (points[current] / points[previous] - 1) * 100
     period = f'{current[0]}-{current[1]:02d}'
-    return sourced(value, 'US medical-care CPI proxy', '% YoY', 'US urban consumers', period,
+    history = []
+    for year_month in sorted(points):
+        prior = (year_month[0] - 1, year_month[1])
+        if prior in points:
+            history.append({'month': f'{year_month[0]}-{year_month[1]:02d}',
+                            'value': round((points[year_month] / points[prior] - 1) * 100, 4)})
+    observation = sourced(value, 'US medical-care CPI proxy', '% YoY', 'US urban consumers', period,
         'US Bureau of Labor Statistics — CUUR0000SAM', 'https://data.bls.gov/timeseries/CUUR0000SAM',
         'Shows how prices paid by US consumers for medical care have changed compared with the same '
         'month last year. These price changes can affect patients and insurers and provide '
         'context for healthcare spending and demand for imaging. This US measure does not '
         'tell us what hospitals pay for staff, scanners or other equipment.',
         as_of=date.today().isoformat(), status='estimated')
+    observation['history'] = history[-36:]
+    observation['history_note'] = 'Monthly change from the same month one year earlier, using the original unadjusted US medical-care price index. Falling inflation means prices are rising more slowly, not necessarily falling.'
+    return observation
 
 
 def automatic_observations(slug, offline=False):
@@ -937,7 +986,7 @@ def financing_background(offline=False):
     for label, fetch, source in [
         ('US effective federal funds rate', us_financing, {'name':'Federal Reserve Bank of New York', 'url':'https://www.newyorkfed.org/markets/reference-rates/effr'}),
         ('US medical-care CPI — annual change', us_medical_inflation, {'name':'US Bureau of Labor Statistics', 'url':'https://data.bls.gov/timeseries/CUUR0000SAM'})]:
-        item=dict(label=label,value=None,period='',as_of=None,retrieved=None,attempted_at=date.today().isoformat(),source=source,reason='Offline: source was not requested.')
+        item=dict(label=label,value=None,period='',as_of=None,retrieved=None,attempted_at=date.today().isoformat(),source=source,history=[],history_note='',reason='Offline: source was not requested.')
         if not offline:
             try:
                 observation=fetch()
