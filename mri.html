@@ -1,494 +1,590 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-GB">
 <head>
-	<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Imaging AI & Health Macro Dashboard</title>
-    
-	<!-- Browser Tab Icon (Favicon) -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E">
-	<!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MRI | The Medical Imaging Dashboard</title>
+<meta name="description" content="Regional MRI equipment and examination trends, global MRI market and manufacturer shares, clinical innovation and selected research.">
+<link rel="stylesheet" href="styles.css">
+<style>
+.mri-page{max-width:1450px}.mri-page a{color:#8bd4f5}.mri-page a:focus-visible,.mri-page select:focus-visible,.mri-page summary:focus-visible{outline:2px solid #92e2ff;outline-offset:3px}
+.mri-page h2{color:#ecf7ff}.mri-lead{background:linear-gradient(125deg,#13283d,#101b2c);border:1px solid #35566d;border-radius:14px;padding:clamp(22px,3vw,38px);margin-bottom:20px}
+.mri-eyebrow{color:#86d4f9;font-size:.79rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase}.mri-lead h2{font-size:clamp(1.7rem,3.4vw,2.9rem);line-height:1.12;margin:9px 0 15px}.mri-lead p{font-size:1rem;max-width:900px;color:#c7d7e5;line-height:1.7}
+.mri-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.mri-nav a{padding:10px 12px;border-radius:8px;background:#142235;border:1px solid #38566b;color:#d9edfa;font-size:.84rem;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.mri-card{background:#131d2b;border:1px solid #334a60;border-radius:12px;padding:clamp(17px,2vw,25px);margin:0 0 19px;min-width:0}
+.mri-card h2{font-size:1.2rem;margin:0 0 13px;border-bottom:1px solid #35485a;padding-bottom:11px}
+.mri-card h3{font-size:1.02rem;margin:0 0 9px;color:#e9f6ff}.mri-muted{color:#b5cad8;font-size:.87rem;line-height:1.65}
+.mri-control{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:20px 0 5px}.mri-control label{font-size:.92rem;font-weight:700;color:#d4e6f2}.mri-control select{background:#091726;color:#f0faff;border:1px solid #57768f;border-radius:8px;padding:10px 13px;font-size:1rem;min-height:44px;min-width:220px}
+.mri-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:19px 0 15px}
+.mri-stat{border-radius:10px;border:1px solid #38556a;background:#0e1c2e;padding:15px;min-width:0}
+.mri-stat h3{font-size:.85rem;margin:0 0 11px;color:#bedcea}.mri-value{font-size:1.7rem;line-height:1.25;color:#f4fbff;font-weight:750;overflow-wrap:anywhere}.mri-stat small{display:block;color:#a9bfce;font-size:.76rem;line-height:1.55;margin-top:8px}
+.mri-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.mri-indicator{border:1px solid #38516a;background:#0d1b2c;border-radius:10px;padding:18px;min-width:0}
+.mri-indicator h3{margin-bottom:8px}.mri-definition{font-size:.84rem;color:#c1d4e0;line-height:1.6;margin:8px 0}.mri-definition strong{display:block;color:#86d6f8;margin-bottom:3px;font-weight:700}
+.mri-reading{font-size:1.42rem;color:#ebf9ff;font-weight:750;margin:15px 0 6px}.mri-reading small{font-size:.76rem;font-weight:400;color:#b4c9d7}
+.mri-source{font-size:.78rem;line-height:1.55;color:#afc3d3;margin-top:10px;overflow-wrap:anywhere}
+.mri-chart{width:100%;overflow-x:auto;margin:15px 0 7px}.mri-chart svg{width:100%;min-width:400px;display:block;height:auto}.mri-no-data{color:#c7d6e1;font-size:.83rem;line-height:1.65;padding:22px 10px}
+.mri-page details{margin:12px 0}.mri-page details>summary{color:#9fdefc;cursor:pointer;min-height:36px;display:flex;align-items:center;font-size:.84rem}.mri-page table{width:100%;border-collapse:collapse;font-size:.82rem}.mri-page th,.mri-page td{text-align:left;padding:7px;border-bottom:1px solid #30485b}.mri-page td:last-child,.mri-page th:last-child{text-align:right}
+.mri-insight{background:#0b2433;border-left:3px solid #5fc4ec;padding:16px 19px;border-radius:3px;margin:15px 0;color:#cbe1ed;font-size:.91rem;line-height:1.65}
+.mri-topic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.mri-topic{border-radius:9px;border:1px solid #375166;background:#0c1a2a;padding:17px;min-width:0}
+.mri-topic h3{font-size:.95rem}.mri-topic p{font-size:.84rem;line-height:1.6;color:#bfd1df;margin:7px 0 0}
+.mri-paper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:16px 0}
+.mri-paper{border:1px solid #375166;background:#0d1b2b;border-radius:10px;padding:16px;min-width:0}.mri-paper h3{font-size:.95rem;line-height:1.5}
+.mri-paper p{color:#bcd0df;font-size:.83rem;line-height:1.6;margin:9px 0}
+.mri-tag{border:1px solid #446276;border-radius:5px;padding:3px 7px;color:#b9dfef;font-size:.73rem;display:inline-block;margin-bottom:9px}
+.mri-source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mri-source-list article{background:#0f1f2e;border:1px solid #385266;border-radius:9px;padding:14px;min-width:0}.mri-source-list h3{font-size:.94rem}.mri-source-list p{font-size:.8rem;line-height:1.6;color:#b9ccdb;margin-top:7px}
+.mri-method{font-size:.85rem;line-height:1.65;color:#c2d6e3}
+.mri-method li{margin:7px 0 7px 20px}
+.mri-chart-legend{font-size:.77rem;color:#a9cee1;margin:5px 0}
+@media(max-width:1100px){.mri-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mri-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.mri-grid,.mri-paper-grid,.mri-source-list,.mri-topic-grid{grid-template-columns:1fr}.mri-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mri-lead{padding:20px}.mri-page{padding:16px}.mri-chart svg{min-width:380px}}
+@media(max-width:460px){.mri-stat-grid{grid-template-columns:1fr}.mri-control select{width:100%}.mri-stat{padding:14px}}
+@media(prefers-reduced-motion:reduce){.mri-page *{scroll-behavior:auto}}
 
+/* MRI market reports: evidence-led comparison rather than an invented market time series */
+.mri-market-section{border-color:#47677d;background:linear-gradient(138deg,#17293b,#111b2a 48%,#111b2a)}
+.mri-market-feature-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:18px}
+.mri-market-big{font-size:clamp(1.7rem,2.75vw,2.5rem);font-weight:750;color:#e8f8ff;margin:14px 0 5px;letter-spacing:-.035em}
+.mri-market-estimates{display:flex;flex-direction:column;gap:13px;margin:19px 0 15px}
+.mri-market-size-row{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 76px;align-items:center;gap:12px}
+.mri-market-size-name{color:#d3e7f4;font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
+.mri-market-size-track{background:#243c50;height:17px;border-radius:5px;overflow:hidden}
+.mri-market-size-fill{background:linear-gradient(90deg,#5fa3d8,#80d6eb);height:100%;border-radius:5px;min-width:2px}
+.mri-market-size-number{font-size:.82rem;color:#dff3ff;font-weight:700;text-align:right}
+.mri-market-source{font-size:.76rem;color:#99bdd2;display:block;margin-top:4px}
+.mri-share-bars{display:flex;flex-direction:column;gap:14px;margin:22px 0 12px}
+.mri-share-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;align-items:center;min-width:0}
+.mri-share-name{font-size:.85rem;font-weight:600;color:#dceefa;line-height:1.4;overflow-wrap:anywhere}
+.mri-share-track{height:22px;border-radius:5px;overflow:hidden;background:repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),rgba(152,190,216,.2) calc(25% - 1px),rgba(152,190,216,.2) 25%),#223648}
+.mri-share-bar{height:100%;min-width:2px;border-radius:5px;background:#76cbed;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.mri-share-percent{font-size:.93rem;font-weight:750;color:#f4fbff;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mri-share-axis{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;margin:0 0 18px}
+.mri-share-axis-scale{display:flex;justify-content:space-between;align-items:center;color:#b6cbdb;font-size:.74rem;font-variant-numeric:tabular-nums}
+.mri-share-axis-unit{color:#a9c5d6;font-size:.75rem;text-align:right}
+@media(max-width:940px){.mri-market-feature-grid{grid-template-columns:1fr}}
+@media(max-width:510px){.mri-market-size-row{grid-template-columns:100px minmax(0,1fr) 65px;gap:7px}.mri-share-row,.mri-share-axis{grid-template-columns:minmax(0,110px) minmax(0,1fr) 42px;gap:7px}.mri-market-size-name,.mri-market-size-number{font-size:.76rem}}
+
+
+/* Regional OECD sample comparisons: no inferred regional mean or total. */
+.mri-region-bars{display:flex;flex-direction:column;gap:13px;margin:18px 0}
+.mri-region-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) minmax(0,80px);gap:12px;align-items:center;min-width:0}
+.mri-region-name{color:#e4f3fd;font-size:.86rem;font-weight:650;overflow-wrap:anywhere}
+.mri-region-track{height:22px;border-radius:5px;background:#22384c;overflow:hidden}
+.mri-region-fill{height:100%;background:linear-gradient(90deg,#4e9fcf,#8ad7f3);border-radius:5px}
+.mri-region-number{font-size:.92rem;text-align:right;color:#e5f9ff;font-weight:720;font-variant-numeric:tabular-nums}
+.mri-region-meta{grid-column:1/-1;color:#abc1d0;font-size:.76rem;margin:-9px 0 4px;line-height:1.5}
+.mri-detail-picker{margin:12px 0 20px}
+@media(max-width:580px){.mri-region-row{grid-template-columns:minmax(0,110px) minmax(0,1fr) 58px;gap:7px}.mri-region-number{font-size:.83rem}}
+
+.mri-aim-title{font-size:1rem;color:#a6e4ff;margin:12px 0 4px;font-weight:740}
+.mri-lag-note{background:#162b3b;border:1px solid #48687d;border-radius:9px;color:#d0e5f2;padding:13px 17px;font-size:.84rem;line-height:1.68;margin:16px 0}
+.mri-projection-legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 12px;color:#b7cedd;font-size:.79rem}
+.mri-projection-legend>span{display:inline-flex;align-items:center;gap:6px}
+.mri-projection-legend i{width:20px;height:4px;display:inline-block;border-radius:2px}
+.mri-key-actual{background:#85ddfa}.mri-key-forecast{background:repeating-linear-gradient(90deg,#f6c06f 0 5px,transparent 5px 8px)}.mri-key-band{background:rgba(247,180,90,.4)}
+.mri-activity-implications{border-top:1px solid #436174;margin-top:26px;padding-top:19px}
+.mri-activity-implications h3{font-size:1.05rem;margin-bottom:11px}
+.mri-tech-single{display:block}
+.mri-industry-share{max-width:900px;margin:18px 0 22px}
+.mri-industry-products-title{padding-top:20px;border-top:1px solid #39546a;font-size:1.08rem}
+.mri-forecast-method{border-left:3px dashed #efbb6d;padding:9px 12px;margin:12px 0;color:#e4d2b4;font-size:.79rem;line-height:1.6;background:#2b251c}
+
+.mri-control.mri-region-primary{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 24px;margin:24px 0 14px;border:1px solid #659db8;border-radius:13px;background:linear-gradient(100deg,#1a364a,#102638)}
+.mri-region-primary label{font-size:1.3rem;font-weight:850;letter-spacing:.065em;color:#c6edff;white-space:nowrap}
+.mri-region-primary select{font-size:1.08rem;font-weight:720;min-height:48px;min-width:255px;border:2px solid #8cd7ff;border-radius:9px;background:#081b2b;color:#f4faff}
+.mri-region-series-legend{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}
+.mri-region-series-legend span{display:flex;gap:7px;align-items:center;font-size:.83rem;color:#d0e4f3}
+.mri-region-series-legend i{height:4px;width:19px;display:inline-block;border-radius:2px}
+.mri-region-chart-note{font-size:.81rem;color:#b9cfdb;line-height:1.6;margin:9px 0}
+@media(max-width:650px){.mri-control.mri-region-primary{flex-direction:column;align-items:stretch;padding:16px}.mri-region-primary label{font-size:1.12rem}.mri-region-primary select{width:100%;min-width:0}}
+
+/* Interpretation-first MRI information density, responsive tables and source years. */
+.mri-compare-caution{border-left:3px solid #eec077;background:#29251e;color:#e9d5b6;
+ padding:12px 16px;margin:12px 0 20px;font-size:.83rem;line-height:1.6}
+.mri-year-flag{display:inline-block;border:1px solid #57798d;color:#d4edf7;
+ background:#1c3447;border-radius:5px;padding:2px 6px;font-weight:800;font-variant-numeric:tabular-nums}
+.mri-year-flag.mri-year-old{border-color:#b68f60;background:#352d23;color:#ffe2b8}
+.mri-region-bars .mri-region-row{gap:11px 13px}
+.mri-page .mri-chart{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;scrollbar-width:thin}
+.mri-page .mri-chart svg{display:block;width:100%;min-width:700px;max-width:none;height:auto}
+.mri-page details:has(table){max-width:100%;overflow-x:auto}
+.mri-page details table{min-width:540px}
+.mri-research-topic{color:#b5e5fb;font-size:.83rem;font-weight:690}
+.mri-research-selection{font-size:.76rem;color:#adc3d4;line-height:1.55}
+.mri-stat .mri-value{font-size:clamp(1.15rem,2.1vw,1.72rem);word-break:normal;overflow-wrap:anywhere}
+.mri-stat h3{font-size:.86rem}
+@media(max-width:780px){.mri-page .mri-chart svg{min-width:630px}.mri-region-row{grid-template-columns:minmax(95px,125px) minmax(80px,1fr) minmax(52px,64px)}}
+@media(max-width:480px){.mri-page .mri-chart svg{min-width:600px}.mri-page .mri-grid{grid-template-columns:minmax(0,1fr)}
+ .mri-stat .mri-value{font-size:1.4rem}.mri-year-flag{padding:1px 4px}}
+</style>
 </head>
 <body>
+<header><div class="header-content">
+<div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
+<nav class="nav-tabs" aria-label="Dashboard pages">
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn active" aria-current="page" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a></nav></div></header>
+<main class="mri-page">
+<section class="mri-lead" aria-labelledby="mri-page-heading">
+<h2 id="mri-page-heading">MRI: capacity, use and innovation</h2>
+<h3 class="mri-aim-title">Aim of this page</h3>
+<p>Explore MRI scanner availability, examination trends, clinical applications and the global MRI equipment market through clearly sourced data.</p>
+<div class="mri-control mri-region-primary"><label for="mri-region">SELECT REGION</label>
+<select id="mri-region" aria-label="Select region for MRI data"></select>
+</div>
+<p class="mri-muted" id="mri-region-scope">The selected region controls OECD MRI equipment and examination data only. Market values, manufacturer shares and the research feed remain global. Country observations are selected samples, not regional averages.</p>
+</section>
+<nav class="mri-nav" aria-label="On this page">
+<a href="#mri-overview">At a glance</a><a href="#mri-regional-comparison">Regional comparisons</a><a href="#mri-market">MRI market</a><a href="#mri-activity">Capacity &amp; use</a><a href="#mri-research">Latest MRI research</a><a href="#mri-clinical">Clinical uses</a><a href="#mri-technology">Technology</a><a href="#mri-industry">MRI industry</a><a href="#mri-sources">Sources &amp; methodology</a>
+</nav>
+<section class="mri-card" id="mri-overview" aria-labelledby="mri-overview-heading">
+<h2 id="mri-overview-heading">MRI at a glance</h2>
+<p class="mri-muted">A concise regional snapshot of MRI capacity, examinations and research, with country names and actual observation years. No regional mean is inferred.</p>
+<div class="mri-stat-grid" id="mri-stat-grid" aria-live="polite"></div>
+</section>
+<section class="mri-card" id="mri-regional-comparison" aria-labelledby="mri-regional-heading">
+<h2 id="mri-regional-heading">Regional MRI comparison · selected OECD countries</h2>
+<p class="mri-muted" id="mri-comparison-note">Latest available country readings: years and provider scope differ. These bars are not same-year rankings or regional averages.</p>
+<p class="mri-compare-caution" id="mri-comparison-warning" aria-live="polite">Reporting-year and provider-scope differences are shown below.</p>
+<div class="mri-grid">
+<article class="mri-indicator"><h3>MRI scanners per million people</h3><div id="mri-region-scanners" class="mri-region-bars" aria-live="polite"></div></article>
+<article class="mri-indicator"><h3>MRI examinations per 1,000 people</h3><div id="mri-region-exams" class="mri-region-bars" aria-live="polite"></div></article>
+</div>
+<p class="mri-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Provider totals can have country-specific exclusions: OECD notes, for example, public-sector/hospital coverage limitations in the UK and reimbursement-related coverage in Australia. Consult the <a target="_blank" rel="noopener noreferrer" href="https://www.oecd.org/en/publications/health-at-a-glance-2025_8f9e3f98-en/full-report/diagnostic-technologies_9039027d.html">OECD diagnostic technologies methodology</a> before comparing countries. Missing readings are never treated as zero.</p>
+</section>
+<section class="mri-card mri-market-section" id="mri-market" aria-labelledby="mri-market-heading">
+<h2 id="mri-market-heading">Global MRI equipment market size</h2>
+<p class="mri-muted">Published estimates of the global MRI scanner and equipment market. These are commercial research estimates, not independently observed MRI equipment sales. Manufacturer shares appear with the manufacturer profiles below.</p>
+<div class="mri-market-feature-grid">
+<article class="mri-indicator">
+<h3>MRI scanner market size · 2025 estimates</h3>
+<p class="mri-definition"><strong>What it measures</strong>Publishers' reported global annual MRI scanner/device market value, in US dollars. Differences in scope and methodology prevent treating the figures as an observed common total.</p>
+<p class="mri-definition"><strong>Why it matters for imaging</strong>Provides an order-of-magnitude picture of the equipment sector, rather than the much larger economic activity generated by MRI examinations.</p>
+<div class="mri-market-big" id="mri-market-size-value">Source estimates loading…</div>
+<p class="mri-muted" id="mri-market-size-subtitle"></p>
+<div id="mri-market-estimate-chart" aria-label="Comparative published MRI market-size estimates" class="mri-market-estimates"></div>
+<p class="mri-muted" id="mri-market-variance"></p>
+</article>
 
-    <header>
-        <div class="header-content">
-            <div class="title-area">
-                <h1>The Medical Imaging Dashboard</h1>
-                <p class="author-bio">Created and managed by Felix Beacher, PhD.</p>
-            </div>
-            <!-- Modern Flashy Tab Navigation (Home First) -->
-            <nav class="nav-tabs">
-                <a href="index.html" class="tab-btn">Home</a>
-                <a href="global-macro.html" class="tab-btn">Glob Econ</a>
-                <a href="ai.html" class="tab-btn active">Im AI</a>
-                <a href="ct.html" class="tab-btn">CT</a>
-                <a href="mri.html" class="tab-btn">MRI</a>
-                <a href="pet.html" class="tab-btn">PET</a>
-                <a href="xray.html" class="tab-btn">Xray</a>
-            </nav>
-        </div>
-    </header>
+</div>
 
-    <main>
-        <div class="region-filter-container">
-            <label for="regionSelect">SELECT REGION:</label>
-            <select id="regionSelect">
-                <option value="global">Global</option>
-                <option value="northAmerica">North America</option>
-                <option value="europe">Europe</option>
-                <option value="asia">Asia</option>
-                <option value="middleEast">Middle East</option>
-                <option value="southAmerica">South America</option>
-            </select>
-        </div>
+<details><summary>Source definitions, dates and estimate limitations</summary>
+<div class="mri-method">
+<p>The market-size figures are published by independent commercial research firms; their segment boundaries, reporting periods and proprietary calculations are not necessarily identical. Their variation is a publisher comparison, not a statistically calculated confidence interval. Forecasts have not been mixed with historical estimates.</p>
+<p>The 2022 global MRI manufacturer shares are reproduced as Figure 1 in a May 2024 Digital Power China report, attributed to Next Move Strategy Consulting. “Other manufacturers” is a published 17% category, not a calculated residual. Measurement basis and methodology are not disclosed. Historical shares cannot be applied to 2025 market-size estimates.</p>
+<p>Source checks run on publication builds; a source that cannot be accessed continues to show its original publication date and is not relabelled as new market data. MRI research and OECD data are collected separately.</p>
+</div></details>
+</section>
+<section class="mri-card" id="mri-activity" aria-labelledby="mri-activity-heading">
+<h2 id="mri-activity-heading">Scanner availability and examination activity</h2>
+<p class="mri-muted">View the OECD histories for countries within your selected region, displayed together. Each series is a published country observation, not a constructed regional average.</p>
+<div class="mri-grid">
+<article class="mri-indicator" id="mri-scanners"></article>
+<article class="mri-indicator" id="mri-exams"></article>
+</div>
+<div class="mri-lag-note" id="mri-data-lag" aria-live="polite"></div>
+<div class="mri-projection-legend"><span><i class="mri-key-actual"></i> Solid lines: observed OECD figures</span><span><i class="mri-key-forecast"></i> Dashed lines: modelled scenarios</span><span><i class="mri-key-band"></i> Shading: sensitivity, not confidence limits</span></div>
+<p class="mri-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
+<div id="mri-interpretation" class="mri-activity-implications" aria-labelledby="mri-interpretation-heading">
+<h3 id="mri-interpretation-heading">From MRI trends to imaging decisions</h3>
+<p class="mri-muted">The historical commentary below is generated from actual OECD observations. Forward scenarios are shown separately and are not official OECD data.</p>
+<div class="mri-grid"><article class="mri-indicator"><h3>What the observed series show</h3><div id="mri-reading" class="mri-insight" aria-live="polite"></div></article>
+<article class="mri-indicator"><h3>What to investigate before acting</h3><div id="mri-next" class="mri-insight"></div></article></div>
+</div>
+</section>
 
-        <!-- Regional Summary Box Section -->
-        <div class="card" style="margin-bottom: 25px;">
-            <h2>Description of Region</h2>
-            <p id="regional-summary-text" class="metric-desc" style="margin-top: 10px; font-size: 1rem;">
-                <!-- REGIONAL_SUMMARY_PLACEHOLDER -->
-            </p>
-        </div>
+<section class="mri-card" id="mri-research" aria-labelledby="mri-research-heading">
+<h2 id="mri-research-heading">Recently published MRI research</h2>
+<p class="mri-muted">A selected PubMed discovery feed prioritising indexed clinical study designs, specialist-journal relevance and MRI topic diversity. Case reports, editorials and reviews are excluded. This is not a systematic review or a validated study-quality ranking.</p>
+<div id="mri-papers" class="mri-paper-grid" aria-live="polite"></div>
+<p class="mri-source" id="mri-pubmed-source"></p>
+</section>
+<section class="mri-card" id="mri-clinical" aria-labelledby="mri-clinical-heading">
+<h2 id="mri-clinical-heading">Where MRI fits in to clinical care</h2>
+<p class="mri-muted">Clinical context rather than patient-specific recommendations. Indications depend on the diagnostic question, safety screening, access, protocol and appropriateness guidance.</p>
+<div class="mri-topic-grid">
+<article class="mri-topic"><h3>Brain and neurological disease</h3><p><strong>What it measures:</strong> CNS anatomy and selected tissue properties using T1, T2, diffusion and other sequences.</p><p><strong>Why it matters for imaging:</strong> stroke, demyelination, epilepsy and tumour workups depend on sequence selection and specialist reporting.</p></article>
+<article class="mri-topic"><h3>Spine and musculoskeletal MRI</h3><p><strong>What it measures:</strong> marrow, intervertebral discs, ligaments, muscles, tendons and joints.</p><p><strong>Why it matters for imaging:</strong> demand includes sports injuries, degenerative disease and infection, with long protocols and patient positioning influencing throughput.</p></article>
+<article class="mri-topic"><h3>Oncology and whole-body MRI</h3><p><strong>What it measures:</strong> structural, diffusion-weighted and selected contrast-enhanced characteristics of tumours.</p><p><strong>Why it matters for imaging:</strong> tumour staging, therapy monitoring and protocol consistency influence exam length and service capacity.</p></article>
+<article class="mri-topic"><h3>Cardiovascular MRI</h3><p><strong>What it measures:</strong> ventricular function, myocardial tissue characteristics, blood flow and congenital anatomy.</p><p><strong>Why it matters for imaging:</strong> specialist acquisition, ECG gating, patient cooperation and interpretation expertise are essential.</p></article>
+<article class="mri-topic"><h3>Abdominal and pelvic imaging</h3><p><strong>What it measures:</strong> liver, pancreas, biliary anatomy, bowel and pelvic organs, using organ-specific sequences.</p><p><strong>Why it matters for imaging:</strong> prostate, breast, hepatobiliary and pelvic pathways require distinct protocols and sometimes contrast agents.</p></article>
+<article class="mri-topic"><h3>Paediatric MRI</h3><p><strong>What it measures:</strong> brain, spine and other soft tissues without ionising radiation.</p><p><strong>Why it matters for imaging:</strong> motion control, child-friendly protocols and sometimes sedation affect scanner workflow and staffing.</p></article>
+</div>
+<p class="mri-source">Original clinical orientation: <a target="_blank" rel="noopener noreferrer" href="https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria">ACR Appropriateness Criteria</a>. MRI requires implant/device screening, controlled magnetic-field access and protocol-specific safety assessment; it is not interchangeable with CT.</p>
+</section>
+<section class="mri-card" id="mri-technology" aria-labelledby="mri-technology-heading">
+<h2 id="mri-technology-heading">Technology and service considerations</h2>
+<div class="mri-grid mri-tech-single">
+<article class="mri-indicator">
+<h3>Technology developments to track</h3>
+<p class="mri-definition"><strong>Magnetic field strength and gradients</strong>1.5T and 3T are widely deployed clinical configurations, while low-field, ultra-high-field and dedicated MRI serve different clinical and research needs. Higher field strength alone does not imply better performance for every application.</p>
+<p class="mri-definition"><strong>Low-helium, sealed and smaller-footprint magnets</strong>Cooling design, installation requirements, servicing and operating costs can affect access and replacement decisions. Check manufacturer-specific claims and lifecycle costs.</p>
+<p class="mri-definition"><strong>Acquisition acceleration and reconstruction</strong>Parallel imaging, compressed sensing and AI-enabled reconstruction can shorten examinations or affect image quality, but require validation for each protocol and clinical task.</p>
+<p class="mri-definition"><strong>MRI safety and patient experience</strong>Implant/device compatibility, ferromagnetic object screening, acoustic noise, RF heating, claustrophobia and gadolinium-contrast considerations all influence service planning.</p>
+<p class="mri-source">Safety reference: <a target="_blank" rel="noopener noreferrer" href="https://www.acr.org/clinical-resources/clinical-tools-and-reference/mr-safety">ACR MR Safety</a>. This is background context, not a real-time safety indicator.</p>
+</article></div>
+</section>
+<section class="mri-card" id="mri-industry" aria-labelledby="mri-industry-heading">
+<h2 id="mri-industry-heading">Selected MRI equipment manufacturers</h2>
+<p class="mri-muted">Manufacturer share estimates and examples of established MRI product portfolios are shown together for context. The 2022 share estimates are historical, global and based on an undisclosed denominator; product links are not endorsements or live sales rankings.</p>
+<div class="mri-industry-share"><article class="mri-indicator">
+<h3>Global MRI manufacturer shares · 2022 benchmark</h3>
+<p class="mri-definition"><strong>What it measures</strong>Historical global MRI manufacturer shares for 2022 attributed to Next Move Strategy Consulting and reproduced in a May 2024 public report. Their denominator is not specified.</p>
+<p class="mri-definition"><strong>Why it matters for imaging</strong>Shows the estimated competitive concentration of major MRI suppliers. It is not a comparison of innovation, equipment performance or MRI systems in any selected country.</p>
+<div id="mri-share-bars" class="mri-share-bars" role="list" aria-label="Global MRI manufacturer shares for 2022, attributed to Next Move Strategy Consulting"></div>
+<div id="mri-share-axis" class="mri-share-axis" aria-hidden="true"></div>
+<p class="mri-source" id="mri-share-citation"></p>
+</article></div>
+<div class="mri-insight"><strong>Market interpretation, generated from the source estimates:</strong> <span id="mri-market-analysis"></span></div>
+<h3 class="mri-industry-products-title">Selected MRI product portfolios</h3>
+<p class="mri-muted">Manufacturer product information, not a ranking of technological performance or reported equipment revenue.</p>
+<div class="mri-topic-grid">
+<article class="mri-topic"><h3>Siemens Healthineers</h3><p>MAGNETOM MRI systems from lower-field clinical installations to 1.5T, 3T and ultra-high-field MRI.</p><p><a href="https://www.siemens-healthineers.com/magnetic-resonance-imaging" target="_blank" rel="noopener noreferrer">Manufacturer MRI portfolio →</a></p></article>
+<article class="mri-topic"><h3>GE HealthCare</h3><p>SIGNA systems, MRI coils, reconstruction and service technology.</p><p><a href="https://www.gehealthcare.com/en/products/magnetic-resonance-imaging" target="_blank" rel="noopener noreferrer">Manufacturer MRI range →</a></p></article>
+<article class="mri-topic"><h3>Philips</h3><p>Ingenia and related MRI platform, acceleration and helium management technologies.</p><p><a href="https://www.philips.com/healthcare/solutions/magnetic-resonance" target="_blank" rel="noopener noreferrer">Manufacturer MRI information →</a></p></article>
+<article class="mri-topic"><h3>Canon Medical Systems</h3><p>Vantage MRI systems with workflow and reconstruction capabilities.</p><p><a href="https://global.medical.canon/products/magnetic-resonance/" target="_blank" rel="noopener noreferrer">Manufacturer MRI portfolio →</a></p></article>
+<article class="mri-topic"><h3>Fujifilm Healthcare</h3><p>Open and high-field MRI systems and inherited Hitachi MRI technology.</p><p><a href="https://www.fujifilm.com/products/healthcare/medical-imaging/mri" target="_blank" rel="noopener noreferrer">Manufacturer MRI information →</a></p></article>
+<article class="mri-topic"><h3>United Imaging Healthcare</h3><p>uMR clinical systems across multiple field strengths. Included in “Other” in the older published share chart.</p><p><a href="https://global.united-imaging.com/en/product-service/products/mr" target="_blank" rel="noopener noreferrer">Manufacturer MRI range →</a></p></article>
+</div>
+<div class="mri-insight"><strong>For purchasing and service planning:</strong> combine the source-backed country trends above with local scanner age, utilisation, clinical case mix, uptime, maintenance support, sequence optimisation, MR safety screening and scan-time requirements. Public OECD counts do not reveal manufacturers' sales or hospital procurement pipelines.</div>
+</section>
+<section class="mri-card" id="mri-sources" aria-labelledby="mri-sources-heading">
+<h2 id="mri-sources-heading">Sources, coverage and methodology</h2>
+<div class="mri-source-list" id="mri-source-list"></div>
+<details><summary>Detailed interpretation and update rules</summary><div class="mri-method"><ul>
+<li>OECD capacity is MRI scanners per million people. Examination activity is MRI examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
+<li>Each country in the selected region has its own colour. Published observations are shown as solid lines; sufficiently supported modelled extensions are dashed in the same colour, with sensitivity shading. Gaps remain gaps, and no regional mean or total is calculated.</li>
+<li>MRI projections require four consecutive annual source observations ending in 2024 or later. A model fitted to the first three predicts the fourth as a one-year historical holdout; forecasts are withheld if the relative error exceeds 10% for scanner density or 15% for examinations. If the holdout is adequate, an annualised trend is fitted on all four readings, capped at ±5% and ±8% respectively. The widening ±2-percentage-point annual-growth sensitivity is <strong>not</strong> a statistical confidence interval, and the result is not an OECD forecast. Actual published readings always take precedence over modelled ones.</li>
+<li>PubMed searches MRI-specific titles from the preceding 365 days and evaluates a recent candidate pool; case reports, editorials, reviews and non-X-ray tomography are excluded. Verified indexed publication types and specialist-journal relevance inform an editorial prioritisation that limits repeated topics. Displayed papers are a selected discovery sample, not a systematic review, validated quality ranking or measure of clinical benefit.</li>
+<li>Data are retrieved at automated rebuild time; "retrieved" is not the date that a study or annual MRI observation was recorded. Any unavailable source is labelled as such.</li>
+</ul></div></details>
+</section>
+</main>
+<footer><div>© 2026 Felix Beacher. All rights reserved.</div><p class="footer-disclaimer">Information for industry and clinical context; not individual medical advice, an investment recommendation or a validated forecast. Follow local clinical guidelines and review the original sources.</p></footer>
+<script id="mri-data" type="application/json">{"schema_version": 1, "generated_at": "2026-10-24T15:28:58.788923+00:00", "oecd": {"source": "OECD Health Statistics / OECD Data Explorer", "checked": "2026-10-24", "countries": {"CHE": {"name": "Switzerland", "exams": {"scope": "Hospitals only (not all examinations)", "status": "available", "series": {"CT": [{"year": 2015, "value": 100.3}, {"year": 2016, "value": 104.0}, {"year": 2017, "value": 109.9}, {"year": 2018, "value": 113.9}, {"year": 2019, "value": 120.6}, {"year": 2020, "value": 121.8}, {"year": 2021, "value": 135.4}, {"year": 2022, "value": 141.6}, {"year": 2023, "value": 139.7}, {"year": 2024, "value": 140.5}], "MRI": [{"year": 2015, "value": 69.9}, {"year": 2016, "value": 72.2}, {"year": 2017, "value": 74.1}, {"year": 2018, "value": 77.8}, {"year": 2019, "value": 81.2}, {"year": 2020, "value": 78.4}, {"year": 2021, "value": 88.5}, {"year": 2022, "value": 91.3}, {"year": 2023, "value": 91.8}, {"year": 2024, "value": 91.0}], "PET": [{"year": 2015, "value": 4.1}, {"year": 2016, "value": 4.8}, {"year": 2017, "value": 5.3}, {"year": 2018, "value": 5.9}, {"year": 2019, "value": 6.3}, {"year": 2020, "value": 6.8}, {"year": 2021, "value": 7.5}, {"year": 2022, "value": 8.7}, {"year": 2023, "value": 9.0}, {"year": 2024, "value": 8.8}]}, "reason": "", "projection": {"status": "illustrative", "base_year": 2024, "base_value": 91.0, "start_year": 2021, "start_value": 88.5, "annual_rate": 0.009329, "raw_annual_rate": 0.009329, "backtest_error_pct": 2.74, "backtest_limit_pct": 15.0, "capped": false, "max_rate": 0.08, "sensitivity_pp": 2, "points": [{"year": 2025, "value": 91.849, "low": 90.029, "high": 93.669, "status": "modelled"}, {"year": 2026, "value": 92.706, "low": 89.068, "high": 96.416, "status": "modelled"}, {"year": 2027, "value": 93.571, "low": 88.118, "high": 99.244, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 37.67}, {"year": 2016, "value": 38.93}, {"year": 2017, "value": 39.28}, {"year": 2018, "value": 38.76}, {"year": 2019, "value": 38.72}, {"year": 2020, "value": 39.59}, {"year": 2021, "value": 39.06}, {"year": 2022, "value": 39.65}, {"year": 2023, "value": 39.94}, {"year": 2024, "value": 40.64}], "MRI": [], "PET": [{"year": 2015, "value": 3.38}, {"year": 2016, "value": 3.34}, {"year": 2017, "value": 3.31}, {"year": 2018, "value": 3.76}, {"year": 2019, "value": 3.85}, {"year": 2020, "value": 3.94}, {"year": 2021, "value": 4.25}, {"year": 2022, "value": 4.79}, {"year": 2023, "value": 5.29}, {"year": 2024, "value": 5.44}]}, "reason": "", "projection": {"status": "unavailable", "reason": "At least four distinct annual OECD observations are required", "points": []}}}, "GBR": {"name": "United Kingdom", "exams": {"scope": "Hospitals only (not all examinations)", "status": "available", "series": {"CT": [{"year": 2015, "value": 81.5}, {"year": 2016, "value": 87.2}, {"year": 2017, "value": 92.6}, {"year": 2018, "value": 101.4}, {"year": 2019, "value": 103.5}, {"year": 2020, "value": 94.9}, {"year": 2022, "value": 105.7}, {"year": 2023, "value": 123.1}, {"year": 2024, "value": 132.7}], "MRI": [{"year": 2015, "value": 56.3}, {"year": 2016, "value": 60.8}, {"year": 2017, "value": 62.4}, {"year": 2018, "value": 67.0}, {"year": 2019, "value": 67.9}, {"year": 2020, "value": 50.9}, {"year": 2022, "value": 60.6}, {"year": 2023, "value": 68.4}, {"year": 2024, "value": 74.6}], "PET": [{"year": 2015, "value": 1.8}, {"year": 2016, "value": 2.4}, {"year": 2017, "value": 2.8}, {"year": 2018, "value": 3.2}, {"year": 2019, "value": 3.5}, {"year": 2020, "value": 3.4}, {"year": 2022, "value": 3.8}, {"year": 2023, "value": 4.0}, {"year": 2024, "value": 4.3}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Four consecutive recent, positive observation years are required", "points": []}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2023, "value": 9.85}, {"year": 2024, "value": 10.44}, {"year": 2025, "value": 10.89}], "MRI": [{"year": 2023, "value": 8.57}, {"year": 2024, "value": 9.01}, {"year": 2025, "value": 9.44}], "PET": [{"year": 2023, "value": 0.39}, {"year": 2024, "value": 0.46}, {"year": 2025, "value": 0.43}]}, "reason": "", "projection": {"status": "unavailable", "reason": "At least four distinct annual OECD observations are required", "points": []}}}, "USA": {"name": "United States", "exams": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 244.6}, {"year": 2016, "value": 252.8}, {"year": 2017, "value": 255.0}, {"year": 2018, "value": 270.0}, {"year": 2019, "value": 276.8}, {"year": 2020, "value": 220.2}, {"year": 2021, "value": 254.4}], "MRI": [{"year": 2015, "value": 117.5}, {"year": 2016, "value": 120.2}, {"year": 2017, "value": 110.5}, {"year": 2018, "value": 118.7}, {"year": 2019, "value": 127.2}, {"year": 2020, "value": 82.6}, {"year": 2021, "value": 107.5}], "PET": [{"year": 2015, "value": 5.3}, {"year": 2016, "value": 5.8}, {"year": 2017, "value": 6.0}, {"year": 2018, "value": 6.3}, {"year": 2019, "value": 6.7}, {"year": 2020, "value": 6.7}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Four consecutive recent, positive observation years are required", "points": []}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 40.86}, {"year": 2016, "value": 41.7}, {"year": 2017, "value": 42.53}, {"year": 2018, "value": 44.3}, {"year": 2019, "value": 44.67}, {"year": 2020, "value": 42.57}, {"year": 2021, "value": 42.61}], "MRI": [{"year": 2015, "value": 38.89}, {"year": 2016, "value": 36.58}, {"year": 2017, "value": 37.46}, {"year": 2018, "value": 39.02}, {"year": 2019, "value": 40.2}, {"year": 2020, "value": 34.65}, {"year": 2021, "value": 37.97}], "PET": [{"year": 2015, "value": 5.11}, {"year": 2018, "value": 5.22}, {"year": 2019, "value": 5.42}, {"year": 2020, "value": 5.75}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Four consecutive recent, positive observation years are required", "points": []}}}, "DEU": {"name": "Germany", "exams": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 143.1}, {"year": 2016, "value": 148.5}, {"year": 2017, "value": 139.9}, {"year": 2018, "value": 144.7}, {"year": 2019, "value": 151.2}, {"year": 2020, "value": 150.0}, {"year": 2021, "value": 159.8}, {"year": 2022, "value": 163.0}, {"year": 2023, "value": 168.5}, {"year": 2024, "value": 176.3}], "MRI": [{"year": 2015, "value": 138.6}, {"year": 2016, "value": 143.4}, {"year": 2017, "value": 140.8}, {"year": 2018, "value": 145.1}, {"year": 2019, "value": 149.8}, {"year": 2020, "value": 149.9}, {"year": 2021, "value": 157.7}, {"year": 2022, "value": 156.8}, {"year": 2023, "value": 161.9}, {"year": 2024, "value": 166.6}], "PET": [{"year": 2015, "value": 1.6}, {"year": 2016, "value": 1.7}, {"year": 2017, "value": 1.7}, {"year": 2018, "value": 1.8}, {"year": 2019, "value": 1.9}, {"year": 2020, "value": 1.8}, {"year": 2021, "value": 1.9}, {"year": 2022, "value": 1.7}, {"year": 2023, "value": 1.7}, {"year": 2024, "value": 1.6}]}, "reason": "", "projection": {"status": "illustrative", "base_year": 2024, "base_value": 166.6, "start_year": 2021, "start_value": 157.7, "annual_rate": 0.018469, "raw_annual_rate": 0.018469, "backtest_error_pct": 1.54, "backtest_limit_pct": 15.0, "capped": false, "max_rate": 0.08, "sensitivity_pp": 2, "points": [{"year": 2025, "value": 169.677, "low": 166.345, "high": 173.009, "status": "modelled"}, {"year": 2026, "value": 172.811, "low": 166.09, "high": 179.664, "status": "modelled"}, {"year": 2027, "value": 176.002, "low": 165.836, "high": 186.576, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 35.09}, {"year": 2016, "value": 35.17}, {"year": 2017, "value": 35.13}, {"year": 2018, "value": 35.33}, {"year": 2019, "value": 35.02}, {"year": 2020, "value": 35.55}, {"year": 2021, "value": 36.49}, {"year": 2022, "value": 35.8}, {"year": 2023, "value": 36.48}, {"year": 2024, "value": 37.96}], "MRI": [{"year": 2015, "value": 33.63}, {"year": 2016, "value": 34.49}, {"year": 2017, "value": 34.71}, {"year": 2018, "value": 34.47}, {"year": 2019, "value": 35.31}, {"year": 2020, "value": 36.22}, {"year": 2021, "value": 36.94}, {"year": 2022, "value": 36.75}, {"year": 2023, "value": 37.1}, {"year": 2024, "value": 37.93}], "PET": []}, "reason": "", "projection": {"status": "illustrative", "base_year": 2024, "base_value": 37.93, "start_year": 2021, "start_value": 36.94, "annual_rate": 0.008855, "raw_annual_rate": 0.008855, "backtest_error_pct": 1.98, "backtest_limit_pct": 10.0, "capped": false, "max_rate": 0.05, "sensitivity_pp": 2, "points": [{"year": 2025, "value": 38.266, "low": 37.507, "high": 39.024, "status": "modelled"}, {"year": 2026, "value": 38.605, "low": 37.089, "high": 40.151, "status": "modelled"}, {"year": 2027, "value": 38.947, "low": 36.676, "high": 41.309, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}}, "FRA": {"name": "France", "exams": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 187.5}, {"year": 2016, "value": 190.7}, {"year": 2017, "value": 188.0}, {"year": 2018, "value": 193.6}, {"year": 2019, "value": 199.6}, {"year": 2020, "value": 197.6}, {"year": 2021, "value": 217.9}, {"year": 2022, "value": 222.8}, {"year": 2023, "value": 227.8}, {"year": 2024, "value": 241.4}], "MRI": [{"year": 2015, "value": 101.8}, {"year": 2016, "value": 109.1}, {"year": 2017, "value": 112.6}, {"year": 2018, "value": 118.1}, {"year": 2019, "value": 123.1}, {"year": 2020, "value": 117.0}, {"year": 2021, "value": 136.2}, {"year": 2022, "value": 143.0}, {"year": 2023, "value": 150.6}, {"year": 2024, "value": 162.9}], "PET": [{"year": 2015, "value": 6.2}, {"year": 2016, "value": 7.0}, {"year": 2017, "value": 7.5}, {"year": 2018, "value": 9.0}, {"year": 2019, "value": 9.6}, {"year": 2020, "value": 10.3}, {"year": 2021, "value": 11.7}, {"year": 2022, "value": 12.9}, {"year": 2023, "value": 14.3}, {"year": 2024, "value": 15.9}]}, "reason": "", "projection": {"status": "illustrative", "base_year": 2024, "base_value": 162.9, "start_year": 2021, "start_value": 136.2, "annual_rate": 0.061487, "raw_annual_rate": 0.061487, "backtest_error_pct": 2.79, "backtest_limit_pct": 15.0, "capped": false, "max_rate": 0.08, "sensitivity_pp": 2, "points": [{"year": 2025, "value": 172.916, "low": 169.658, "high": 176.174, "status": "modelled"}, {"year": 2026, "value": 183.548, "low": 176.697, "high": 190.53, "status": "modelled"}, {"year": 2027, "value": 194.834, "low": 184.027, "high": 206.056, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 16.57}, {"year": 2016, "value": 16.95}, {"year": 2017, "value": 17.35}, {"year": 2018, "value": 17.63}, {"year": 2019, "value": 18.14}, {"year": 2020, "value": 18.92}, {"year": 2021, "value": 19.48}, {"year": 2022, "value": 20.11}, {"year": 2023, "value": 20.93}, {"year": 2024, "value": 21.85}], "MRI": [{"year": 2015, "value": 12.56}, {"year": 2016, "value": 13.55}, {"year": 2017, "value": 14.2}, {"year": 2018, "value": 14.73}, {"year": 2019, "value": 15.35}, {"year": 2020, "value": 16.26}, {"year": 2021, "value": 16.96}, {"year": 2022, "value": 17.86}, {"year": 2023, "value": 19.12}, {"year": 2024, "value": 20.63}], "PET": [{"year": 2015, "value": 1.95}, {"year": 2016, "value": 2.08}, {"year": 2017, "value": 2.2}, {"year": 2018, "value": 2.32}, {"year": 2019, "value": 2.48}, {"year": 2020, "value": 2.71}, {"year": 2021, "value": 2.99}, {"year": 2022, "value": 3.16}, {"year": 2023, "value": 3.4}, {"year": 2024, "value": 3.71}]}, "reason": "", "projection": {"status": "illustrative", "base_year": 2024, "base_value": 20.63, "start_year": 2021, "start_value": 16.96, "annual_rate": 0.05, "raw_annual_rate": 0.067475, "backtest_error_pct": 2.69, "backtest_limit_pct": 10.0, "capped": true, "max_rate": 0.05, "sensitivity_pp": 2, "points": [{"year": 2025, "value": 21.662, "low": 21.249, "high": 22.074, "status": "modelled"}, {"year": 2026, "value": 22.745, "low": 21.886, "high": 23.619, "status": "modelled"}, {"year": 2027, "value": 23.882, "low": 22.543, "high": 25.273, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}}, "CAN": {"name": "Canada", "exams": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 147.8}, {"year": 2017, "value": 153.5}, {"year": 2019, "value": 144.1}, {"year": 2022, "value": 163.9}], "MRI": [{"year": 2015, "value": 54.7}, {"year": 2017, "value": 50.8}, {"year": 2019, "value": 61.9}, {"year": 2022, "value": 56.8}], "PET": [{"year": 2015, "value": 2.2}, {"year": 2017, "value": 2.5}, {"year": 2019, "value": 3.3}, {"year": 2022, "value": 4.0}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Four consecutive recent, positive observation years are required", "points": []}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 15.07}, {"year": 2017, "value": 15.38}, {"year": 2019, "value": 14.59}, {"year": 2022, "value": 14.22}], "MRI": [{"year": 2015, "value": 9.52}, {"year": 2017, "value": 9.96}, {"year": 2019, "value": 10.05}, {"year": 2022, "value": 10.35}], "PET": [{"year": 2015, "value": 1.32}, {"year": 2017, "value": 1.48}, {"year": 2019, "value": 1.52}, {"year": 2022, "value": 1.44}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Four consecutive recent, positive observation years are required", "points": []}}}, "AUS": {"name": "Australia", "exams": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 119.5}, {"year": 2016, "value": 119.3}, {"year": 2017, "value": 126.1}, {"year": 2018, "value": 134.7}, {"year": 2019, "value": 141.1}, {"year": 2020, "value": 144.8}, {"year": 2021, "value": 164.0}, {"year": 2022, "value": 158.6}, {"year": 2023, "value": 167.1}, {"year": 2024, "value": 177.2}, {"year": 2025, "value": 188.3}], "MRI": [{"year": 2015, "value": 40.9}, {"year": 2016, "value": 42.4}, {"year": 2017, "value": 44.8}, {"year": 2018, "value": 48.1}, {"year": 2019, "value": 51.4}, {"year": 2020, "value": 51.3}, {"year": 2021, "value": 56.9}, {"year": 2022, "value": 53.0}, {"year": 2023, "value": 52.8}, {"year": 2024, "value": 54.9}, {"year": 2025, "value": 56.5}], "PET": [{"year": 2015, "value": 2.5}, {"year": 2016, "value": 2.7}, {"year": 2017, "value": 3.1}, {"year": 2018, "value": 3.5}, {"year": 2019, "value": 3.9}, {"year": 2020, "value": 4.6}, {"year": 2021, "value": 5.3}, {"year": 2022, "value": 5.5}, {"year": 2023, "value": 7.6}, {"year": 2024, "value": 8.4}, {"year": 2025, "value": 9.2}]}, "reason": "", "projection": {"status": "illustrative", "base_year": 2025, "base_value": 56.5, "start_year": 2022, "start_value": 53.0, "annual_rate": 0.021545, "raw_annual_rate": 0.021545, "backtest_error_pct": 1.11, "backtest_limit_pct": 15.0, "capped": false, "max_rate": 0.08, "sensitivity_pp": 2, "points": [{"year": 2026, "value": 57.717, "low": 56.587, "high": 58.847, "status": "modelled"}, {"year": 2027, "value": 58.961, "low": 56.675, "high": 61.292, "status": "modelled"}], "method": "Four recent consecutive annual readings; hold-out final year backtest, then capped endpoint annualised growth with +/-2 percentage point annual-rate sensitivity."}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2015, "value": 59.54}, {"year": 2016, "value": 63.0}, {"year": 2017, "value": 64.37}, {"year": 2018, "value": 67.34}, {"year": 2019, "value": 69.82}, {"year": 2020, "value": 67.8}, {"year": 2021, "value": 71.6}, {"year": 2022, "value": 73.14}, {"year": 2023, "value": 73.41}, {"year": 2024, "value": 75.35}, {"year": 2025, "value": 80.03}], "MRI": [{"year": 2015, "value": 14.49}, {"year": 2016, "value": 14.3}, {"year": 2017, "value": 14.15}, {"year": 2018, "value": 14.1}, {"year": 2019, "value": 14.8}, {"year": 2020, "value": 14.82}, {"year": 2021, "value": 14.99}, {"year": 2022, "value": 14.8}, {"year": 2023, "value": 16.65}, {"year": 2024, "value": 17.06}, {"year": 2025, "value": 19.95}], "PET": [{"year": 2015, "value": 2.65}, {"year": 2016, "value": 3.06}, {"year": 2017, "value": 3.29}, {"year": 2018, "value": 3.85}, {"year": 2019, "value": 3.75}, {"year": 2020, "value": 3.86}, {"year": 2021, "value": 3.89}, {"year": 2022, "value": 4.11}, {"year": 2023, "value": 4.09}, {"year": 2024, "value": 4.34}, {"year": 2025, "value": 4.53}]}, "reason": "", "projection": {"status": "unavailable", "reason": "Held-out annual backtest error exceeds 10%", "backtest_error_pct": 10.21, "points": []}}}, "JPN": {"name": "Japan", "exams": {"scope": null, "status": "unavailable", "series": {"CT": [], "MRI": [], "PET": []}, "reason": "No comparable published country observations", "projection": {"status": "unavailable", "reason": "At least four distinct annual OECD observations are required", "points": []}}, "equipment": {"scope": "All healthcare providers", "status": "available", "series": {"CT": [{"year": 2017, "value": 111.3}, {"year": 2020, "value": 115.7}, {"year": 2023, "value": 119.81}], "MRI": [{"year": 2017, "value": 55.12}, {"year": 2020, "value": 57.39}, {"year": 2023, "value": 59.81}], "PET": [{"year": 2017, "value": 4.62}, {"year": 2020, "value": 4.71}, {"year": 2023, "value": 4.52}]}, "reason": "", "projection": {"status": "unavailable", "reason": "At least four distinct annual OECD observations are required", "points": []}}}}, "sources": {"exams": "https://data-explorer.oecd.org/vis?df%5Bag%5D=OECD.ELS.HD\u0026df%5Bid%5D=DSD_HEALTH_PROC%40DF_DIAG_EXAM", "equipment": "https://data-explorer.oecd.org/vis?df%5Bag%5D=OECD.ELS.HD\u0026df%5Bid%5D=DSD_HEALTH_REAC_HOSP%40DF_MED_TECH"}, "note": "Examination counts and scanner availability have different denominators and provider coverage. Do not divide one by the other or infer unmet need without local evidence."}, "regional_groups": {"europe": {"name": "Europe", "countries": ["CHE", "GBR", "DEU", "FRA"]}, "northAmerica": {"name": "North America", "countries": ["USA", "CAN"]}, "asiaPacific": {"name": "Asia-Pacific", "countries": ["AUS", "JPN"]}}, "pubmed": {"status": "live", "checked": "2026-10-24", "count": 11620, "items": [{"title": "Mapping the Evolution of Machine Learning in Functional Magnetic Resonance Imaging Research: A Comprehensive Scientometric Analysis.", "url": "https://pubmed.ncbi.nlm.nih.gov/42895795/", "journal": "Topics in magnetic resonance imaging : TMRI", "date": "2026-10-14", "kind": "MRI clinical / technical study", "category": "Diffusion / functional MRI", "priority": 6, "selection_basis": "MRI topic and date; design not indexed", "design": "Study design not verified by this feed", "excerpt": "The Scopus search yielded 4657 documents, with 2639 included after filtering. Scientific production in this field has grown…"}, {"title": "Comparison of signal drop on T2-weighted and post-contrast T1-weighted Dixon MRI in spinal bone marrow lesions.", "url": "https://pubmed.ncbi.nlm.nih.gov/42858634/", "journal": "European journal of radiology", "date": "2026-10-06", "kind": "MRI clinical / technical study", "category": "Other MRI clinical research", "priority": 12, "selection_basis": "Verified indexed study type: Comparative Study", "design": "Comparative Study", "excerpt": "Among 78 patients (median age, 63.5 years [interquartile range (IQR), 54.3-70.8]; 37 men, 41 women; 41 benign, 34…"}, {"title": "Quantitative assessment of vertebral bone marrow adipose tissue using photon-counting CT compared with MRI.", "url": "https://pubmed.ncbi.nlm.nih.gov/42843083/", "journal": "European journal of radiology", "date": "2026-10-05", "kind": "MRI clinical / technical study", "category": "Musculoskeletal MRI", "priority": 12, "selection_basis": "Verified indexed study type: Comparative Study", "design": "Comparative Study", "excerpt": "A total of 73 participants were included, and 339 vertebral bodies were analyzed. VNCa CTFF showed strong positive…"}, {"title": "Cerebral metabolic rate of oxygen mapping on admission MRI may predict penumbral tissue fate in acute stroke patients treated successfully with thrombectomy.", "url": "https://pubmed.ncbi.nlm.nih.gov/42854504/", "journal": "European journal of radiology", "date": "2026-10-01", "kind": "MRI clinical / technical study", "category": "Neuro MRI", "priority": 6, "selection_basis": "MRI topic and date; design not indexed", "design": "Study design not verified by this feed", "excerpt": "Of 321 screened patients, 134 were included (median age, 71 years; 57.5 % men; median NIHSS score, 15),…"}, {"title": "Clinical significance of MRI-based tumor status differs by histological subtype in early-stage cervical cancer.", "url": "https://pubmed.ncbi.nlm.nih.gov/42804816/", "journal": "European journal of radiology", "date": "2026-09-27", "kind": "MRI clinical / technical study", "category": "Oncology MRI", "priority": 12, "selection_basis": "Verified indexed study type: Multicenter Study", "design": "Multicenter Study", "excerpt": "The study included 246 SCC and 93 HPVA-adeno cases. MRI categorization showed substantial interobserver agreement (κ = 0.87-0.97).…"}, {"title": "Preoperative magnetic resonance imaging-based nomogram for predicting overall survival in patients with glioma: a multicenter study.", "url": "https://pubmed.ncbi.nlm.nih.gov/42800241/", "journal": "European journal of radiology", "date": "2026-09-23", "kind": "MRI clinical / technical study", "category": "Other MRI clinical research", "priority": 12, "selection_basis": "Verified indexed study type: Multicenter Study", "design": "Multicenter Study", "excerpt": "In the EVD, the PCR nomogram achieved a C-index of 0.736, compared with 0.701 for the histopathology-based model…"}, {"title": "Development and external validation of a deep learning-based BI-RADS prediction model for breast MRI.", "url": "https://pubmed.ncbi.nlm.nih.gov/42804814/", "journal": "European journal of radiology", "date": "2026-09-23", "kind": "MRI clinical / technical study", "category": "Oncology MRI", "priority": 12, "selection_basis": "Verified indexed study type: Validation Study", "design": "Validation Study", "excerpt": "The external validation cohort consisted of 158 examinations, including 21 malignant and 137 benign cases. Radiologist assessment achieved…"}, {"title": "MRI-based quantification of knee synovial fluid volume validated against an improved reference standard incorporating intraoperative aspiration.", "url": "https://pubmed.ncbi.nlm.nih.gov/42759284/", "journal": "European journal of radiology", "date": "2026-09-10", "kind": "MRI clinical / technical study", "category": "Musculoskeletal MRI", "priority": 12, "selection_basis": "Verified indexed study type: Validation Study", "design": "Validation Study", "excerpt": "Nineteen patients, including 15 women, with a median age of 74 years were analyzed. Additional synovial fluid was…"}, {"title": "Infarct-volume prognostic value depends on outcome ascertainment and validation design in public stroke MRI datasets.", "url": "https://pubmed.ncbi.nlm.nih.gov/42685524/", "journal": "European journal of radiology", "date": "2026-08-31", "kind": "MRI clinical / technical study", "category": "Neuro MRI", "priority": 12, "selection_basis": "Verified indexed study type: Validation Study", "design": "Validation Study", "excerpt": "In SOOP, observed outcomes were associated with larger lesions than missing outcomes (median, 15.08 vs 3.68 mL; standardized…"}, {"title": "Cardiac MRI identifies interatrial septum late enhancement as a hallmark of amyloidosis.", "url": "https://pubmed.ncbi.nlm.nih.gov/42696887/", "journal": "European journal of radiology", "date": "2026-08-31", "kind": "Cardiac MRI", "category": "Cardiac MRI", "priority": 6, "selection_basis": "MRI topic and date; design not indexed", "design": "Study design not verified by this feed", "excerpt": "IAS thickness did not differ significantly between groups. IAS LGE was significantly more frequent in CA compared with…"}], "query": "(\"magnetic resonance imaging\"[Title] OR \"MRI\"[Title] OR \"MR imaging\"[Title] OR \"functional MRI\"[Title] OR \"diffusion MRI\"[Title]) NOT (review[Publication Type] OR meta-analysis[Publication Type] OR protocol[Title] OR spectroscopy[Title])", "window": "past 365 days", "error": ""}, "market": {"schema_version": 1, "scope": "Global MRI equipment market, published commercial-research estimates with varying definitions; no public audited global sales series", "size": {"unit": "USD billions", "year": 2025, "entries": [{"publisher": "Global Market Insights", "value": 6.8, "publication_date": "2026-04", "source": "https://www.gminsights.com/industry-analysis/magnetic-resonance-imaging-mri-systems-market", "match_phrase": "global magnetic resonance imaging systems market was valued at USD 6.8 billion in 2025", "basis": "MRI systems; commercial research estimate.", "last_verified_at": "2026-10-24", "check_status": "published 2025 estimate reverified"}, {"publisher": "Fortune Business Insights", "value": 8.15, "publication_date": "2026-10-05", "source": "https://www.fortunebusinessinsights.com/industry-reports/magnetic-resonance-imaging-mri-equipment-market-100087", "match_phrase": "global magnetic resonance imaging (MRI) equipment market size was valued at USD 8.15 billion in 2025", "basis": "MRI equipment by field strength, design, application and end user.", "check_status": "source inaccessible · dated published reference"}, {"publisher": "IMARC Group", "value": 8.4, "publication_date": "2026-03-12", "source": "https://www.imarcgroup.com/magnetic-resonance-imaging-systems-market", "match_phrase": "global magnetic resonance imaging (MRI) systems market size reached USD 8.4 Billion in 2025", "basis": "MRI systems market, 2025 base year.", "last_verified_at": "2026-10-24", "check_status": "published 2025 estimate reverified"}], "note": "Commercial-market estimates published by independent providers. Different market definitions and proprietary models make them alternatives, not a statistical confidence interval."}, "shares": {"publisher": "Digital Power China consortium (2024), citing Next Move Strategy Consulting", "publication_date": "2024-05", "reference_year": 2022, "source": "https://timruhlig.eu/ctf/assets/x93kiko5rt7l/77L6q7DdWpiXpDuLHAhRw3/a7d98a4cf82de06b517dc8b4c78f80a9/DPC_-_GESAMT_Final.pdf", "source_page": "104 (report), Figure 1; PDF page 103", "geography": "Global", "label": "Global MRI manufacturer shares (2022 historical research estimate)", "denominator": "Underlying share basis not specified in the reproduced public figure; do not assume revenue, placements or installed base.", "entries": [{"name": "Siemens Healthineers", "value": 33}, {"name": "GE HealthCare", "value": 23}, {"name": "Philips", "value": 18}, {"name": "Other manufacturers", "value": 17}, {"name": "Canon Medical Systems", "value": 5}, {"name": "Fujifilm", "value": 4}], "note": "Historical 2022 MRI manufacturer share estimate reproduced in the May 2024 Digital Power China report, Figure 1, attributed to Next Move Strategy Consulting. This is NOT a 2025 or 2026 vendor-share measurement. The displayed supplier figures sum to 100%; definitions and sample methodology are not public. Do not apply percentages to independently published 2025 market-size figures.", "check_status": "historical 2022 vendor-share figure reproduced in 2024; not a live API"}, "checked_at": "2026-10-24"}, "purpose": "MRI modality data and recent MRI research, not AI-sector commercial metrics"}</script>
+<script>
+'use strict';
+const mriData=JSON.parse(document.getElementById('mri-data').textContent);
+const $=id=>document.getElementById(id);
+function el(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x}
+function put(parent,...els){parent.replaceChildren(...els)}
+function latest(points){return points.length?points[points.length-1]:null}
+function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
+function obs(country,kind){const k=mriData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.MRI)?k.series.MRI:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
+function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
+function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
+function stat(title,value,period){const box=el('article','mri-stat');box.append(el('h3','',title),el('div','mri-value',value),el('small','',period));return box}
+const regionSelect=$('mri-region'),REGIONS=mriData.regional_groups||{};
+const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1'];
+function regionalHistory(regionKey,kind,label,unit){
+ const group=REGIONS[regionKey],countries=mriData.oecd?.countries||{};
+ const rows=(group?.countries||[]).filter(code=>countries[code]).map((code,i)=>{
+  const data=obs(code,kind),last=latest(data.points);
+  const forecast=data.projection?.status==='illustrative'&&last?
+   (data.projection.points||[]).filter(p=>p.year>last.year&&p.year<=2027):[];
+  return {name:countries[code].name,data,forecast,color:CT_COUNTRY_COLORS[i%CT_COUNTRY_COLORS.length]};
+ });
+ const all=rows.flatMap(r=>r.data.points.map(p=>({year:p.year,value:p.value}))
+  .concat(r.forecast.flatMap(p=>[{year:p.year,value:p.low},{year:p.year,value:p.high}])));
+ const box=el('div','mri-chart');
+ if(!all.length){box.append(el('p','mri-no-data','No available OECD observations in this regional sample.'));return {box,rows}}
+ const start=Math.min(...all.map(p=>p.year)),end=Math.max(...all.map(p=>p.year));
+ const ymax=Math.max(1,...all.map(p=>p.value))*1.12;
+ const x0=54,x1=683,y1=208;
+ const X=y=>x0+(y-start)/Math.max(1,end-start)*(x1-x0),Y=v=>y1-v/ymax*185;
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox','0 0 720 253');svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',group.name+' '+label+': separate country lines; solid historical, dashed modelled. No regional averages.');
+ const shape=(tag,attrs,text)=>{
+  const n=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);
+  if(text!==undefined)n.textContent=text;return n;
+ };
+ svg.append(shape('title',{},group.name+' · '+label+' · OECD observations by reporting country'));
+ for(let i=0;i<=4;i++){
+  const v=ymax*i/4,y=Y(v);
+  svg.append(shape('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'#35546b','stroke-dasharray':'3 5'}));
+  svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#bacfdf','font-size':12},fmt(v,0)));
+  const yr=start+Math.round((end-start)*i/4);
+  svg.append(shape('text',{x:X(yr),y:y1+24,'text-anchor':'middle',fill:'#bacfdf','font-size':12},String(yr)));
+ }
+ for(const r of rows){
+  for(const [i,p] of r.data.points.entries()){
+   const prev=r.data.points[i-1];
+   if(prev&&p.year===prev.year+1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
+   const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+   dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit));svg.append(dot);
+  }
+  if(r.forecast.length){
+   const last=latest(r.data.points);
+   const polygon=[[X(last.year),Y(last.value)],...r.forecast.map(p=>[X(p.year),Y(p.high)]),
+    ...[...r.forecast].reverse().map(p=>[X(p.year),Y(p.low)])];
+   svg.append(shape('polygon',{points:polygon.map(p=>p.join(',')).join(' '),fill:r.color,'fill-opacity':.13}));
+   let prev=last;
+   for(const p of r.forecast){
+    svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),
+      stroke:r.color,'stroke-width':2.7,'stroke-dasharray':'7 5'}));
+    const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+    dot.append(shape('title',{},r.name+' · modelled '+p.year+': '+fmt(p.value)+
+      ' '+unit+'; sensitivity '+fmt(p.low)+'–'+fmt(p.high)));svg.append(dot);
+    prev=p;
+   }
+  }
+ }
+ box.append(svg);return {box,rows};
+}
+function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
+ const root=el('div');root.append(el('h3','',title));
+ for(const [heading,content] of [['What it measures',what],['Why it matters for imaging',why]]){
+  const p=el('p','mri-definition');p.append(el('strong','',heading),document.createTextNode(content));root.append(p);
+ }
+ const plot=regionalHistory(regionKey,kind,title,unit);root.append(plot.box);
+ const legend=el('div','mri-region-series-legend');
+ for(const r of plot.rows){
+  const item=el('span'),mark=el('i');mark.style.backgroundColor=r.color;
+  const recent=latest(r.data.points);
+  item.append(mark,document.createTextNode(r.name+' · '+(recent?fmt(recent.value)+' ('+recent.year+')':'unavailable')));legend.append(item);
+ }
+ root.append(legend);
+ root.append(el('p','mri-region-chart-note','Solid lines: reported OECD observations. Dashed segments and shaded sensitivity ranges: country-specific modelled scenarios where source history allows, not a regional forecast.'));
+ const details=el('details');details.append(el('summary','','View dated observations and modelled estimates'));
+ const table=el('table'),head=el('thead'),tr=el('tr');
+ for(const label of ['Country','Year','Type',unit,'Sensitivity']){const th=el('th','',label);th.scope='col';tr.append(th)}
+ head.append(tr);table.append(head);
+ const body=el('tbody');
+ for(const r of plot.rows){
+  for(const p of [...r.data.points].reverse()){
+   const row=el('tr');for(const item of [r.name,String(p.year),'OECD observed',fmt(p.value),'—'])row.append(el('td','',item));body.append(row);
+  }
+  for(const p of r.forecast){
+   const row=el('tr');for(const item of [r.name,String(p.year),'Modelled',fmt(p.value),fmt(p.low)+'–'+fmt(p.high)])row.append(el('td','',item));body.append(row);
+  }
+ }
+ table.append(body);details.append(table);root.append(details);
+ const source=el('p','mri-source','OECD Health Statistics · checked '+(mriData.oecd?.checked||'unavailable')+'. ');
+ appendLink(source,url,'Original source');root.append(source);
+ $(id).replaceChildren(...root.childNodes);
+}
+function reportRegionalAnalysis(regionKey){
+ const group=REGIONS[regionKey],notes=[],dates=[],differences=[],signals=[];
+ let projected=0;
+ for(const code of group.countries){
+  const name=mriData.oecd?.countries?.[code]?.name;if(!name)continue;
+  const s=obs(code,'equipment'),e=obs(code,'exams'),sp=latest(s.points),ep=latest(e.points);
+  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
+   '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
+  dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
+  // Compare growth rates only over exactly the same two consecutive
+  // observation years, with full provider coverage on both series.
+  const ss=s.points,ee=e.points;
+  if(ss.length>=2&&ee.length>=2&&s.scope==='All healthcare providers'&&
+     e.scope==='All healthcare providers'){
+   const lastS=ss[ss.length-1],prevS=ss[ss.length-2];
+   const lastE=ee[ee.length-1],prevE=ee[ee.length-2];
+   if(prevS.year===prevE.year&&lastS.year===lastE.year&&
+      lastS.year-prevS.year===1&&lastS.year>=2023&&
+      prevS.value>0&&prevE.value>0){
+    const gS=100*(lastS.value/prevS.value-1),gE=100*(lastE.value/prevE.value-1);
+    if(gE-gS>1.5){
+     signals.push(name+' ('+prevS.year+'–'+lastS.year+'): MRI examinations per capita rose '+
+       fmt(gE,1)+'% versus scanner density '+fmt(gS,1)+
+       '%. This may indicate increasing utilisation pressure, but does not measure scanner throughput directly.');
+    }
+   }
+  }
+  if(sp&&ep&&sp.year!==ep.year)differences.push(name+' has observations from different years.');
+  if(s.scope!==e.scope)differences.push(name+' has differing provider scope.');
+  if(s.projection.status==='illustrative'&&s.projection.points.length)projected++;
+  if(e.projection.status==='illustrative'&&e.projection.points.length)projected++;
+ }
+ const list=el('ul');for(const note of notes)list.append(el('li','',note));
+ $('mri-reading').replaceChildren(el('p','',group.name+' · selected published country observations, not a regional average.'),list);
+ $('mri-next').textContent=(signals.length?signals.join(' '):
+   'No suitable same-year, full-provider series establish examination growth substantially faster than scanner density in this sample. ')+
+   ' '+(differences.join(' ')||'')+
+   ' '+projected+' separately backtested country-series extensions are modelled, not regional forecasts. Check scanner age, staffing, case mix, referral appropriateness, local waiting times and actual throughput before planning procurement.';
+ $('mri-data-lag').textContent='OECD MRI statistics are released after annual national reporting and validation, so the latest year differs across countries. For '+
+  group.name+': '+dates.join('; ')+'. Missing years are not zero. Scenario extensions are not OECD observations.';
+}
+function sampleRecords(key,kind){
+ const r=REGIONS[key],countryData=mriData.oecd?.countries||{};
+ return (r?.countries||[]).filter(code=>countryData[code]).map(code=>{
+  const observed=obs(code,kind);
+  return {code,name:countryData[code].name,point:latest(observed.points),scope:observed.scope};
+ });
+}
+function regionalBars(containerId,records,unit){
+ const target=$(containerId);target.replaceChildren();
+ const valid=records.filter(x=>x.point);
+ if(!valid.length){target.append(el('p','mri-no-data','No verified observations are available in this regional country sample.'));return;}
+ const max=Math.max(...valid.map(x=>x.point.value),1);
+ // Keep the configured country order: sorting mismatched reporting years
+ // by value implies a same-year ranking that the source cannot support.
+ for(const x of records){
+  const row=el('div','mri-region-row');row.setAttribute('role','group');
+  row.setAttribute('aria-label',x.name+': '+(x.point?fmt(x.point.value)+' '+unit+' in '+x.point.year:'unavailable'));
+  row.append(el('span','mri-region-name',x.name));
+  const track=el('div','mri-region-track');
+  if(x.point){
+   const fill=el('div','mri-region-fill');fill.style.width=(100*x.point.value/max).toFixed(2)+'%';track.append(fill);
+  }
+  row.append(track,el('strong','mri-region-number',x.point?fmt(x.point.value):'N/A'));
+  const year=el('span','mri-year-flag'+(x.point&&x.point.year<2024?' mri-year-old':''),
+   x.point?String(x.point.year):'No data');
+  const meta=el('small','mri-region-meta');
+  meta.append(year,document.createTextNode(' · '+(x.scope||'Provider scope unavailable')+
+    (x.point&&x.point.year<2024?' · Historic observation; compare with caution':'')));
+  row.append(meta);
+  target.append(row);
+ }
+}
+function setRegionalOverview(regionKey){
+ const region=REGIONS[regionKey],name=region?.name||'Region';
+ const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
+ const total=region?.countries?.length||0,pub=mriData.pubmed||{};
+ const latestPoint=items=>items.filter(r=>r.point).sort((a,b)=>b.point.year-a.point.year||a.name.localeCompare(b.name))[0];
+ const latestS=latestPoint(scanners),latestE=latestPoint(exams);
+ const recentS=scanners.filter(r=>r.point&&r.point.year>=2024).length;
+ const recentE=exams.filter(r=>r.point&&r.point.year>=2024).length;
+ const includedYears=[...scanners,...exams].filter(x=>x.point).map(x=>x.point.year);
+ const youngest=Math.max(0,...includedYears),oldest=includedYears.length?Math.min(...includedYears):null;
+ $('mri-region-scope').textContent=name+' · '+total+' OECD country samples. The region selector changes MRI service statistics only; market, vendor shares and selected research are global.';
+ $('mri-regional-heading').textContent=name+' · MRI country comparisons';
+ $('mri-comparison-note').textContent='Country readings refer to different observation years and, sometimes, different healthcare-provider coverage. Countries follow the listed sample order, not a ranking.';
+ $('mri-comparison-warning').textContent=oldest===null?
+  'No verified country observations are available for this region.':
+  'Source observation years range from '+oldest+' to '+youngest+' across available MRI indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
+ put($('mri-stat-grid'),
+  stat('Latest MRI scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
+       latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
+  stat('Latest MRI examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
+       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation'),
+  stat('Recent country coverage',recentS+' / '+total+' scanners',
+       recentE+' / '+total+' exams · observations from 2024 onwards; not a regional total'),
+  stat('Selected MRI studies',pub.status==='live'?String((pub.items||[]).length):'Unavailable',
+       'Worldwide PubMed · selected from '+(pub.count==null?'unavailable':fmt(pub.count,0))+' MRI search matches')
+ );
+ regionalBars('mri-region-scanners',scanners,'scanners per million');
+ regionalBars('mri-region-exams',exams,'examinations per 1,000');
+}
+function chooseRegion(regionKey){
+ const group=REGIONS[regionKey];if(!group)return;
+ regionSelect.value=regionKey;setRegionalOverview(regionKey);
+ renderRegionalIndicator('mri-scanners',regionKey,'equipment','MRI scanner availability',
+   'MRI scanners per million inhabitants reported for each country.',
+   'Shows reported equipment availability, not staffed scan hours, clinical capacity or hospital demand.',
+   'scanners per million',mriData.oecd?.sources?.equipment);
+ renderRegionalIndicator('mri-exams',regionKey,'exams','MRI examinations per population',
+   'Annual examinations per 1,000 inhabitants reported in each country’s provider scope.',
+   'Tracks service activity, not clinical necessity, outcomes or market sales.',
+   'examinations per 1,000',mriData.oecd?.sources?.exams);
+ reportRegionalAnalysis(regionKey);
+ const u=new URL(location.href);u.searchParams.set('region',regionKey);u.searchParams.delete('country');
+ history.replaceState(null,'',u);
+}
+function renderPapers(){
+ const pub=mriData.pubmed||{},area=$('mri-papers');area.replaceChildren();
+ if(!(pub.items||[]).length)area.append(el('p','mri-no-data',pub.error?'Latest PubMed retrieval unavailable: '+pub.error:'No MRI articles returned by this exact search and time window.'));
+ for(const paper of (pub.items||[])){
+  const art=el('article','mri-paper');art.append(el('span','mri-tag',paper.kind||'MRI publication'));
+  const h=el('h3');appendLink(h,paper.url,paper.title);art.append(h);
+  art.append(el('p','mri-research-topic',paper.category||paper.kind||'MRI research'));
+  art.append(el('p','',paper.journal+' · '+paper.date));
+  if(paper.design)art.append(el('p','',paper.design));
+  if(paper.selection_basis)art.append(el('p','mri-research-selection','Selection: '+paper.selection_basis));
+  if(paper.excerpt){const details=el('details');details.append(el('summary','','Read reported abstract excerpt'),el('p','',paper.excerpt));art.append(details)}
+  art.append(el('p','mri-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
+  area.append(art);
+ }
+ const note=$('mri-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
+ appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'computed tomography'),'Search PubMed');
+}
+function renderSources(){
+ const container=$('mri-source-list');container.replaceChildren();
+ const entries=[
+  {heading:'OECD · scanner availability',url:mriData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:mriData.oecd?.checked||'Unverified'},
+  {heading:'OECD · MRI examinations',url:mriData.oecd?.sources?.exams,detail:'Annual MRI examinations per 1,000; some country data cover hospitals only.',status:mriData.oecd?.checked||'Unverified'},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent MRI publications via NCBI E-utilities; explicit MRI search and source dates.',status:mriData.pubmed?.status+' · '+(mriData.pubmed?.checked||'date unavailable')},
+  {heading:'Clinical and radiation guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria',detail:'Reference definitions and clinical appropriateness, not monthly market measurements.',status:'ACR / FDA / national references'}
+ ];
+ for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
+}
+for(const [key,region] of Object.entries(REGIONS)){
+ const option=el('option','',region.name);option.value=key;regionSelect.append(option);
+}
+const params=new URLSearchParams(location.search),regionParam=params.get('region'),oldCountry=params.get('country');
+const inferred=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
+const initial=REGIONS[regionParam]?regionParam:inferred||Object.keys(REGIONS)[0];
+regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
+if(initial)chooseRegion(initial);else $('mri-stat-grid').textContent='No regional MRI data configured.';
+const CT_SHARE_COLOURS=['#79c9ef','#9ad7c6','#edc68a','#d0afed','#f4a9ab','#8195a9'];
+function renderMarket(){
+ const market=mriData.market;
+ if(!market||!market.size||!market.shares){
+  $('mri-market-size-value').textContent='Market estimates unavailable';
+  $('mri-share-citation').textContent='No verified MRI manufacturer share figures are available.';
+  return;
+ }
+ const entries=market.size.entries.filter(x=>Number.isFinite(x.value)&&x.value>0);
+ const chart=$('mri-market-estimate-chart');chart.replaceChildren();
+ if(!entries.length){$('mri-market-size-value').textContent='Market estimates unavailable';return;}
+ const values=entries.map(x=>x.value),lo=Math.min(...values),hi=Math.max(...values);
+ $('mri-market-size-value').textContent='US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn';
+ $('mri-market-size-subtitle').textContent=market.size.year+' market · '+entries.length+' independent publisher estimates · not a statistical confidence interval';
+ for(const record of [...entries].sort((a,b)=>a.value-b.value)){
+  const row=el('div','mri-market-size-row'),label=el('div','mri-market-size-name');
+  label.append(el('div','',record.publisher),el('small','mri-market-source','Published '+record.publication_date));
+  const track=el('div','mri-market-size-track'),bar=el('div','mri-market-size-fill');
+  bar.style.width=(100*record.value/hi).toFixed(2)+'%';
+  bar.title=record.publisher+': US$'+fmt(record.value,2)+' billion';
+  track.append(bar);row.append(label,track,el('span','mri-market-size-number','$'+fmt(record.value,2)+'bn'));
+  chart.append(row);
+  const source=el('p','mri-source');appendLink(source,record.source,'Source: '+record.publisher);
+  source.append(document.createTextNode(' · '+(record.check_status||'dated published reference')));
+  chart.append(source);
+ }
+ const spread=hi-lo;
+ $('mri-market-variance').textContent='Difference between these published estimates: US$'+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
+ const bars=$('mri-share-bars'),axis=$('mri-share-axis');
+ bars.replaceChildren();axis.replaceChildren();
+ const shares=[...market.shares.entries].filter(x=>Number.isFinite(x.value)&&x.value>=0)
+   .sort((a,b)=>b.value-a.value || a.name.localeCompare(b.name));
+ // Scale is a percentage axis, not a share of the maximum supplier.
+ // A rounded upper bound leaves headroom and keeps small vendors legible.
+ const maxShare=Math.max(1,...shares.map(x=>x.value));
+ const scale=Math.max(10,Math.ceil(maxShare/10)*10);
+ for(const [i,item] of shares.entries()){
+  const colour=CT_SHARE_COLOURS[i%CT_SHARE_COLOURS.length];
+  const row=el('div','mri-share-row');row.setAttribute('role','listitem');
+  const name=el('span','mri-share-name',item.name);
+  const track=el('div','mri-share-track'),bar=el('div','mri-share-bar');
+  bar.style.width=(100*item.value/scale).toFixed(2)+'%';
+  bar.style.backgroundColor=colour;
+  bar.title=item.name+': '+fmt(item.value,0)+'%';
+  bar.setAttribute('aria-hidden','true');
+  track.append(bar);
+  row.append(name,track,el('strong','mri-share-percent',fmt(item.value,0)+'%'));
+  bars.append(row);
+ }
+ const spacer=el('span'),ticks=el('div','mri-share-axis-scale'),axisUnit=el('span','mri-share-axis-unit','%');
+ for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
+ axis.append(spacer,ticks,axisUnit);
+ const source=$('mri-share-citation');source.replaceChildren(document.createTextNode(
+  'Digital Power China / Next Move · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
+  ));
+ appendLink(source,market.shares.source,'Original 2022 MRI manufacturer-share figure');
+ source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
+ const four=shares.filter(x=>['Siemens Healthineers','GE HealthCare','Philips'].includes(x.name)).reduce((sum,item)=>sum+item.value,0);
+ $('mri-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the 2022 historical source, Siemens Healthineers, GE HealthCare and Philips together account for '+fmt(four,0)+'% of the published global MRI manufacturer share. The MRI shares refer to 2022, but their denominator is undisclosed. Do not multiply those historical shares by independent 2025 market-size estimates to infer MRI vendor revenues.';
+ const sl=$('mri-source-list');
+ const research=el('article');research.append(el('h3','','Published MRI market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
+ for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
+ sl.append(research);
+ const dbs=el('article');dbs.append(el('h3','','MRI manufacturer shares · 2022 benchmark'),el('p','','Next Move 2022 shares reproduced in Digital Power China May 2024, Figure 1; denominator unspecified.'));
+ const p=el('p');appendLink(p,market.shares.source,'Original 2022 MRI manufacturer-share figure');dbs.append(p);sl.append(dbs);
+}
 
-        <!-- Top Macro Indicators Ticker (Dynamic) -->
-        <div class="ticker-banner">
-            <div class="ticker-card">
-                <div class="metric-label" id="ticker1-label">Central Bank Policy</div>
-                <div class="metric" id="ticker1-val"><!-- POLICY_RATE_PLACEHOLDER --></div>
-                <div class="metric-sub" id="ticker1-sub"><!-- POLICY_RATE_BASIS_PLACEHOLDER --></div>
-                <p class="metric-desc" id="ticker1-desc">Sets baseline borrowing costs, shaping capital purchasing cycles across healthcare systems.</p>
-            </div>
-            <div class="ticker-card">
-                <div class="metric-label" id="ticker2-label">Healthcare Inflation</div>
-                <div class="metric" id="ticker2-val"><!-- HEALTHCARE_INFLATION_PLACEHOLDER --></div>
-                <div class="metric-sub" id="ticker2-sub"><!-- HEALTHCARE_INFLATION_BASIS_PLACEHOLDER --></div>
-                <p class="metric-desc" id="ticker2-desc">Measures operational expenditure pressure, pushing trusts to seek AI efficiency gains.</p>
-            </div>
-            <div class="ticker-card">
-                <div class="metric-label" id="ticker3-label">MedTech Index <!-- MEDTECH_INDEX_NAME_PLACEHOLDER --></div>
-                <div class="metric" id="ticker3-val"><!-- MEDTECH_INDEX_PLACEHOLDER --></div>
-                <div class="metric-sub" id="ticker3-sub">Sector Benchmark</div>
-                <p class="metric-desc" id="ticker3-desc">Reflects healthcare sector equity valuations and broader investment appetite.</p>
-            </div>
-            <div class="ticker-card">
-                <div class="metric-label" id="ticker4-label">Imaging Demand Backlog</div>
-                <div class="metric" id="ticker4-val"><!-- IMAGING_DEMAND_BACKLOG_PLACEHOLDER --></div>
-                <div class="metric-sub" id="ticker4-sub"><!-- IMAGING_BACKLOG_BASIS_PLACEHOLDER --></div>
-                <p class="metric-desc" id="ticker4-desc"><!-- IMAGING_BACKLOG_DESCRIPTION_PLACEHOLDER --></p>
-            </div>
-            <div class="ticker-card">
-                <div class="metric-label" id="ticker5-label">Cloud Inference Index</div>
-                <div class="metric" id="ticker5-val"><!-- CLOUD_INFERENCE_INDEX_PLACEHOLDER --></div>
-                <div class="metric-sub" id="ticker5-sub">Compute Cost YoY</div>
-                <p class="metric-desc" id="ticker5-desc"><!-- CLOUD_INFERENCE_ANALYSIS_PLACEHOLDER --></p>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            
-            <!-- Sector Outlook Summary Unit -->
-            <div class="card col-12 outlook-box">
-                <div class="outlook-header">
-                    <h2 id="outlook-title">Sector Outlook Summary <!-- OUTLOOK_PERIOD_PLACEHOLDER --></h2>
-                    <!-- OUTLOOK_BADGE_STYLE_PLACEHOLDER -->
-                    <span id="outlook-badge"><!-- OUTLOOK_BADGE_PLACEHOLDER --></span>
-                </div>
-                <p id="outlook-summary-text" class="outlook-summary">
-                    <!-- OUTLOOK_SUMMARY_PLACEHOLDER -->
-                </p>
-                
-                <div class="outlook-factors-grid">
-                    <!-- 4 Key Growth Drivers -->
-                    <div class="factor-column drivers-column">
-                        <h3>KEY DRIVERS</h3>
-                        <div class="factor-list">
-                            <!-- DRIVERS_CARDS_PLACEHOLDER -->
-                        </div>
-                    </div>
-
-                    <!-- 4 Key Headwinds -->
-                    <div class="factor-column headwinds-column">
-                        <h3>KEY HEADWINDS</h3>
-                        <div class="factor-list">
-                            <!-- HEADWINDS_CARDS_PLACEHOLDER -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Integrated Regional Operational Highlights Footer -->
-                <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 15px;">
-                    <h3 id="highlights-title" style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; color: var(--text-main);">Regional Operational Highlights</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
-                        <!-- HIGHLIGHTS_CARDS_PLACEHOLDER -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Key Sector Metrics -->
-            <div class="card col-3">
-                <div class="metric-label">FDA Clearances (LLZ Category)</div>
-                <div class="metric" id="clearances-metric"><!-- FDA_LLZ_CLEARANCES_PLACEHOLDER --></div>
-                <div class="metric-sub">Radiology Image Processing</div>
-                <p class="metric-desc"><!-- FDA_CLEARANCES_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
-            </div>
-            <div class="card col-3">
-                <div class="metric-label">Radiologist Vacancy Rate</div>
-                <div class="metric"><!-- RADIOLOGIST_VACANCY_RATE_PLACEHOLDER --></div>
-                <div class="metric-sub"><!-- RADIOLOGIST_WORKFORCE_STATUS_PLACEHOLDER --></div>
-                <p class="metric-desc">Measures unfilled clinical posts, underscoring the structural need for automated productivity solutions.</p>
-            </div>
-            <div class="card col-3">
-                <div class="metric-label">Reimbursement Adoption</div>
-                <div class="metric"><!-- REIMBURSEMENT_ADOPTION_PLACEHOLDER --></div>
-                <div class="metric-sub">Hospitals with Active Billing</div>
-                <p class="metric-desc"><!-- REIMBURSEMENT_SOURCE_DESCRIPTION_PLACEHOLDER --></p>
-            </div>
-            <div class="card col-3">
-                <div class="metric-label">Prospective Clinical Validation</div>
-                <div class="metric"><!-- PROSPECTIVE_CLINICAL_VALIDATION_YTD_PLACEHOLDER --></div>
-                <div class="metric-sub">Peer-Reviewed Papers YTD</div>
-                <p class="metric-desc">Quantifies real-world clinical evidence publications needed to convince hospital procurement committees.</p>
-            </div>
-
-            <!-- Graph Unit 1: Approvals vs VC Funding -->
-            <div class="card col-8">
-                <h2>AI Approvals vs. MedTech Venture Capital Investment</h2>
-                <canvas id="approvalsChart"></canvas>
-            </div>
-
-            <!-- Text Unit: Targeted News Feed -->
-            <div class="card col-4">
-                <h2>Latest Industry Headlines</h2>
-                <div id="news-feed-container">
-                    <!-- NEWS_ITEMS_PLACEHOLDER -->
-                </div>
-            </div>
-
-            <!-- Graph Unit 2: Modality Breakdown -->
-            <div class="card col-6">
-                <h2>AI Clearances by Imaging Modality</h2>
-                <canvas id="modalityChart"></canvas>
-                <p class="metric-desc" style="margin-top: 15px;">
-                    <!-- MODALITY_ANALYSIS_PLACEHOLDER -->
-                </p>
-            </div>
-
-            <!-- Graph Unit 3: Stock Index vs Interest Rate Graph (6-Month View) -->
-            <div class="card col-6">
-                <h2 id="macroChartTitle">Stock Market Index & Interest Rates</h2>
-                <canvas id="macroChart"></canvas>
-                <p class="metric-desc" style="margin-top: 15px;">
-                    <!-- MACRO_ANALYSIS_PLACEHOLDER -->
-                </p>
-            </div>
-
-            <!-- Graph Unit 4: Vendor Revenue Breakdown (Pie Charts) -->
-            <div class="card col-12">
-                <h2>Vendor AI Revenue Breakdown</h2>
-				<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 15px;">
-                    <div style="flex: 1; min-width: 260px; max-width: 320px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Total Overall Revenue</h3>
-                        <canvas id="totalVendorChart"></canvas>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Cardiology</h3>
-                        <canvas id="cardioVendorChart"></canvas>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Pulmonology</h3>
-                        <canvas id="pulmoVendorChart"></canvas>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Neurology</h3>
-                        <canvas id="neuroVendorChart"></canvas>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Breast</h3>
-                        <canvas id="breastVendorChart"></canvas>
-                    </div>
-                    <div style="flex: 1; min-width: 200px; max-width: 250px; text-align: center;">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">Oncology</h3>
-                        <canvas id="oncologyVendorChart"></canvas>
-                    </div>
-                </div>
-                <p class="metric-desc" style="margin-top: 15px;">
-                    <!-- VENDOR_REVENUE_SOURCE_DESCRIPTION_PLACEHOLDER -->
-                </p>
-            </div>
-
-        </div>
-    </main>
-
-    <footer>
-        <div>&copy; 2026 Felix Beacher. All rights reserved.</div>
-        <p class="footer-disclaimer">
-            Disclaimer: The information and data provided on this dashboard are for general informational purposes only. Nothing contained on this site constitutes any form of financial advice. While metrics and figures are sourced from public registers, APIs, and market estimates, no warranty is made regarding their completeness, accuracy, or timeliness. The creator assumes no liability for any errors, omissions, or actions taken based on the information provided.
-        </p>
-    </footer>
-
-    <script>
-        const monthLabels = [/* MACRO_MONTH_LABELS_PLACEHOLDER */];
-
-        const regionData = {
-            global: {
-                summary: /* GLOBAL_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* GLOBAL_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* GLOBAL_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* GLOBAL_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* GLOBAL_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* GLOBAL_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* GLOBAL_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            },
-            europe: {
-                summary: /* EUROPE_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* EUROPE_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* EUROPE_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* EUROPE_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* EUROPE_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* EUROPE_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* EUROPE_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            },
-            northAmerica: {
-                summary: /* NORTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* NORTH_AMERICA_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* NORTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* NORTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* NORTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* NORTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* NORTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            },
-            asia: {
-                summary: /* ASIA_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* ASIA_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* ASIA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* ASIA_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* ASIA_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* ASIA_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* ASIA_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            },
-            middleEast: {
-                summary: /* MIDDLE_EAST_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* MIDDLE_EAST_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* MIDDLE_EAST_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* MIDDLE_EAST_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* MIDDLE_EAST_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* MIDDLE_EAST_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* MIDDLE_EAST_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            },
-            southAmerica: {
-                summary: /* SOUTH_AMERICA_SUMMARY_PLACEHOLDER */ "",
-                clearances: [/* SOUTH_AMERICA_CLEARANCES_PLACEHOLDER */],
-                vcFunding: [/* SOUTH_AMERICA_VC_FUNDING_GBP_MILLIONS_PLACEHOLDER */],
-                modalities: [/* SOUTH_AMERICA_MODALITY_SHARES_PLACEHOLDER */],
-                indexName: /* SOUTH_AMERICA_INDEX_NAME_PLACEHOLDER */ "",
-                indexData: [/* SOUTH_AMERICA_INDEX_POINTS_PLACEHOLDER */],
-                ratesData: [/* SOUTH_AMERICA_POLICY_RATES_PERCENT_PLACEHOLDER */]
-            }
-        };
-
-        // Line Chart Initialization (Approvals vs VC Funding)
-        const ctxApprovals = document.getElementById('approvalsChart').getContext('2d');
-        const approvalsChart = new Chart(ctxApprovals, {
-            type: 'line',
-            data: {
-                labels: [/* APPROVALS_FUNDING_PERIOD_LABELS_PLACEHOLDER */],
-                datasets: [
-                    {
-                        label: 'AI Regulatory Clearances',
-                        data: regionData.global.clearances,
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'VC Funding (£ Millions)',
-                        data: regionData.global.vcFunding,
-                        borderColor: '#34d399',
-                        tension: 0.3,
-                        fill: false,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { display: true, text: 'Clearances', color: '#9ca3af' },
-                        grid: { color: '#30363d' },
-                        ticks: { color: '#9ca3af' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: { display: true, text: 'Funding (£M)', color: '#9ca3af' },
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#9ca3af' }
-                    },
-                    x: {
-                        grid: { color: '#30363d' },
-                        ticks: { color: '#9ca3af' }
-                    }
-                }
-            }
-        });
-
-        // Doughnut Chart Initialization (Modalities)
-        const ctxModality = document.getElementById('modalityChart').getContext('2d');
-        const modalityChart = new Chart(ctxModality, {
-            type: 'doughnut',
-            data: {
-                labels: ['CT Scans', 'MRI', 'X-Ray / Mammography', 'Ultrasound', 'Pathology'],
-                datasets: [{
-                    data: regionData.global.modalities,
-                    backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } }
-            }
-        });
-
-        // Dual-Axis Line Chart Initialization (Index vs Interest Rate)
-        const ctxMacro = document.getElementById('macroChart').getContext('2d');
-        const macroChart = new Chart(ctxMacro, {
-            type: 'line',
-            data: {
-                labels: monthLabels,
-                datasets: [
-                    {
-                        label: 'Stock Market Index',
-                        data: regionData.global.indexData,
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        tension: 0.3,
-                        fill: true,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Central Bank Policy Rate (%)',
-                        data: regionData.global.ratesData,
-                        borderColor: '#f87171',
-                        borderDash: [5, 5],
-                        tension: 0.2,
-                        fill: false,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top', labels: { color: '#f3f4f6' } } },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { display: true, text: 'Index Points', color: '#9ca3af' },
-                        grid: { color: '#30363d' },
-                        ticks: { color: '#9ca3af' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: { display: true, text: 'Interest Rate (%)', color: '#9ca3af' },
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#9ca3af' }
-                    },
-                    x: {
-                        grid: { color: '#30363d' },
-                        ticks: { color: '#9ca3af' }
-                    }
-                }
-            }
-        });
-
-        function updateView(regionKey) {
-            const selectedRegion = regionData[regionKey] || regionData.global;
-
-            document.getElementById('regional-summary-text').innerText = selectedRegion.summary || '';
-
-            approvalsChart.data.datasets[0].data = selectedRegion.clearances;
-            approvalsChart.data.datasets[1].data = selectedRegion.vcFunding;
-            approvalsChart.update();
-
-            modalityChart.data.datasets[0].data = selectedRegion.modalities;
-            modalityChart.update();
-
-            document.getElementById('macroChartTitle').innerText = `${selectedRegion.indexName || 'Stock Market Index'} & Interest Rates`;
-            macroChart.data.datasets[0].label = selectedRegion.indexName || 'Stock Market Index';
-            macroChart.data.datasets[0].data = selectedRegion.indexData;
-            macroChart.data.datasets[1].data = selectedRegion.ratesData;
-            macroChart.update();
-        }
-
-        document.getElementById('regionSelect').addEventListener('change', (e) => {
-            const region = e.target.value;
-            const url = new URL(window.location);
-            url.searchParams.set('region', region);
-            window.history.pushState({}, '', url);
-            updateView(region);
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const initialRegion = urlParams.get('region') || 'global';
-            document.getElementById('regionSelect').value = initialRegion;
-            updateView(initialRegion);
-        });
-    
-        // Vendor Pie Charts Data
-        const vendorLabels = [/* VENDOR_NAMES_PLACEHOLDER */];
-        const vendorColors = ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa'];
-        const commonPieOptions = { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f3f4f6' } } } };
-
-        new Chart(document.getElementById('totalVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* TOTAL_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-
-        new Chart(document.getElementById('cardioVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* CARDIOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-
-        new Chart(document.getElementById('pulmoVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* PULMONOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-
-        new Chart(document.getElementById('neuroVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* NEUROLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-
-        new Chart(document.getElementById('breastVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* BREAST_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-
-        new Chart(document.getElementById('oncologyVendorChart').getContext('2d'), {
-            type: 'pie',
-            data: { labels: vendorLabels, datasets: [{ data: [/* ONCOLOGY_VENDOR_REVENUE_SHARES_PLACEHOLDER */], backgroundColor: vendorColors }] },
-            options: commonPieOptions
-        });
-    </script>
+renderPapers();renderSources();renderMarket();
+</script>
 </body>
 </html>
