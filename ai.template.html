@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Medical Imaging AI</title>
+<title>Imaging AI | The Medical Imaging Dashboard</title>
 <!-- Browser Tab Icon (Favicon) -->
 <link href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E" rel="icon"/>
 <!-- Chart.js CDN -->
@@ -48,6 +48,41 @@
 #ai-overview-section,#fda-trend-section,#ai-research-section,#ai-evidence-section,#ai-adoption-section,#ai-industry-section,#ai-news-section,#ai-source-status-section{scroll-margin-top:22px}
 @media(max-width:1080px){.ai-overview-section .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-evidence-stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:690px){.ai-overview-section .dashboard-grid,.ai-evidence-stages,.ai-summary-strips,.ai-study-list{grid-template-columns:minmax(0,1fr)}.ai-chart-wrap{min-height:200px}.ai-chart-wrap canvas{max-height:320px}.ai-section-nav a{font-size:.79rem}.ai-overview-section .dashboard-grid>.card{grid-column:auto}}
+
+/* Match the MRI/X-ray modality pages; keep changes local to Im AI. */
+.ai-page{max-width:1450px;--card-bg:#131d2b;--border-color:#334a60;--text-muted:#b5cad8}
+.ai-page a{color:#8bd4f5}.ai-page a:focus-visible,.ai-page select:focus-visible,.ai-page summary:focus-visible{outline:2px solid #92e2ff;outline-offset:3px}
+.ai-lead{background:linear-gradient(125deg,#13283d,#101b2c);border:1px solid #35566d;border-radius:14px;padding:clamp(22px,3vw,38px);margin-bottom:20px}
+.ai-lead h2{color:#ecf7ff;font-size:clamp(1.7rem,3.4vw,2.9rem);line-height:1.12;margin:9px 0 15px}
+.ai-lead .ai-aim-title{font-size:1rem;color:#a6e4ff;margin:12px 0 4px;font-weight:740}
+.ai-lead>p{font-size:1rem;max-width:900px;color:#c7d7e5;line-height:1.7}
+.ai-page .region-filter-container{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 24px;margin:24px 0 14px;border:1px solid #659db8;border-radius:13px;background:linear-gradient(100deg,#1a364a,#102638);box-shadow:none}
+.ai-page .region-filter-container label{font-size:1.3rem;font-weight:850;letter-spacing:.065em;color:#c6edff;white-space:nowrap}
+.ai-page .region-filter-container select{font-size:1.08rem;font-weight:720;min-height:48px;min-width:255px;border:2px solid #8cd7ff;border-radius:9px;background:#081b2b;color:#f4faff;padding:10px 13px}
+.ai-lead .ai-region-scope{font-size:.87rem;line-height:1.65;color:#b5cad8;margin-top:12px}
+.ai-page>.dashboard-grid{gap:19px;margin-bottom:0;grid-template-columns:minmax(0,1fr)}
+.ai-page>.dashboard-grid>.card{grid-column:1}
+.ai-page .card{background:#131d2b;border:1px solid #334a60;border-radius:12px;padding:clamp(17px,2vw,25px);min-width:0;box-shadow:none;overflow:visible}
+.ai-page .card:hover{transform:none;border-color:#334a60}
+.ai-page .card h2{font-size:1.2rem;margin:0 0 13px;border-bottom:1px solid #35485a;padding-bottom:11px;color:#ecf7ff;line-height:1.4}
+.ai-page .card h3{color:#e9f6ff}
+.ai-page .metric-desc,.ai-page .outlook-summary{color:#b5cad8;font-size:.87rem;line-height:1.65}
+.ai-page .metric-label{color:#bedcea;line-height:1.5}.ai-page .metric{color:#f4fbff;font-weight:750;font-size:clamp(1.15rem,2.1vw,1.72rem)}
+.ai-page .metric-sub{color:#a9bfce;line-height:1.55}
+.ai-page .ai-overview-section .dashboard-grid>.card{background:#0e1c2e;border:1px solid #38556a;padding:15px;border-radius:10px}
+.ai-page .ai-mini-stat,.ai-page .ai-evidence-stages article,.ai-page .ai-study{background:#0d1b2c;border-color:#38516a;border-radius:10px}
+.ai-page .ai-section-nav{margin-bottom:18px}.ai-page .ai-section-nav a{background:#142235;border-color:#38566b;color:#d9edfa}
+.ai-page .outlook-box{background:#131d2b;border:1px solid #334a60}.ai-page .outlook-header{align-items:flex-start;gap:14px;flex-wrap:wrap}
+.ai-page .outlook-header h2{flex:1;min-width:0}.ai-page .factor-column{min-width:0}
+.ai-page .factor-list{background:#0d1b2c;border:1px solid #38516a;border-radius:10px;padding:17px}
+.ai-page #ai-drivers,.ai-page #ai-headwinds{color:#bfd1df;font-size:.87rem;line-height:1.65}
+.ai-page table{font-size:.82rem;line-height:1.6;min-width:620px}.ai-page th,.ai-page td{border-bottom:1px solid #30485b;vertical-align:top;color:#c2d6e3}
+.ai-page th{color:#e9f6ff}.ai-page details>summary{color:#9fdefc;cursor:pointer;min-height:38px}
+.ai-page #news-feed-container article{background:#0d1b2b;border:1px solid #375166;border-radius:10px;padding:16px}
+.ai-page #ai-source-status{overflow-wrap:anywhere}.ai-page #ai-source-status li{margin:7px 0;line-height:1.65}
+@media(max-width:750px){.ai-page{padding:16px}.ai-lead{padding:20px}.ai-page .outlook-factors-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.ai-page .region-filter-container{flex-direction:column;align-items:stretch;padding:16px}.ai-page .region-filter-container label{font-size:1.12rem}.ai-page .region-filter-container select{width:100%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.ai-page *{scroll-behavior:auto;transition:none}}
 </style>
 </head>
 <body>
@@ -58,9 +93,9 @@
 <p class="author-bio">Created and managed by Felix Beacher, PhD.</p>
 </div>
 <!-- Modern Flashy Tab Navigation (Home First) -->
-<nav class="nav-tabs">
+<nav class="nav-tabs" aria-label="Dashboard pages">
 <a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn active" href="ai.html">Im AI</a>
+<a class="tab-btn active" aria-current="page" href="ai.html">Im AI</a>
 
 <a class="tab-btn" href="ct.html">CT</a>
 <a class="tab-btn" href="mri.html">MRI</a>
@@ -69,9 +104,13 @@
 </nav>
 </div>
 </header>
-<main>
+<main class="ai-page">
+<section class="ai-lead" aria-labelledby="ai-page-heading">
+<h2 id="ai-page-heading">Imaging AI: evidence, adoption and innovation</h2>
+<h3 class="ai-aim-title">Aim of this page</h3>
+<p>Explore imaging AI research, clinical evidence, adoption and industry developments through clearly sourced data.</p>
 <div class="region-filter-container">
-<label for="regionSelect">SELECT REGION:</label>
+<label for="regionSelect">SELECT REGION</label>
 <select id="regionSelect">
 <option value="global">Global</option>
 <option value="northAmerica">North America</option>
@@ -81,6 +120,8 @@
 <option value="southAmerica">Latin America</option>
 </select>
 </div>
+<p class="ai-region-scope">Select a region to explore available evidence and source coverage. US FDA figures remain a US regulatory benchmark; regional research counts use selected-country samples.</p>
+</section>
 <nav class="ai-section-nav" aria-label="On this page">
 <a href="#ai-overview-section">At a glance</a>
 <a href="#fda-trend-section">Regulation</a>
