@@ -80,14 +80,14 @@ class CTDashboardTests(unittest.TestCase):
                     oecd_fetch=bad,pubmed_fetch=self.fake_pubmed)
 
     def test_2025_2026_2027_ct_scenario_from_2024_actuals(self):
-        points=[{'year':2022,'value':20},{'year':2023,'value':20.5},
-                {'year':2024,'value':22}]
+        points=[{'year':2022,'value':20},{'year':2023,'value':21.5},
+                {'year':2024,'value':23}]
         forecast=ct.ct_trend_scenario(points,'equipment',through=2027)
         self.assertEqual(forecast['status'],'illustrative')
         self.assertEqual([x['year'] for x in forecast['points']],[2025,2026,2027])
         self.assertTrue(forecast['capped'])  # 2022-2024 annualised growth exceeds 5%
         self.assertAlmostEqual(forecast['annual_rate'],0.05,places=4)
-        self.assertAlmostEqual(forecast['points'][0]['value'],23.1)
+        self.assertAlmostEqual(forecast['points'][0]['value'],24.15)
         self.assertTrue(all(x['low'] < x['value'] < x['high'] for x in forecast['points']))
         self.assertGreater(forecast['points'][2]['high']-forecast['points'][2]['low'],
                            forecast['points'][0]['high']-forecast['points'][0]['low'])
