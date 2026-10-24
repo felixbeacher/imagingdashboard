@@ -74,7 +74,7 @@ class MacroTests(unittest.TestCase):
             page=(ROOT/name).read_text()
             self.assertIn('>Glob Econ</a>',page)
             self.assertIn('src="risk.svg"',page)
-            self.assertIn('Projections & country coverage',page)
+            self.assertIn('Further information',page);self.assertIn('Why it matters for imaging',page)
     def test_navigation_in_every_tab(self):
         for name in ['ai.html','index.html','ct.html','mri.html','pet.html','xray.html']:
             self.assertIn('href="global-macro.html"',(ROOT/name).read_text())
