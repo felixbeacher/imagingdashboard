@@ -51,6 +51,12 @@ class CTDashboardTests(unittest.TestCase):
         self.assertNotIn('An automated refresh does not make annual observations monthly data',t)
         self.assertIn('Where CT fits in to clinical care',t)
         self.assertIn('ct-region-primary',t)
+        self.assertIn('four consecutive annual source observations',t)
+        self.assertIn('OECD diagnostic technologies methodology',t)
+        self.assertIn('Case reports, editorials and reviews are excluded',t)
+        self.assertIn('The selected region controls OECD CT equipment',t)
+        self.assertIn('min-width:700px',t)
+
         self.assertIn('United Imaging Healthcare',t)
         self.assertIn('global.united-imaging.com/en/product-service/products/ct',t)
         self.assertIn('id="ct-comparison-warning"',t)
@@ -220,8 +226,12 @@ class CTDashboardTests(unittest.TestCase):
         Photoacoustic computed tomography for animal tissue</ArticleTitle><ArticleDate>
         <Year>2026</Year><Month>10</Month><Day>20</Day></ArticleDate></Article>
         </MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>104</PMID><Article><ArticleTitle>
+        High resolution ultrasound computed tomography of the brain</ArticleTitle>
+        <ArticleDate><Year>2026</Year><Month>10</Month><Day>21</Day></ArticleDate></Article>
+        </MedlineCitation></PubmedArticle>
         </PubmedArticleSet>'''
-        items=ct.parse_pubmed(xml,['101','102','103'])
+        items=ct.parse_pubmed(xml,['101','102','103','104'])
         self.assertEqual([i['title'] for i in items],
             ['Photon-counting CT for lung disease','Computed tomography for abdominal assessment'])
         self.assertEqual(items[0]['date'],'2026-10-12')
