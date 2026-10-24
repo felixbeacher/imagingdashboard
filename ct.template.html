@@ -146,6 +146,7 @@
 <section class="ct-card" id="ct-regional-comparison" aria-labelledby="ct-regional-heading">
 <h2 id="ct-regional-heading">Regional CT comparison · selected OECD countries</h2>
 <p class="ct-muted" id="ct-comparison-note">Latest available country readings: years and provider scope differ. These bars are not same-year rankings or regional averages.</p>
+<p class="ct-compare-caution" id="ct-comparison-warning" aria-live="polite">Reporting-year and provider-scope differences are shown below.</p>
 <div class="ct-grid">
 <article class="ct-indicator"><h3>CT scanners per million people</h3><div id="ct-region-scanners" class="ct-region-bars" aria-live="polite"></div></article>
 <article class="ct-indicator"><h3>CT examinations per 1,000 people</h3><div id="ct-region-exams" class="ct-region-bars" aria-live="polite"></div></article>
@@ -360,7 +361,7 @@ function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
  $(id).replaceChildren(...root.childNodes);
 }
 function reportRegionalAnalysis(regionKey){
- const group=REGIONS[regionKey],notes=[],dates=[],differences=[];
+ const group=REGIONS[regionKey],notes=[],dates=[],differences=[],signals=[];
  let projected=0;
  for(const code of group.countries){
   const name=ctData.oecd?.countries?.[code]?.name;if(!name)continue;
@@ -368,6 +369,24 @@ function reportRegionalAnalysis(regionKey){
   notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
    '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
   dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
+  // Compare growth rates only over exactly the same two consecutive
+  // observation years, with full provider coverage on both series.
+  const ss=s.points,ee=e.points;
+  if(ss.length>=2&&ee.length>=2&&s.scope==='All healthcare providers'&&
+     e.scope==='All healthcare providers'){
+   const lastS=ss[ss.length-1],prevS=ss[ss.length-2];
+   const lastE=ee[ee.length-1],prevE=ee[ee.length-2];
+   if(prevS.year===prevE.year&&lastS.year===lastE.year&&
+      lastS.year-prevS.year===1&&lastS.year>=2023&&
+      prevS.value>0&&prevE.value>0){
+    const gS=100*(lastS.value/prevS.value-1),gE=100*(lastE.value/prevE.value-1);
+    if(gE-gS>1.5){
+     signals.push(name+' ('+prevS.year+'–'+lastS.year+'): CT examinations per capita rose '+
+       fmt(gE,1)+'% versus scanner density '+fmt(gS,1)+
+       '%. This may indicate increasing utilisation pressure, but does not measure scanner throughput directly.');
+    }
+   }
+  }
   if(sp&&ep&&sp.year!==ep.year)differences.push(name+' has observations from different years.');
   if(s.scope!==e.scope)differences.push(name+' has differing provider scope.');
   if(s.projection.status==='illustrative'&&s.projection.points.length)projected++;
@@ -375,8 +394,10 @@ function reportRegionalAnalysis(regionKey){
  }
  const list=el('ul');for(const note of notes)list.append(el('li','',note));
  $('ct-reading').replaceChildren(el('p','',group.name+' · selected published country observations, not a regional average.'),list);
- $('ct-next').textContent=(differences.join(' ')||'Provider scope and reporting years require verification when comparing countries.')+
-  ' '+projected+' individual country series have modelled extensions, not regional forecasts. Check local scanner age, staffing, waiting times, case mix, throughput and appropriateness before making service decisions.';
+ $('ct-next').textContent=(signals.length?signals.join(' '):
+   'No suitable same-year, full-provider series establish examination growth substantially faster than scanner density in this sample. ')+
+   ' '+(differences.join(' ')||'')+
+   ' '+projected+' separately backtested country-series extensions are modelled, not regional forecasts. Check scanner age, staffing, case mix, referral appropriateness, local waiting times and actual throughput before planning procurement.';
  $('ct-data-lag').textContent='OECD CT statistics are released after annual national reporting and validation, so the latest year differs across countries. For '+
   group.name+': '+dates.join('; ')+'. Missing years are not zero. Scenario extensions are not OECD observations.';
 }
@@ -392,7 +413,9 @@ function regionalBars(containerId,records,unit){
  const valid=records.filter(x=>x.point);
  if(!valid.length){target.append(el('p','ct-no-data','No verified observations are available in this regional country sample.'));return;}
  const max=Math.max(...valid.map(x=>x.point.value),1);
- for(const x of [...records].sort((a,b)=>(b.point?.value??-1)-(a.point?.value??-1))){
+ // Keep the configured country order: sorting mismatched reporting years
+ // by value implies a same-year ranking that the source cannot support.
+ for(const x of records){
   const row=el('div','ct-region-row');row.setAttribute('role','group');
   row.setAttribute('aria-label',x.name+': '+(x.point?fmt(x.point.value)+' '+unit+' in '+x.point.year:'unavailable'));
   row.append(el('span','ct-region-name',x.name));
@@ -401,23 +424,40 @@ function regionalBars(containerId,records,unit){
    const fill=el('div','ct-region-fill');fill.style.width=(100*x.point.value/max).toFixed(2)+'%';track.append(fill);
   }
   row.append(track,el('strong','ct-region-number',x.point?fmt(x.point.value):'N/A'));
-  row.append(el('small','ct-region-meta',x.point?'Year '+x.point.year+' · '+x.scope:'No verified CT observation · '+x.scope));
+  const year=el('span','ct-year-flag'+(x.point&&x.point.year<2024?' ct-year-old':''),
+   x.point?String(x.point.year):'No data');
+  const meta=el('small','ct-region-meta');
+  meta.append(year,document.createTextNode(' · '+(x.scope||'Provider scope unavailable')+
+    (x.point&&x.point.year<2024?' · Historic observation; compare with caution':'')));
+  row.append(meta);
   target.append(row);
  }
 }
 function setRegionalOverview(regionKey){
  const region=REGIONS[regionKey],name=region?.name||'Region';
  const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
- const sc=scanners.filter(x=>x.point).length,ex=exams.filter(x=>x.point).length;
  const total=region?.countries?.length||0,pub=ctData.pubmed||{};
- $('ct-region-scope').textContent=name+' · selected OECD countries ('+total+' included). This comparison is not a complete regional survey or an averaged regional rate.';
- $('ct-regional-heading').textContent=name+' · CT capacity and examination comparisons';
- $('ct-comparison-note').textContent='Latest available OECD CT observations for '+name+'. Country reporting years and provider scope may differ; do not interpret the bars as regional totals or same-year rankings.';
+ const latestPoint=items=>items.filter(r=>r.point).sort((a,b)=>b.point.year-a.point.year||a.name.localeCompare(b.name))[0];
+ const latestS=latestPoint(scanners),latestE=latestPoint(exams);
+ const recentS=scanners.filter(r=>r.point&&r.point.year>=2024).length;
+ const recentE=exams.filter(r=>r.point&&r.point.year>=2024).length;
+ const includedYears=[...scanners,...exams].filter(x=>x.point).map(x=>x.point.year);
+ const youngest=Math.max(0,...includedYears),oldest=includedYears.length?Math.min(...includedYears):null;
+ $('ct-region-scope').textContent=name+' · '+total+' OECD country samples. The region selector changes CT service statistics only; market, vendor shares and selected research are global.';
+ $('ct-regional-heading').textContent=name+' · CT country comparisons';
+ $('ct-comparison-note').textContent='Country readings refer to different observation years and, sometimes, different healthcare-provider coverage. Countries follow the listed sample order, not a ranking.';
+ $('ct-comparison-warning').textContent=oldest===null?
+  'No verified country observations are available for this region.':
+  'Source observation years range from '+oldest+' to '+youngest+' across available CT indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('ct-stat-grid'),
-  stat('Countries sampled',String(total),'OECD reporting countries in '+name+' · not all countries'),
-  stat('Scanner observations',String(sc)+' of '+total,'Countries with published CT scanners per million'),
-  stat('Examination observations',String(ex)+' of '+total,'Countries with published CT examinations per 1,000'),
-  stat('Recent CT publications',pub.count==null?'Unavailable':fmt(pub.count,0),'PubMed query matches · past 12 months · worldwide')
+  stat('Latest CT scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
+       latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
+  stat('Latest CT examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
+       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation'),
+  stat('Recent country coverage',recentS+' / '+total+' scanners',
+       recentE+' / '+total+' exams · observations from 2024 onwards; not a regional total'),
+  stat('Selected CT studies',pub.status==='live'?String((pub.items||[]).length):'Unavailable',
+       'Worldwide PubMed · selected from '+(pub.count==null?'unavailable':fmt(pub.count,0))+' CT search matches')
  );
  regionalBars('ct-region-scanners',scanners,'scanners per million');
  regionalBars('ct-region-exams',exams,'examinations per 1,000');
@@ -443,13 +483,15 @@ function renderPapers(){
  for(const paper of (pub.items||[])){
   const art=el('article','ct-paper');art.append(el('span','ct-tag',paper.kind||'CT publication'));
   const h=el('h3');appendLink(h,paper.url,paper.title);art.append(h);
+  art.append(el('p','ct-research-topic',paper.category||paper.kind||'CT research'));
   art.append(el('p','',paper.journal+' · '+paper.date));
   if(paper.design)art.append(el('p','',paper.design));
+  if(paper.selection_basis)art.append(el('p','ct-research-selection','Selection: '+paper.selection_basis));
   if(paper.excerpt){const details=el('details');details.append(el('summary','','Read reported abstract excerpt'),el('p','',paper.excerpt));art.append(details)}
   art.append(el('p','ct-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
   area.append(art);
  }
- const note=$('ct-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. Matching publications are a research-discovery sample, not a systematic review or an estimate of clinical value. ';
+ const note=$('ct-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
  appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'computed tomography'),'Search PubMed');
 }
 function renderSources(){
