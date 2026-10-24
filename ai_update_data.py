@@ -986,11 +986,11 @@ def regional_economic_background(offline=False):
                 values[current] = round(statistics.median(valid), 2) if len(valid) == len(countries) else None
                 details.append(str(current) + ': ' + (str(values[current]) + '%'
                                if values[current] is not None else 'unavailable'))
-            description = ('IMF WEO world aggregate. ' if key == 'global' else 'IMF WEO country-sample median for ' + name + '. ')
+            description = ('IMF estimate for the world as a whole. ' if key == 'global' else 'Middle value across the selected countries in ' + name + '. ')
             description += (
-                           '; '.join(details) + ('. IMF-published world aggregate. ' if key == 'global' else '. Unweighted median, not a regional aggregate. ')
+                           '; '.join(details) + ('. Published world figure from the IMF. ' if key == 'global' else '. Each country counts equally; this is not a figure for the entire region. ')
                            + 'Coverage: ' + ', '.join(n for _, n in countries) + '. '
-                           + 'Current-year estimates and forward projections may be revised.')
+                           + 'This year’s estimate and later forecasts may change as more data are released.')
             source = {'name': 'IMF WEO / DataMapper', 'url':
                       'https://www.imf.org/external/datamapper/' + code + '@WEO/'
                       + '/'.join(country for country, _ in countries)}
@@ -1004,7 +1004,7 @@ def regional_economic_background(offline=False):
             summaries.append(label + ' — ' + '; '.join(details) + '.')
         result[key] = dict(cards=cards, overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
             + ' '.join(summaries) + (' These are IMF-published world aggregates. ' if key == 'global' else ' These are unweighted country medians, not an IMF regional aggregate. ')
-            + 'The source provides estimates and projections; regional risk and driver commentary is not supplied by this numerical feed.',
+            + 'These are economic estimates and forecasts, not predictions of imaging demand. The numerical source does not explain the causes of regional risks.',
             source=cards[0]['source'], retrieved=date.today().isoformat() if all(c['retrieved'] for c in cards) else None,
             attempted_at=date.today().isoformat(), status='available' if all(c['value'] is not None for c in cards) else 'partial' if any(c['value'] is not None for c in cards) else 'unavailable')
     return result
