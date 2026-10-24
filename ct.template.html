@@ -238,27 +238,67 @@ function el(tag,cls,value){const x=document.createElement(tag);if(cls)x.classNam
 function put(parent,...els){parent.replaceChildren(...els)}
 function latest(points){return points.length?points[points.length-1]:null}
 function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
-function obs(country,kind){const k=ctData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.CT)?k.series.CT:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),reason:k?.reason||''}}
+function obs(country,kind){const k=ctData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.CT)?k.series.CT:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
 function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
 function measure(point,unit){return point?fmt(point.value,1)+' '+unit:'Unavailable'}
 function stat(title,value,period){const box=el('article','ct-stat');box.append(el('h3','',title),el('div','ct-value',value),el('small','',period));return box}
-function svgChart(points,name,unit){
- const frame=el('div','ct-chart');if(!points.length){frame.append(el('p','ct-no-data','No verified annual observations are available. No estimated data are shown.'));return frame}
- const allYears=points.map(p=>p.year),start=Math.min(...allYears),end=Math.max(...allYears);
- const x0=60,x1=620,y0=22,y1=195,top=Math.max(1,...points.map(p=>p.value))*1.13;
+function svgChart(points,name,unit,projection){
+ const frame=el('div','ct-chart');
+ if(!points.length){frame.append(el('p','ct-no-data','No verified annual OECD observations are available. No projections are calculated.'));return frame}
+ const latestActual=latest(points);
+ const future=projection?.status==='illustrative'?
+  (projection.points||[]).filter(p=>p.year>latestActual.year&&p.year<=2027):[];
+ const allYears=[...points.map(p=>p.year),...future.map(p=>p.year)];
+ const start=Math.min(...allYears),end=Math.max(...allYears);
+ const x0=60,x1=620,y0=22,y1=195;
+ const top=Math.max(1,...points.map(p=>p.value),...future.map(p=>p.high))*1.14;
  const X=year=>x0+(year-start)/Math.max(1,end-start)*(x1-x0);
  const Y=value=>y1-(value/top)*(y1-y0);
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
- svg.setAttribute('viewBox','0 0 650 243');svg.setAttribute('role','img');
- svg.setAttribute('aria-label',name+' annual OECD series from '+start+' to '+end+'. Annual values follow below.');
- function shape(tag,attrs,text){const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n}
- svg.append(shape('title',{},name+' annual OECD history'));
- for(let n=0;n<=4;n++){const v=top*n/4,y=Y(v);svg.append(shape('line',{x1:x0,x2:x1,y1:y,y2:y,stroke:'#355269','stroke-dasharray':'3 5'}));svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#b9d1e0','font-size':'13'},fmt(v,0)))}
- for(let n=0;n<5;n++){const year=start+Math.round((end-start)*n/4);svg.append(shape('text',{x:X(year),y:y1+27,'text-anchor':'middle',fill:'#b9d1e0','font-size':'13'},String(year)))}
+ svg.setAttribute('viewBox','0 0 650 243');
+ svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',name+': blue OECD observations through '+latestActual.year+
+   (future.length?'; dashed amber modelled trend for '+future[0].year+'–'+future[future.length-1].year+
+   ', with a sensitivity band (not a confidence interval)':'')+'. Values are tabulated below.');
+ function shape(tag,attrs,text){
+  const n=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);
+  if(text!==undefined)n.textContent=text;
+  return n
+ }
+ svg.append(shape('title',{},name+' · OECD observations'+(future.length?' and illustrative scenario':'')+'; annual values tabulated below'));
+ for(let n=0;n<=4;n++){
+  const v=top*n/4,y=Y(v);
+  svg.append(shape('line',{x1:x0,x2:x1,y1:y,y2:y,stroke:'#355269','stroke-dasharray':'3 5'}));
+  svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#b9d1e0','font-size':'13'},fmt(v,0)));
+ }
+ for(let n=0;n<5;n++){
+  const year=start+Math.round((end-start)*n/4);
+  svg.append(shape('text',{x:X(year),y:y1+27,'text-anchor':'middle',fill:'#b9d1e0','font-size':'13'},String(year)));
+ }
+ if(future.length){
+  const envelope=[...future.map(p=>[X(p.year),Y(p.high)]),
+    ...[...future].reverse().map(p=>[X(p.year),Y(p.low)])];
+  svg.append(shape('polygon',{points:envelope.map(v=>v.join(',')).join(' '),fill:'#eab46b','fill-opacity':'.23'}));
+  let prev=latestActual;
+  for(const p of future){
+   svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),
+     stroke:'#f7c277','stroke-width':'3','stroke-dasharray':'7 6','stroke-linecap':'round'}));
+   const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:'4.5',fill:'#fac576'});
+   dot.append(shape('title',{},p.year+' scenario: '+fmt(p.value)+' '+unit+
+     ' (sensitivity: '+fmt(p.low)+'–'+fmt(p.high)+')'));
+   svg.append(dot);
+   prev=p;
+  }
+ }
  for(let i=0;i<points.length;i++){
   const p=points[i],x=X(p.year),y=Y(p.value),prev=points[i-1];
-  if(prev&&prev.year===p.year-1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:x,y2:y,stroke:'#7ed8f8','stroke-width':'3','stroke-linecap':'round'}));
-  const circle=shape('circle',{cx:x,cy:y,r:'4.5',fill:'#85ddfa'});circle.append(shape('title',{},p.year+': '+fmt(p.value)+' '+unit));svg.append(circle);
+  if(prev&&prev.year===p.year-1)
+   svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:x,y2:y,
+    stroke:'#7ed8f8','stroke-width':'3','stroke-linecap':'round'}));
+  const dot=shape('circle',{cx:x,cy:y,r:'4.5',fill:'#85ddfa'});
+  dot.append(shape('title',{},p.year+': '+fmt(p.value)+' '+unit+' (actual OECD)'));
+  svg.append(dot);
  }
  frame.append(svg);return frame;
 }
@@ -270,7 +310,27 @@ function indicator(id,label,what,why,series,unit,url){
  const reading=el('div','ct-reading',point?measure(point,unit):'Unavailable');
  reading.append(el('small','',point?' · '+point.year:' · missing observation'));block.append(reading);
  block.append(el('p','ct-muted','Coverage: '+series.scope));
- block.append(svgChart(series.points,label,unit));
+ block.append(svgChart(series.points,label,unit,series.projection));
+ const projected=series.projection;
+ if(projected?.status==='illustrative'&&(projected.points||[]).length){
+   const rate=100*projected.annual_rate;
+   const info=el('p','ct-forecast-method',
+     'Illustrative '+projected.points[0].year+'–'+projected.points[projected.points.length-1].year+
+     ' scenario from '+projected.start_year+' and '+projected.base_year+
+     ' observations · '+(rate>=0?'+':'')+fmt(rate,2)+'% annual trend'+
+     (projected.capped?' (capped for restraint)':'')+
+     '. ±2 percentage-point annual-growth sensitivity; not a confidence interval or official OECD figures.');
+   block.append(info);
+   const forecastDetails=el('details'),summary=el('summary','','View modelled estimates and sensitivity bounds'),table=el('table');
+   const header=el('thead'),titles=el('tr');
+   for(const title of ['Modelled year','Trend scenario','Lower sensitivity','Upper sensitivity']){const h=el('th','',title);h.scope='col';titles.append(h)}
+   header.append(titles);table.append(header);
+   const body=el('tbody');
+   for(const p of projected.points){const r=el('tr');r.append(el('td','',String(p.year)),el('td','',fmt(p.value)),el('td','',fmt(p.low)),el('td','',fmt(p.high)));body.append(r)}
+   table.append(body);forecastDetails.append(summary,table);block.append(forecastDetails);
+ }else{
+   block.append(el('p','ct-forecast-method','A trend estimate is not shown: too few recent, comparable actual observations to extrapolate reliably.'));
+ }
  const details=el('details'),summary=el('summary','','View observed annual data'),table=el('table');
  const tr=el('tr');for(const title of ['Year',unit]){const th=el('th','',title);th.scope='col';tr.append(th)}const thead=el('thead');thead.append(tr);table.append(thead);
  const tbody=el('tbody');for(const p of [...series.points].reverse()){const row=el('tr');row.append(el('td','',String(p.year)),el('td','',fmt(p.value)));tbody.append(row)}
@@ -285,11 +345,32 @@ function yearDifference(points,label){
  const words=Math.abs(diff)<.05?'was broadly unchanged':diff>0?'rose':'fell';
  return label+' '+words+' from '+fmt(prior.value)+' ('+prior.year+') to '+fmt(recent.value)+' ('+recent.year+'), a change of '+fmt(Math.abs(diff))+' '+(label==='CT scanner density'?'scanners per million people':'examinations per 1,000 people')+'.'+(recent.year-prior.year>1?' These observations are '+(recent.year-prior.year)+' years apart, not consecutive years.':'');
 }
+
+function projectionNarrative(label,series){
+ const p=series.projection,actual=latest(series.points);
+ if(!actual)return label+': no source observations are available.';
+ if(p?.status!=='illustrative'||!(p.points||[]).length)
+  return label+': no estimate is presented; recent and sufficiently complete source history is required.';
+ const final=p.points.find(x=>x.year===2027)||p.points[p.points.length-1];
+ const annual=100*p.annual_rate;
+ return label+': a modelled '+final.year+' scenario of '+fmt(final.value,1)+' (sensitivity '+fmt(final.low,1)+'–'+fmt(final.high,1)+'), compounded from the last observed '+actual.year+' value at '+(annual>=0?'+':'')+fmt(annual,2)+'% per year. This uses the latest three actual readings'+(p.capped?' with the growth rate capped for restraint':'')+'; it is not an OECD forecast.';
+}
+function updateReportingNote(code,scanners,exams){
+ const name=ctData.oecd?.countries?.[code]?.name||'Selected country';
+ const latestS=latest(scanners.points),latestE=latest(exams.points);
+ function timing(point,label){
+  return label+': '+(point?point.year+' latest available published observation':'no published observation');
+ }
+ const dataYear=new Date(ctData.generated_at).getUTCFullYear()||2026;
+ $('ct-data-lag').textContent='Why do the official series stop before '+dataYear+'? OECD CT statistics are annual national submissions, with country-specific reporting and validation lags. For '+name+', '+timing(latestS,'scanners')+'; '+timing(latestE,'examinations')+'. Other countries already report newer years. Missing subsequent years are not zero, and modelled trend extensions are illustrative only—not additional OECD observations.';
+}
 function setCountryDetail(code){
  const scanners=obs(code,'equipment'),exams=obs(code,'exams'),latestS=latest(scanners.points),latestE=latest(exams.points);
  indicator('ct-scanners','CT scanner availability','Installed CT scanner units reported per million inhabitants, across the publisher’s indicated provider setting.','Describes equipment availability but does not establish scanner age, operating hours, capacity, throughput or clinical need.',scanners,'scanners/million',ctData.oecd?.sources?.equipment);
  indicator('ct-exams','CT examinations per population','Reported annual CT examinations per 1,000 inhabitants, in the published provider scope.','Describes the use of CT services. It can inform demand questions but cannot establish appropriateness, patient benefit or underlying demand by itself.',exams,'exams/1,000',ctData.oecd?.sources?.exams);
  $('ct-reading').textContent=yearDifference(scanners.points,'CT scanner density')+' '+yearDifference(exams.points,'CT examination activity');
+ $('ct-reading').textContent+=' '+projectionNarrative('Scanner availability',scanners)+' '+projectionNarrative('Examinations',exams);
+ updateReportingNote(code,scanners,exams);
  const gaps=[];
  if(latestS&&latestE&&latestS.year!==latestE.year)gaps.push('The current scanner and examination observations refer to different years ('+latestS.year+' versus '+latestE.year+').');
  if(scanners.scope!==exams.scope)gaps.push('Provider coverage differs: scanner data are '+scanners.scope+'; examinations are '+exams.scope+'.');
