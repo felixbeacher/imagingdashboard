@@ -35,7 +35,7 @@ class CTDashboardTests(unittest.TestCase):
         for label in ('CT at a glance','Scanner availability and examination activity',
                       'What it measures','Why it matters for imaging',
                       'Recently published CT research','From CT trends to imaging decisions',
-                      'Aim of this page', 'ct-data-lag', 'ct-region', 'ct-country', 'ct-region-scanners'):
+                      'Aim of this page', 'ct-data-lag', 'ct-region', 'ct-region-scanners', 'SELECT REGION'):
             self.assertIn(label,t)
         for stale in ('AI Approvals vs. MedTech Venture Capital Investment',
                       'Vendor AI Revenue Breakdown','Radiologist Vacancy Rate'):
@@ -45,6 +45,12 @@ class CTDashboardTests(unittest.TestCase):
         self.assertNotIn('Imaging modality · computed tomography',t)
         self.assertNotIn('Unlike imaging AI',t)
         self.assertNotIn('<h3>Radiation and appropriateness</h3>',t)
+        self.assertNotIn('id="ct-country"',t)
+        self.assertNotIn('countrySelect',t)
+        self.assertNotIn('Computed tomography uses X-rays and computer reconstruction',t)
+        self.assertNotIn('An automated refresh does not make annual observations monthly data',t)
+        self.assertIn('Where CT fits in to clinical care',t)
+        self.assertIn('ct-region-primary',t)
         self.assertLess(t.index('id="ct-market"'), t.index('id="ct-industry"'))
         self.assertLess(t.index('id="ct-industry"'), t.index('Global CT manufacturer shares · DBS estimate'))
         self.assertLess(t.index('Global CT manufacturer shares · DBS estimate'), t.index('Selected CT product portfolios'))
@@ -181,12 +187,15 @@ class CTDashboardTests(unittest.TestCase):
         self.assertEqual(rendered.count('id="ct-overview"'),1)
         self.assertEqual(rendered.count('id="ct-region"'),1)
         self.assertIn('function setRegionalOverview(regionKey)',rendered)
-        self.assertIn('function chooseRegion(regionKey,preferredCode)',rendered)
-        self.assertIn('Modelled trend (2025–2027, where applicable)',rendered)
-        self.assertIn('function updateReportingNote(code,scanners,exams)',rendered)
-        self.assertIn("svgChart(series.points,label,unit,series.projection)",rendered)
-        self.assertNotIn('Explore country data',rendered)
-        self.assertIn('Country detail within this region',rendered)
+        self.assertIn('function chooseRegion(regionKey)',rendered)
+        self.assertIn('function regionalHistory(regionKey,kind,label,unit)',rendered)
+        self.assertIn('function reportRegionalAnalysis(regionKey)',rendered)
+        self.assertIn("renderRegionalIndicator('ct-scanners',regionKey,'equipment'",rendered)
+        self.assertIn("renderRegionalIndicator('ct-exams',regionKey,'exams'",rendered)
+        self.assertNotIn('id="ct-country"',rendered)
+        self.assertNotIn('Explore regional data',rendered)
+        self.assertNotIn('Country detail within this region',rendered)
+        self.assertNotIn('ct-updated',rendered)
         self.assertIn('2021',rendered)
 
     def test_offline_sources_are_empty_not_imagined(self):

@@ -304,8 +304,12 @@ jobs:
               for region in regional_groups.values() for code in region['countries']
           ):
               raise SystemExit('Missing or invalid CT regional data samples')
-          if 'id="ct-region"' not in page or 'Explore country data' in page:
-              raise SystemExit('CT region selector missing or obsolete label remains')
+          if 'id="ct-region"' not in page or 'SELECT REGION' not in page:
+              raise SystemExit('CT prominent region selector is missing')
+          if 'id="ct-country"' in page or 'Country detail within this region' in page:
+              raise SystemExit('CT obsolete country selector remains')
+          if 'function regionalHistory(regionKey,kind,label,unit)' not in page:
+              raise SystemExit('CT historical plots are not regional')
           market=obj.get('market',{})
           if len(market.get('size',{}).get('entries',[])) < 2:
               raise SystemExit('Fewer than two sourced market estimates')
@@ -317,8 +321,8 @@ jobs:
               raise SystemExit('CT page aim or annual reporting-lag notice missing')
           if '<h3>Radiation and appropriateness</h3>' in page or 'Unlike imaging AI' in page:
               raise SystemExit('Removed CT content has reappeared')
-          if 'function updateReportingNote(code,scanners,exams)' not in page:
-              raise SystemExit('CT reporting-lag explanation missing')
+          if 'function reportRegionalAnalysis(regionKey)' not in page:
+              raise SystemExit('CT region-level reporting-lag explanation missing')
           for country in obj['oecd']['countries'].values():
               for kind in ('equipment','exams'):
                   scenario=country[kind].get('projection')
