@@ -27,7 +27,9 @@ CT_QUERY = ('("computed tomography"[Title] OR "CT angiography"[Title] OR '
             '"photon-counting CT"[Title] OR "spectral CT"[Title] OR "coronary CT"[Title]) '
             'NOT (review[Publication Type] OR meta-analysis[Publication Type] '
             'OR protocol[Title] OR photoacoustic[Title] OR "electron tomography"[Title] '
-            'OR "optical coherence tomography"[Title])')
+            'OR "optical coherence tomography"[Title] '
+            'OR "ultrasound computed tomography"[Title] '
+            'OR "ultrasonic computed tomography"[Title])')
 DOI_RE = re.compile(r'^10\.\d{4,9}/[-._;()/:A-Za-z0-9]+$')
 
 
@@ -86,7 +88,7 @@ CT_RESEARCH_CATEGORIES = (
     ('Spectral CT', r'spectral|dual.energy'),
     ('Cardiac / vascular CT', r'cardiac|coronary|angiograph|vascular'),
     ('Neuro CT', r'stroke|cerebral|brain|neuro'),
-    ('Dose / reconstruction', r'dose|radiation|reconstruction|iterative'),
+    ('Dose / reconstruction', r'dose|radiation|iterative reconstruction|deep.learning (?:image )?reconstruction|image reconstruction|reconstruction algorithm'),
     ('Oncology CT', r'cancer|tumou?r|oncolog|lung screening'),
 )
 
@@ -126,7 +128,7 @@ def parse_pubmed(xml, expected_ids, limit=10):
             continue
         if not re.search(r'computed tomography|CT angiograph|photon.counting CT|spectral CT|coronary CT',title,re.I):
             continue
-        if re.search(r'\b(?:review|meta-analysis|protocol|photoacoustic)\b|electron tomography|optical coherence tomography',title,re.I):
+        if re.search(r'\b(?:review|meta-analysis|protocol|photoacoustic)\b|electron tomography|optical coherence tomography|ultrasound (?:computed )?tomography|ultrasonic (?:computed )?tomography',title,re.I):
             continue
         journal=_text(art.find('.//Journal/Title')) or 'Journal not supplied'
         types=[_text(t) for t in art.findall('.//PublicationType') if _text(t)]
