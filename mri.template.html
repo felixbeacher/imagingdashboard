@@ -246,7 +246,7 @@
 <article class="mri-topic"><h3>Fujifilm Healthcare</h3><p>Open and high-field MRI systems and inherited Hitachi MRI technology.</p><p><a href="https://www.fujifilm.com/products/healthcare/medical-imaging/mri" target="_blank" rel="noopener noreferrer">Manufacturer MRI information →</a></p></article>
 <article class="mri-topic"><h3>United Imaging Healthcare</h3><p>uMR clinical systems across multiple field strengths. Included in “Other” in the older published share chart.</p><p><a href="https://global.united-imaging.com/en/product-service/products/mr" target="_blank" rel="noopener noreferrer">Manufacturer MRI range →</a></p></article>
 </div>
-<div class="mri-insight"><strong>For purchasing and service planning:</strong> combine the source-backed country trends above with local scanner age, utilisation, clinical case mix, uptime, maintenance support, reconstruction and dose requirements. Public OECD counts do not reveal manufacturers' sales or hospital procurement pipelines.</div>
+<div class="mri-insight"><strong>For purchasing and service planning:</strong> combine the source-backed country trends above with local scanner age, utilisation, clinical case mix, uptime, maintenance support, sequence optimisation, MR safety screening and scan-time requirements. Public OECD counts do not reveal manufacturers' sales or hospital procurement pipelines.</div>
 </section>
 <section class="mri-card" id="mri-sources" aria-labelledby="mri-sources-heading">
 <h2 id="mri-sources-heading">Sources, coverage and methodology</h2>
@@ -575,7 +575,7 @@ function renderMarket(){
  appendLink(source,market.shares.source,'Original 2022 MRI manufacturer-share figure');
  source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
  const four=shares.filter(x=>['Siemens Healthineers','GE HealthCare','Philips'].includes(x.name)).reduce((sum,item)=>sum+item.value,0);
- $('mri-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the 2022 historical source, Siemens Healthineers, GE HealthCare and Philips together account for '+fmt(four,0)+'% of the published global MRI manufacturer share. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor MRI revenues.';
+ $('mri-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the 2022 historical source, Siemens Healthineers, GE HealthCare and Philips together account for '+fmt(four,0)+'% of the published global MRI manufacturer share. The MRI shares refer to 2022, but their denominator is undisclosed. Do not multiply those historical shares by independent 2025 market-size estimates to infer MRI vendor revenues.';
  const sl=$('mri-source-list');
  const research=el('article');research.append(el('h3','','Published MRI market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
  for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
