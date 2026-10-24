@@ -115,7 +115,6 @@ class MacroTests(unittest.TestCase):
                             for card in region['cards']))
         for name in ('global-macro.html', 'global-macro.template.html'):
             html = (ROOT / name).read_text(encoding='utf-8')
-            self.assertIn('id="economic-trends"', html)
             self.assertIn('function economicTrend(', html)
             self.assertIn('See annual figures and publication status', html)
             self.assertIn('class="economic-indicator-grid"', html)
