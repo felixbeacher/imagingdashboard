@@ -1,0 +1,17 @@
+{
+  "source": "iShares MSCI ACWI ETF fundamentals",
+  "observations": {
+    "pe": [
+      {
+        "period": "2026-10-15",
+        "value": 24.72
+      }
+    ],
+    "pb": [
+      {
+        "period": "2026-10-15",
+        "value": 3.89
+      }
+    ]
+  }
+}

@@ -1,8 +1,10 @@
 import json
 from datetime import datetime,timezone
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import patch, MagicMock
-from global_valuation import parse_etf,parse_world,fetch,render
+from global_valuation import parse_etf,parse_world,fetch,render,validate_history,merge_history,valuation_trend,write_history,read_history
 
 class GlobalValuationTests(unittest.TestCase):
     def test_fundamentals_require_values_and_dates(self):
@@ -29,6 +31,44 @@ class GlobalValuationTests(unittest.TestCase):
         page=render(dict(buffett=dict(history=[dict(year=2024,value=120)],percentile=95,median=85,comparison_count=20)))
         self.assertIn('Elevated relative to history',page);self.assertIn('does not prove they are overpriced',page)
         self.assertIn('Buffett Indicator',page);self.assertNotIn('Institutional View',page)
+
+    def test_single_latest_valuation_has_no_fake_line_chart(self):
+        data={'etf':{'status':'available','pe':{'value':24.72,'period':'2026-10-15'},
+                     'pb':{'value':3.89,'period':'2026-10-15'}, 'history':{'pe':[],'pb':[]}}}
+        page=render(data)
+        self.assertIn('Historical trend not yet available', page)
+        self.assertNotIn('2026-10-15: 24.72 times', page)
+        self.assertNotIn('verified source observations from', page)
+
+    def test_archive_merges_only_true_observation_dates_and_validates_schema(self):
+        earlier={'pe':[{'period':'2026-10-01','value':20.0}],
+                 'pb':[{'period':'2026-10-01','value':2.5}]}
+        latest={'pe':{'period':'2026-10-15','value':24.72},
+                'pb':{'period':'2026-10-15','value':3.89}}
+        combined=merge_history(earlier,latest)
+        combined=merge_history(combined,latest)
+        self.assertEqual(len(combined['pe']),2)
+        self.assertEqual(combined['pb'][-1]['value'],3.89)
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'history.json'
+            write_history(path,combined)
+            self.assertEqual(read_history(path),combined)
+            corrupted={'source':'Other ETF','observations':combined}
+            with self.assertRaises(ValueError):
+                validate_history(corrupted)
+            with self.assertRaises(ValueError):
+                validate_history({'source':'iShares MSCI ACWI ETF fundamentals',
+                                  'observations':{'pe':[{'period':'2026-10-15','value':float('nan')}],
+                                                  'pb':[]}})
+
+    def test_time_chart_needs_three_real_dates(self):
+        series=[{'period':p,'value':v} for p,v in
+                [('2026-08-15',20.0),('2026-09-15',22.0),('2026-10-15',23.0)]]
+        self.assertEqual(valuation_trend(series[:1], 'P/E'),'')
+        self.assertEqual(valuation_trend(series[:2], 'P/E'),'')
+        svg=valuation_trend(series,'P/E')
+        self.assertIn('2026-10-15',svg)
+        self.assertIn('2026-08',svg)
 
     @patch('global_valuation.urlopen')
     def test_rank_excludes_latest_and_counts_ties(self,call):

@@ -1,15 +1,19 @@
 """Source-fed global-equity context; never substitute illustrative observations."""
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from html.parser import HTMLParser
 from urllib.request import Request, urlopen
 import html
 import json
 import math
 import statistics
+import logging
+from pathlib import Path
 
 ETF_URL='https://www.ishares.com/us/products/239600/ishares-msci-acwi-etf'
 WB_URL='https://api.worldbank.org/v2/country/WLD/indicator/CM.MKT.LCAP.GD.ZS?format=json&per_page=100'
 WB_PAGE='https://data.worldbank.org/indicator/CM.MKT.LCAP.GD.ZS?locations=1W'
+HISTORY_PATH=Path(__file__).with_name('valuation-history.json')
+HISTORY_SOURCE='iShares MSCI ACWI ETF fundamentals'
 
 class Fundamentals(HTMLParser):
     def __init__(self):
@@ -48,8 +52,106 @@ def parse_world(raw):
     latest=max(points); history=[dict(year=y,value=points[y]) for y in sorted(points) if y>=latest-29]
     return history
 
+
+def validate_history(raw):
+    """Accept only dated, sourced observations of this same ETF and methodology."""
+    if not isinstance(raw, dict) or raw.get('source') != HISTORY_SOURCE:
+        raise ValueError('Wrong valuation history source')
+    readings = raw.get('observations')
+    if not isinstance(readings, dict) or set(readings) != {'pe', 'pb'}:
+        raise ValueError('Incorrect valuation history series')
+    result = {}
+    for key in ('pe', 'pb'):
+        rows = readings[key]
+        if not isinstance(rows, list) or len(rows) > 520:
+            raise ValueError('Invalid valuation history size')
+        parsed = []
+        for p in rows:
+            if not isinstance(p, dict) or set(p) != {'period', 'value'}:
+                raise ValueError('Invalid history observation fields')
+            period, value = p['period'], p['value']
+            try:
+                observed = date.fromisoformat(period)
+            except (ValueError, TypeError):
+                raise ValueError('Invalid history observation date') from None
+            if observed > datetime.now(timezone.utc).date() or not isinstance(value, (int, float)) \
+               or isinstance(value, bool) or not math.isfinite(value) or not 0 < value < 1000:
+                raise ValueError('Invalid valuation observation')
+            parsed.append(dict(period=observed.isoformat(), value=float(value)))
+        if [p['period'] for p in parsed] != sorted(set(p['period'] for p in parsed)):
+            raise ValueError('Valuation history dates must be unique and increasing')
+        result[key] = parsed
+    return result
+
+
+def read_history(path=HISTORY_PATH):
+    """Do not claim historical trends when no genuine dated observations are stored."""
+    try:
+        return validate_history(json.loads(Path(path).read_text(encoding='utf-8')))
+    except (OSError, ValueError, TypeError) as exc:
+        logging.warning('Validated ETF valuation history unavailable (%s)', type(exc).__name__)
+        return {'pe': [], 'pb': []}
+
+
+def merge_history(existing, latest):
+    """Append new source dates; replace corrections with the same observation date."""
+    combined = {}
+    for key in ('pe', 'pb'):
+        points = {p['period']: p['value'] for p in existing.get(key, [])}
+        if key in latest:
+            point = latest[key]
+            date.fromisoformat(point['period'])
+            value = float(point['value'])
+            if not math.isfinite(value) or not 0 < value < 1000:
+                raise ValueError('Invalid latest valuation')
+            points[point['period']] = value
+        combined[key] = [{'period': day, 'value': points[day]}
+                         for day in sorted(points)][-260:]
+    return combined
+
+
+def write_history(path, observations):
+    """Called by a permitted scheduled job; no source data are reconstructed."""
+    clean = validate_history({'source': HISTORY_SOURCE, 'observations': observations})
+    output = json.dumps({'source': HISTORY_SOURCE, 'observations': clean}, indent=2) + '\\n'
+    Path(path).write_text(output, encoding='utf-8')
+
+
+def valuation_trend(points, ratio):
+    """Plot only three or more genuine time-spaced observations, with real dates."""
+    if len(points) < 3:
+        return ''
+    from datetime import timedelta
+    first = date.fromisoformat(points[0]['period']).toordinal()
+    last = date.fromisoformat(points[-1]['period']).toordinal()
+    if last <= first:
+        return ''
+    lows = [p['value'] for p in points]
+    low = min(lows); high = max(lows)
+    padding = max((high-low)*.15, high*.025)
+    low = max(0, low-padding); high += padding
+    def x(day): return 48+(date.fromisoformat(day).toordinal()-first)/(last-first)*245
+    def y(value): return 101-(value-low)/(high-low)*75
+    out = [f'<svg viewBox="0 0 315 143" role="img" aria-label="{esc(ratio)}: verified source observations from {esc(points[0]["period"])} through {esc(points[-1]["period"])}. Source samples are not continuous daily readings.">']
+    for value in (low,(low+high)/2,high):
+        pos=y(value)
+        out.append(f'<line x1="48" x2="293" y1="{pos:.1f}" y2="{pos:.1f}" stroke="#304451"/><text x="42" y="{pos+4:.1f}" font-size="9" text-anchor="end" fill="#bcd3e0">{value:.1f}</text>')
+    # Treat gaps longer than roughly two months as discontinuities.
+    for previous,current in zip(points,points[1:]):
+        a=date.fromisoformat(previous['period']);b=date.fromisoformat(current['period'])
+        if (b-a).days<=65:
+            out.append(f'<line x1="{x(previous["period"]):.1f}" y1="{y(previous["value"]):.1f}" x2="{x(current["period"]):.1f}" y2="{y(current["value"]):.1f}" stroke="#80d2f1" stroke-width="2.4"/>')
+    for point in points:
+        cx=x(point['period']);cy=y(point['value'])
+        out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" fill="#80d2f1"><title>{esc(point["period"])}: {point["value"]:.2f}×</title></circle>')
+    out.append(f'<text x="48" y="132" font-size="10" fill="#c7d9e6">{esc(points[0]["period"][:7])}</text>')
+    out.append(f'<text x="293" y="132" text-anchor="end" font-size="10" fill="#c7d9e6">{esc(points[-1]["period"][:7])}</text>')
+    return ''.join(out)+'</svg>'
+
+
 def fetch(offline=False):
     result=dict(attempted_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),etf=dict(status='unavailable',source=ETF_URL),buffett=dict(status='unavailable',source=WB_PAGE),cape=dict(status='unavailable'))
+    result['etf']['history']=read_history()
     if offline:
         for key in ('etf','buffett'):result[key]['reason']='Offline build; sources were not requested.'
         return result
@@ -58,7 +160,9 @@ def fetch(offline=False):
             with urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (ImagingDashboard source collector)'}),timeout=25) as response:raw=response.read().decode()
             values=parser(raw)
             result[key].update(status='available',retrieved_at=datetime.now(timezone.utc).isoformat(timespec='seconds'))
-            if key=='etf':result[key].update(values)
+            if key=='etf':
+                result[key].update(values)
+                result[key]['history']=merge_history(result[key]['history'],values)
             else:
                 result[key]['history']=values
                 prior=[r['value'] for r in values[:-1]];latest=values[-1]['value']
@@ -95,15 +199,22 @@ def render(data):
         label='Assessment unavailable';summary='A sufficiently complete world market-capitalisation/GDP history is not available for this refresh.';conclusion='No global undervalued or overvalued classification has been substituted.';meter='<p class="metric">—</p>'
     output=[f'<div class="ftse-summary"><div><h3>Do world share prices look high or low?</h3><p class="explain">{summary} {conclusion}</p><article class="ftse-view" style="margin-top:14px"><h4>A cautious view of financial markets (Austrian School)</h4><p class="explain">This viewpoint asks whether cheap borrowing has pushed share prices too high or encouraged projects that may struggle when interest rates rise. For imaging businesses, check debt, the cost of renewing loans and the buying power of budgets. This is a perspective, not a separate score.</p></article></div><aside class="ftse-meter"><h3>Global valuation</h3>{meter}<p class="meta">{label}</p><p class="muted-note">World Buffett Indicator · annual observations. A relative-history signal, not a probability or composite fair-value score.</p></aside></div><h3>Global share-market indicators</h3><p class="meta">Checked when the dashboard refreshes. Each figure keeps its own observation date. Annual figures are not live market prices.</p><div class="ftse-group"><h3>1 · Share prices compared with profits and assets</h3><div class="mini-charts">']
     for key,title,caption in [('pe','Global-equity P/E','Share prices compared with company profits in a broad global fund. Loss-making companies are excluded from this ratio.'),('pb','Global-equity price-to-book','Share prices compared with the value of company assets on their balance sheets. Research and software are not always fully reflected in these values.')]:
-        content='<p class="meta">Unavailable — '+esc(e.get('reason','No validated observation.'))+'</p>'
+        content='<p class="meta">Latest reading unavailable — '+esc(e.get('reason','No validated observation.'))+'</p>'
+        points=e.get('history',{}).get(key,[])
         if e.get('status')=='available':
-            point=e[key];content=f'<p class="metric">{point["value"]:.2f}×</p>'+mini_chart([(point['period'],point['value'])],'times')+f'<p class="meta">Observation {point["period"]} · latest point only</p>'
+            point=e[key]
+            content=f'<p class="metric">{point["value"]:.2f}×</p><p class="meta">As published {esc(point["period"])} · refreshed from iShares when the dashboard is rebuilt</p>'
+        trend=valuation_trend(points, title) if points else ''
+        if trend:
+            content+=trend+'<p class="meta">Verified source-date observations collected by this dashboard; missing weeks are not filled.</p>'
+        else:
+            content+='<p class="meta">Historical trend not yet available. iShares provides a latest dated ratio, not a downloadable multi-year series. This dashboard is collecting real source-date observations at each refresh; a chart will appear once at least three distinct dates are verified.</p>'
         output.append(f'<figure class="mini-figure"><h4>{title}</h4>{content}<figcaption>{caption}</figcaption></figure>')
     output.append('</div><p class="meta">Source: <a href="'+ETF_URL+'">iShares MSCI ACWI ETF fundamentals</a> · developed and emerging-market large/mid-cap equities; a fund proxy, not every listed company. '+('Retrieved '+esc(e['retrieved_at']) if e.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
     content='<p class="meta">Unavailable — '+esc(b.get('reason','No validated observation.'))+'</p>'
     if history:
         latest=history[-1];content=f'<p class="metric">{latest["value"]:.1f}% <span class="meta">· {latest["year"]}</span></p>'+mini_chart([(str(r['year']),r['value']) for r in history],'% of GDP')
     output.append('<div class="ftse-group"><h3>2 · Share prices compared with the world economy</h3><div class="mini-charts"><figure class="mini-figure"><h4>Buffett Indicator — world market cap / GDP</h4>'+content+'<figcaption>The total value of listed companies compared with world economic output. High readings may suggest expensive shares, but company coverage and profits also matter.</figcaption></figure><article class="mini-figure"><h4>Global CAPE</h4><p class="meta">No reliable automated worldwide figure is available.</p><p class="explain">CAPE compares share prices with ten years of company profits adjusted for inflation. A trustworthy global figure is not available, so we do not substitute data for one country.</p></article></div><p class="meta">Source: <a href="'+WB_PAGE+'">World Bank / World Federation of Exchanges</a> · annual world aggregate. '+('Retrieved '+esc(b['retrieved_at']) if b.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
-    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The meter ranks the latest available annual world market-cap/GDP ratio against earlier available observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing years are not interpolated. P/E and P/B are supporting context and do not contribute to the meter. No fabricated historical P/E or P/B lines are shown.</p><p class="meta">Collection attempted '+esc(data.get('attempted_at','unknown'))+' · ACWI: '+esc(e.get('status','unavailable'))+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+' · global CAPE: unavailable.</p>')
+    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The meter ranks the latest available annual world market-cap/GDP ratio against earlier available observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing years are not interpolated. P/E and P/B are supporting context and do not contribute to the meter. ETF history consists only of archived, dated source observations; older values are not inferred from market prices.</p><p class="meta">Collection attempted '+esc(data.get('attempted_at','unknown'))+' · ACWI: '+esc(e.get('status','unavailable'))+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+' · global CAPE: unavailable.</p>')
     if history:output.append('<div class="table-wrap"><table><caption>World market capitalisation / GDP</caption><thead><tr><th>Year</th><th>Ratio (%)</th></tr></thead><tbody>'+''.join(f'<tr><td>{r["year"]}</td><td>{r["value"]:.2f}</td></tr>' for r in reversed(history))+'</tbody></table></div>')
     return ''.join(output)+'</details>'
