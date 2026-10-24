@@ -1,6 +1,6 @@
 # Refresh AI independently while the other modality updaters are being repaired.
 # Keep the source HTML templates and Python scripts in the repository root.
-# Publish the generated _site artifact directly; no generated-file commits or pushes.
+# Publish the generated _site artifact directly; only dated iShares valuation snapshots are archived.
 # Set Settings > Pages > Build and deployment > Source to GitHub Actions.
 name: Weekly Dashboard Update
 
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
-      contents: read
+      contents: write
       pages: write
     steps:
       - name: Checkout source templates and scripts
@@ -154,6 +154,35 @@ jobs:
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
                   handle.write('\n'.join(summary) + '\n')
           PY
+
+      - name: Archive validated iShares valuation readings
+        # The public provider exposes current ratios, not a historical download.
+        # Preserve only verified source-dated observations for future charting.
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          from global_valuation import write_history
+          page = Path('_site/global-macro.html').read_text(encoding='utf-8')
+          match = re.search(r'<script id="macro-data" type="application/json">(.*?)</script>', page, re.S)
+          if match:
+              etf = json.loads(match.group(1)).get('valuation', {}).get('etf', {})
+              if etf.get('status') == 'available' and all(k in etf for k in ('pe', 'pb', 'history')):
+                  write_history('valuation-history.json', etf['history'])
+                  print('::notice::Validated iShares P/E and P/B source-dated readings recorded.')
+              else:
+                  print('::notice::Latest iShares readings unavailable; no invented historical points were added.')
+          PY
+          if ! git diff --quiet -- valuation-history.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add valuation-history.json
+            git commit -m 'Archive verified iShares valuation readings [skip ci]'
+            git push origin HEAD:main || echo '::warning::Could not persist valuation archive to main; website build is unaffected.'
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
