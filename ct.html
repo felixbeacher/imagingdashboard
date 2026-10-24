@@ -65,6 +65,17 @@
 @media(max-width:940px){.ct-market-feature-grid{grid-template-columns:1fr}}
 @media(max-width:510px){.ct-market-size-row{grid-template-columns:100px minmax(0,1fr) 65px;gap:7px}.ct-share-row,.ct-share-axis{grid-template-columns:minmax(0,110px) minmax(0,1fr) 42px;gap:7px}.ct-market-size-name,.ct-market-size-number{font-size:.76rem}}
 
+
+/* Regional OECD sample comparisons: no inferred regional mean or total. */
+.ct-region-bars{display:flex;flex-direction:column;gap:13px;margin:18px 0}
+.ct-region-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) minmax(0,80px);gap:12px;align-items:center;min-width:0}
+.ct-region-name{color:#e4f3fd;font-size:.86rem;font-weight:650;overflow-wrap:anywhere}
+.ct-region-track{height:22px;border-radius:5px;background:#22384c;overflow:hidden}
+.ct-region-fill{height:100%;background:linear-gradient(90deg,#4e9fcf,#8ad7f3);border-radius:5px}
+.ct-region-number{font-size:.92rem;text-align:right;color:#e5f9ff;font-weight:720;font-variant-numeric:tabular-nums}
+.ct-region-meta{grid-column:1/-1;color:#abc1d0;font-size:.76rem;margin:-9px 0 4px;line-height:1.5}
+.ct-detail-picker{margin:12px 0 20px}
+@media(max-width:580px){.ct-region-row{grid-template-columns:minmax(0,110px) minmax(0,1fr) 58px;gap:7px}.ct-region-number{font-size:.83rem}}
 </style>
 </head>
 <body>
@@ -79,17 +90,27 @@
 <h2 id="ct-page-heading">CT: capacity, use and innovation</h2>
 <p>Computed tomography uses X-rays and computational reconstruction to create cross-sectional images. This dashboard follows <strong>CT equipment, examinations, clinical practice and technical progress</strong>. Unlike imaging AI—which can be used across modalities—CT is a distinct imaging modality.</p>
 <p class="ct-muted">Based on official annual healthcare statistics and current indexed research. An automated refresh does not make annual observations monthly data. <span id="ct-updated"></span></p>
-<div class="ct-control"><label for="ct-country">Explore country data</label>
-<select id="ct-country" aria-label="Selected CT country"></select>
+<div class="ct-control"><label for="ct-region">Explore regional data</label>
+<select id="ct-region" aria-label="Select a CT data region"></select>
 </div>
+<p class="ct-muted" id="ct-region-scope">Select a region to compare its available OECD country observations. These are country samples, not a complete regional dataset or calculated regional aggregate.</p>
 </section>
 <nav class="ct-nav" aria-label="On this page">
-<a href="#ct-overview">At a glance</a><a href="#ct-market">CT market</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-interpretation">Implications</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-industry">CT industry</a><a href="#ct-sources">Sources &amp; methodology</a>
+<a href="#ct-overview">At a glance</a><a href="#ct-regional-comparison">Regional comparisons</a><a href="#ct-market">CT market</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-interpretation">Implications</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-industry">CT industry</a><a href="#ct-sources">Sources &amp; methodology</a>
 </nav>
 <section class="ct-card" id="ct-overview" aria-labelledby="ct-overview-heading">
 <h2 id="ct-overview-heading">CT at a glance</h2>
-<p class="ct-muted">Country-specific OECD observations and worldwide CT research. All figures carry their original time period and coverage.</p>
+<p class="ct-muted">A regional view of available OECD country observations, with source year and provider scope identified. Country data are not averaged into an unsupported regional total.</p>
 <div class="ct-stat-grid" id="ct-stat-grid" aria-live="polite"></div>
+</section>
+<section class="ct-card" id="ct-regional-comparison" aria-labelledby="ct-regional-heading">
+<h2 id="ct-regional-heading">Regional CT comparison · selected OECD countries</h2>
+<p class="ct-muted" id="ct-comparison-note">Compare the available published readings for countries in the chosen region. Bars are not regional averages: observation years and providers may differ.</p>
+<div class="ct-grid">
+<article class="ct-indicator"><h3>CT scanners per million people</h3><div id="ct-region-scanners" class="ct-region-bars" aria-live="polite"></div></article>
+<article class="ct-indicator"><h3>CT examinations per 1,000 people</h3><div id="ct-region-exams" class="ct-region-bars" aria-live="polite"></div></article>
+</div>
+<p class="ct-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Some examinations cover hospitals only. No missing observations are treated as zero.</p>
 </section>
 <section class="ct-card ct-market-section" id="ct-market" aria-labelledby="ct-market-heading">
 <h2 id="ct-market-heading">Global CT market: size and manufacturers</h2>
@@ -123,7 +144,8 @@
 </section>
 <section class="ct-card" id="ct-activity" aria-labelledby="ct-activity-heading">
 <h2 id="ct-activity-heading">Scanner availability and examination activity</h2>
-<p class="ct-muted">Two separate ways to understand CT services. Neither scanner density nor examination counts alone establishes capacity adequacy, clinical need or equipment sales.</p>
+<p class="ct-muted">Inspect published annual histories for a country <strong>within the selected region</strong>. Two different denominators describe CT services; neither establishes capacity adequacy, clinical need or equipment sales.</p>
+<div class="ct-control ct-detail-picker"><label for="ct-country">Country detail within this region</label><select id="ct-country" aria-label="Country history within selected region"></select></div>
 <div class="ct-grid">
 <article class="ct-indicator" id="ct-scanners"></article>
 <article class="ct-indicator" id="ct-exams"></article>
@@ -242,18 +264,8 @@ function yearDifference(points,label){
  const words=Math.abs(diff)<.05?'was broadly unchanged':diff>0?'rose':'fell';
  return label+' '+words+' from '+fmt(prior.value)+' ('+prior.year+') to '+fmt(recent.value)+' ('+recent.year+'), a change of '+fmt(Math.abs(diff))+' '+(label==='CT scanner density'?'scanners per million people':'examinations per 1,000 people')+'.'+(recent.year-prior.year>1?' These observations are '+(recent.year-prior.year)+' years apart, not consecutive years.':'');
 }
-function setOverview(code){
- const country=ctData.oecd?.countries?.[code],name=country?.name||'Selected country';
+function setCountryDetail(code){
  const scanners=obs(code,'equipment'),exams=obs(code,'exams'),latestS=latest(scanners.points),latestE=latest(exams.points);
- const pub=ctData.pubmed||{};
- $('ct-updated').textContent='Last attempted refresh: '+(ctData.generated_at||'date unavailable').slice(0,10)+'.';
- put($('ct-stat-grid'),
-  stat('CT scanners',latestS?fmt(latestS.value):'Unavailable',latestS?'per million people · '+latestS.year:'No published country value'),
-  stat('CT examinations',latestE?fmt(latestE.value):'Unavailable',latestE?'per 1,000 people · '+latestE.year:'No published country value'),
-  stat('Annual source coverage',latestS||latestE?String(Math.max(latestS?.year||0,latestE?.year||0)):'Unavailable','Most recent observation across the two CT series'),
-  stat('Recent CT publications',pub.count===null||pub.count===undefined?'Unavailable':fmt(pub.count,0),
-    'PubMed query matches · last 12 months · worldwide, not clinical trial count')
- );
  indicator('ct-scanners','CT scanner availability','Installed CT scanner units reported per million inhabitants, across the publisher’s indicated provider setting.','Describes equipment availability but does not establish scanner age, operating hours, capacity, throughput or clinical need.',scanners,'scanners/million',ctData.oecd?.sources?.equipment);
  indicator('ct-exams','CT examinations per population','Reported annual CT examinations per 1,000 inhabitants, in the published provider scope.','Describes the use of CT services. It can inform demand questions but cannot establish appropriateness, patient benefit or underlying demand by itself.',exams,'exams/1,000',ctData.oecd?.sources?.exams);
  $('ct-reading').textContent=yearDifference(scanners.points,'CT scanner density')+' '+yearDifference(exams.points,'CT examination activity');
@@ -262,6 +274,68 @@ function setOverview(code){
  if(scanners.scope!==exams.scope)gaps.push('Provider coverage differs: scanner data are '+scanners.scope+'; examinations are '+exams.scope+'.');
  if(!latestS||!latestE)gaps.push('One or both series are unavailable; do not infer demand from missing observations.');
  $('ct-next').textContent=(gaps.join(' ')||'Both series have observations, but scanner numbers cannot be used as an estimate of service throughput.')+' Before decisions, check local waiting times, actual CT examinations per operating hour, staffing, equipment condition, case mix, appropriateness and dose/protocol audits. This text is derived from source dates and coverage rather than market predictions.';
+}
+const regionSelect=$('ct-region'),countrySelect=$('ct-country');
+const REGIONS=ctData.regional_groups||{};
+function sampleRecords(key,kind){
+ const r=REGIONS[key],countryData=ctData.oecd?.countries||{};
+ return (r?.countries||[]).filter(code=>countryData[code]).map(code=>{
+  const observed=obs(code,kind);
+  return {code,name:countryData[code].name,point:latest(observed.points),scope:observed.scope};
+ });
+}
+function regionalBars(containerId,records,unit){
+ const target=$(containerId);target.replaceChildren();
+ const valid=records.filter(x=>x.point);
+ if(!valid.length){target.append(el('p','ct-no-data','No verified observations are available in this regional country sample.'));return;}
+ const max=Math.max(...valid.map(x=>x.point.value),1);
+ for(const x of [...records].sort((a,b)=>(b.point?.value??-1)-(a.point?.value??-1))){
+  const row=el('div','ct-region-row');row.setAttribute('role','group');
+  row.setAttribute('aria-label',x.name+': '+(x.point?fmt(x.point.value)+' '+unit+' in '+x.point.year:'unavailable'));
+  row.append(el('span','ct-region-name',x.name));
+  const track=el('div','ct-region-track');
+  if(x.point){
+   const fill=el('div','ct-region-fill');fill.style.width=(100*x.point.value/max).toFixed(2)+'%';track.append(fill);
+  }
+  row.append(track,el('strong','ct-region-number',x.point?fmt(x.point.value):'N/A'));
+  row.append(el('small','ct-region-meta',x.point?'Year '+x.point.year+' · '+x.scope:'No verified CT observation · '+x.scope));
+  target.append(row);
+ }
+}
+function setRegionalOverview(regionKey){
+ const region=REGIONS[regionKey],name=region?.name||'Region';
+ const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
+ const sc=scanners.filter(x=>x.point).length,ex=exams.filter(x=>x.point).length;
+ const total=region?.countries?.length||0,pub=ctData.pubmed||{};
+ $('ct-updated').textContent='Source data last retrieved: '+(ctData.generated_at||'date unavailable').slice(0,10)+'.';
+ $('ct-region-scope').textContent=name+' · selected OECD countries ('+total+' included). This comparison is not a complete regional survey or an averaged regional rate.';
+ $('ct-regional-heading').textContent=name+' · CT capacity and examination comparisons';
+ $('ct-comparison-note').textContent='Latest available OECD CT observations for '+name+'. Country reporting years and provider scope may differ; do not interpret the bars as regional totals or same-year rankings.';
+ put($('ct-stat-grid'),
+  stat('Countries sampled',String(total),'OECD reporting countries in '+name+' · not all countries'),
+  stat('Scanner observations',String(sc)+' of '+total,'Countries with published CT scanners per million'),
+  stat('Examination observations',String(ex)+' of '+total,'Countries with published CT examinations per 1,000'),
+  stat('Recent CT publications',pub.count==null?'Unavailable':fmt(pub.count,0),'PubMed query matches · past 12 months · worldwide')
+ );
+ regionalBars('ct-region-scanners',scanners,'scanners per million');
+ regionalBars('ct-region-exams',exams,'examinations per 1,000');
+}
+function chooseRegion(regionKey,preferredCode){
+ const region=REGIONS[regionKey];
+ if(!region)return;
+ regionSelect.value=regionKey;
+ countrySelect.replaceChildren();
+ const codes=region.countries.filter(code=>ctData.oecd?.countries?.[code]);
+ for(const code of codes){
+  const opt=el('option','',ctData.oecd.countries[code].name);opt.value=code;countrySelect.append(opt);
+ }
+ countrySelect.value=codes.includes(preferredCode)?preferredCode:codes[0];
+ setRegionalOverview(regionKey);
+ if(countrySelect.value)setCountryDetail(countrySelect.value);
+ const u=new URL(location.href);
+ u.searchParams.set('region',regionKey);
+ u.searchParams.delete('country');
+ history.replaceState(null,'',u);
 }
 function renderPapers(){
  const pub=ctData.pubmed||{},area=$('ct-papers');area.replaceChildren();
@@ -288,82 +362,18 @@ function renderSources(){
  ];
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
 }
-const picker=$('ct-country');
-const entries=Object.entries(ctData.oecd?.countries||{}).sort((a,b)=>a[1].name.localeCompare(b[1].name));
-for(const [code,c] of entries){const opt=el('option','',c.name);opt.value=code;picker.append(opt)}
-const queryCountry=new URLSearchParams(location.search).get('country');
-picker.value=entries.some(x=>x[0]===queryCountry)?queryCountry:(entries.some(x=>x[0]==='CHE')?'CHE':(entries[0]?.[0]||''));
-function update(){setOverview(picker.value);const u=new URL(location.href);u.searchParams.set('country',picker.value);history.replaceState(null,'',u)}
-picker.addEventListener('change',update);
-if(entries.length)update();else $('ct-stat-grid').textContent='Country data unavailable.';
-
-const CT_SHARE_COLOURS=['#79c9ef','#9ad7c6','#edc68a','#d0afed','#f4a9ab','#8195a9'];
-function renderMarket(){
- const market=ctData.market;
- if(!market||!market.size||!market.shares){
-  $('ct-market-size-value').textContent='Market estimates unavailable';
-  $('ct-share-citation').textContent='No verified CT manufacturer share figures are available.';
-  return;
- }
- const entries=market.size.entries.filter(x=>Number.isFinite(x.value)&&x.value>0);
- const chart=$('ct-market-estimate-chart');chart.replaceChildren();
- if(!entries.length){$('ct-market-size-value').textContent='Market estimates unavailable';return;}
- const values=entries.map(x=>x.value),lo=Math.min(...values),hi=Math.max(...values);
- $('ct-market-size-value').textContent='US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn';
- $('ct-market-size-subtitle').textContent=market.size.year+' market · '+entries.length+' independent publisher estimates · not a statistical confidence interval';
- for(const record of [...entries].sort((a,b)=>a.value-b.value)){
-  const row=el('div','ct-market-size-row'),label=el('div','ct-market-size-name');
-  label.append(el('div','',record.publisher),el('small','ct-market-source','Published '+record.publication_date));
-  const track=el('div','ct-market-size-track'),bar=el('div','ct-market-size-fill');
-  bar.style.width=(100*record.value/hi).toFixed(2)+'%';
-  bar.title=record.publisher+': US$'+fmt(record.value,2)+' billion';
-  track.append(bar);row.append(label,track,el('span','ct-market-size-number','$'+fmt(record.value,2)+'bn'));
-  chart.append(row);
-  const source=el('p','ct-source');appendLink(source,record.source,'Source: '+record.publisher);
-  source.append(document.createTextNode(' · '+(record.check_status||'dated published reference')));
-  chart.append(source);
- }
- const spread=hi-lo;
- $('ct-market-variance').textContent='Difference between these published estimates: US$'+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
- const bars=$('ct-share-bars'),axis=$('ct-share-axis');
- bars.replaceChildren();axis.replaceChildren();
- const shares=[...market.shares.entries].filter(x=>Number.isFinite(x.value)&&x.value>=0)
-   .sort((a,b)=>b.value-a.value || a.name.localeCompare(b.name));
- // Scale is a percentage axis, not a share of the maximum supplier.
- // A rounded upper bound leaves headroom and keeps small vendors legible.
- const maxShare=Math.max(1,...shares.map(x=>x.value));
- const scale=Math.max(10,Math.ceil(maxShare/10)*10);
- for(const [i,item] of shares.entries()){
-  const colour=CT_SHARE_COLOURS[i%CT_SHARE_COLOURS.length];
-  const row=el('div','ct-share-row');row.setAttribute('role','listitem');
-  const name=el('span','ct-share-name',item.name);
-  const track=el('div','ct-share-track'),bar=el('div','ct-share-bar');
-  bar.style.width=(100*item.value/scale).toFixed(2)+'%';
-  bar.style.backgroundColor=colour;
-  bar.title=item.name+': '+fmt(item.value,0)+'%';
-  bar.setAttribute('aria-hidden','true');
-  track.append(bar);
-  row.append(name,track,el('strong','ct-share-percent',fmt(item.value,0)+'%'));
-  bars.append(row);
- }
- const spacer=el('span'),ticks=el('div','ct-share-axis-scale'),axisUnit=el('span','ct-share-axis-unit','%');
- for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
- axis.append(spacer,ticks,axisUnit);
- const source=$('ct-share-citation');source.replaceChildren(document.createTextNode(
-  'DBS CIO Industry Guide · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
-  ));
- appendLink(source,market.shares.source,'Original DBS vendor-share table');
- source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
- const four=shares.filter(x=>!x.derived).slice(0,4).reduce((sum,item)=>sum+item.value,0);
- $('ct-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed CT vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor CT revenues.';
- const sl=$('ct-source-list');
- const research=el('article');research.append(el('h3','','Published CT market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
- for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
- sl.append(research);
- const dbs=el('article');dbs.append(el('h3','','DBS CT manufacturer-share estimates'),el('p','','Published August 2025, page 29; basis of share percentages not specified.'));
- const p=el('p');appendLink(p,market.shares.source,'Original DBS share table');dbs.append(p);sl.append(dbs);
+for(const [key,region] of Object.entries(REGIONS)){
+ const opt=el('option','',region.name);opt.value=key;regionSelect.append(opt);
 }
-
+const url=new URLSearchParams(location.search);
+const requestedRegion=url.get('region');
+const oldCountry=url.get('country');
+const inferredRegion=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
+const startingRegion=REGIONS[requestedRegion]?requestedRegion:inferredRegion||Object.keys(REGIONS)[0];
+regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
+countrySelect.addEventListener('change',()=>{if(countrySelect.value)setCountryDetail(countrySelect.value)});
+if(startingRegion)chooseRegion(startingRegion,oldCountry);
+else $('ct-stat-grid').textContent='No regional data samples configured.';
 renderPapers();renderSources();renderMarket();
 </script>
 </body>

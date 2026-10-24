@@ -156,6 +156,16 @@ def empty_oecd():
     return oecd_imaging.fetch(offline=True)
 
 
+
+# These are COUNTRY SAMPLES within regions, not geographical aggregates.
+# Country annual series are independently published OECD observations. We never
+# average differently dated observations or relabel a sampled country as a region.
+REGIONAL_GROUPS = {
+    'europe': {'name': 'Europe', 'countries': ['CHE', 'GBR', 'DEU', 'FRA']},
+    'northAmerica': {'name': 'North America', 'countries': ['USA', 'CAN']},
+    'asiaPacific': {'name': 'Asia-Pacific', 'countries': ['AUS', 'JPN']},
+}
+
 def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, market_fetch=None):
     today=today or date.today()
     data=(oecd_fetch or oecd_imaging.fetch)(offline=offline)
@@ -176,6 +186,9 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
                 valid.append((yr,float(value)))
             if len({year for year,_ in valid})!=len(valid):
                 raise ValueError('Duplicate CT observation years')
+    for region in REGIONAL_GROUPS.values():
+        if any(code not in data['countries'] for code in region['countries']):
+            raise ValueError('Regional CT sample contains a country without OECD coverage')
     publication=(pubmed_fetch or pubmed_feed)(offline=offline,today=today)
     if not isinstance(publication,dict) or 'items' not in publication:
         raise ValueError('Invalid publication feed')
@@ -183,7 +196,7 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
     ct_market.validate(market)
     return dict(schema_version=1,
                 generated_at=datetime.now(timezone.utc).isoformat(),
-                oecd=data,pubmed=publication,market=market,
+                oecd=data,regional_groups=REGIONAL_GROUPS,pubmed=publication,market=market,
                 purpose='CT modality data and recent CT research, not AI-sector commercial metrics')
 
 

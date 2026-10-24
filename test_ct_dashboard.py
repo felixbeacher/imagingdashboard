@@ -35,7 +35,7 @@ class CTDashboardTests(unittest.TestCase):
         for label in ('CT at a glance','Scanner availability and examination activity',
                       'What it measures','Why it matters for imaging',
                       'Recently published CT research','From CT trends to imaging decisions',
-                      'Radiation and appropriateness','ct-country'):
+                      'Radiation and appropriateness','ct-region', 'ct-country', 'ct-region-scanners'):
             self.assertIn(label,t)
         for stale in ('AI Approvals vs. MedTech Venture Capital Investment',
                       'Vendor AI Revenue Breakdown','Radiologist Vacancy Rate'):
@@ -50,6 +50,9 @@ class CTDashboardTests(unittest.TestCase):
         self.assertEqual(d['oecd']['countries']['CHE']['exams']['scope'],
             'Hospitals only (not all examinations)')
         self.assertEqual(d['pubmed']['count'],42)
+        self.assertEqual(d['regional_groups']['europe']['countries'],['CHE','GBR','DEU','FRA'])
+        self.assertEqual(d['regional_groups']['northAmerica']['countries'],['USA','CAN'])
+        self.assertEqual(d['regional_groups']['asiaPacific']['countries'],['AUS','JPN'])
         self.assertFalse(d['oecd']['countries']['USA']['equipment']['series']['CT'])
 
     def test_reject_future_and_duplicate_year(self):
@@ -139,6 +142,11 @@ class CTDashboardTests(unittest.TestCase):
         self.assertNotIn('</script><script>alert',rendered)
         self.assertIn(r'\u003c/script\u003e',rendered)
         self.assertEqual(rendered.count('id="ct-overview"'),1)
+        self.assertEqual(rendered.count('id="ct-region"'),1)
+        self.assertIn('function setRegionalOverview(regionKey)',rendered)
+        self.assertIn('function chooseRegion(regionKey,preferredCode)',rendered)
+        self.assertNotIn('Explore country data',rendered)
+        self.assertIn('Country detail within this region',rendered)
         self.assertIn('2021',rendered)
 
     def test_offline_sources_are_empty_not_imagined(self):

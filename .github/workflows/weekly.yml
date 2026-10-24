@@ -284,7 +284,7 @@ jobs:
           inspector=Inspector();inspector.feed(page)
           if len(inspector.ids)!=len(set(inspector.ids)):
               raise SystemExit('Duplicate CT dashboard IDs')
-          sections=('ct-overview','ct-market','ct-activity','ct-interpretation','ct-research',
+          sections=('ct-overview','ct-regional-comparison','ct-market','ct-activity','ct-interpretation','ct-research',
                     'ct-clinical','ct-technology','ct-industry','ct-sources')
           if not all(key in inspector.ids for key in sections):
               raise SystemExit('CT sections missing in generated page')
@@ -298,6 +298,14 @@ jobs:
           obj=json.loads(match.group(1))
           if not obj.get('oecd',{}).get('countries') or 'pubmed' not in obj:
               raise SystemExit('Invalid CT data payload')
+          regional_groups=obj.get('regional_groups',{})
+          if len(regional_groups)<3 or any(
+              code not in obj['oecd']['countries']
+              for region in regional_groups.values() for code in region['countries']
+          ):
+              raise SystemExit('Missing or invalid CT regional data samples')
+          if 'id="ct-region"' not in page or 'Explore country data' in page:
+              raise SystemExit('CT region selector missing or obsolete label remains')
           market=obj.get('market',{})
           if len(market.get('size',{}).get('entries',[])) < 2:
               raise SystemExit('Fewer than two sourced market estimates')
