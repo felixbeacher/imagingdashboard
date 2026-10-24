@@ -47,6 +47,17 @@ class GlobalValuationTests(unittest.TestCase):
         self.assertIn('scale 0 to 250% of GDP',svg)
         self.assertIn('stroke-dasharray="94.00 100"',svg)
 
+
+    def test_global_cape_placeholder_card_is_not_rendered(self):
+        page=render(dict(
+            buffett=dict(status='available',history=[dict(year=2025,value=148.5)],
+                         percentile=100,median=91.8,comparison_count=29),
+            etf=dict(status='unavailable')))
+        self.assertNotIn('Global CAPE',page)
+        self.assertNotIn('global CAPE: unavailable',page)
+        self.assertIn('Buffett Indicator — world market cap / GDP',page)
+        self.assertIn('mini-charts single',page)
+
     def test_single_latest_valuation_has_no_fake_line_chart(self):
         data={'etf':{'status':'available','pe':{'value':24.72,'period':'2026-10-15'},
                      'pb':{'value':3.89,'period':'2026-10-15'}, 'history':{'pe':[],'pb':[]}}}

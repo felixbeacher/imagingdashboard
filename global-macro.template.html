@@ -373,8 +373,7 @@ function explainValuation(){
  const rules=[
  [/Global-equity P\/E/,'The price of shares compared with the profits earned by companies in a broad global share fund.','It shows how much investors are prepared to pay for earnings. It is global market context, not a measure of imaging-company value.','The fund excludes companies reporting losses from this ratio.'],
  [/Global-equity price-to-book/,'Share prices compared with the accounting value of companies’ assets after debts.','It adds a second view of market pricing. Medical technology companies may own valuable software or research not fully shown in their accounts.','The fund excludes negative book values.'],
- [/Buffett Indicator|world stock-market value/i,'The total value of listed company shares worldwide compared with global economic output.','It can help judge whether stock markets look expensive, which may influence financing and investor expectations.','This is an annual broad-market measure, not an equipment price or fair-value estimate.'],
- [/Global CAPE/,'Share prices compared with ten years of company profits adjusted for inflation.','It can help compare long-term market valuations, but a trustworthy global reading is unavailable here.','Country data cannot simply stand in for a world figure.']
+ [/Buffett Indicator|world stock-market value/i,'The total value of listed company shares worldwide compared with global economic output.','It can help judge whether stock markets look expensive, which may influence financing and investor expectations.','This is an annual broad-market measure, not an equipment price or fair-value estimate.']
  ];
  for(const fig of document.querySelectorAll('#valuation-section .mini-figure')){
   const heading=fig.querySelector('h4');if(!heading)continue;
@@ -387,7 +386,7 @@ function explainValuation(){
   }
   fig.insertBefore(node('strong','indicator-key','Current reading'),anchor);
   const src=node('div','indicator-source');src.append(node('strong','indicator-key','Source'));
-  const groupLink=/Global CAPE/i.test(heading.textContent)?null:fig.closest('.ftse-group')?.querySelector(':scope > p.meta a');
+  const groupLink=fig.closest('.ftse-group')?.querySelector(':scope > p.meta a');
   if(groupLink){const a=node('a','',groupLink.textContent);a.href=groupLink.href;a.rel='noopener noreferrer';a.target='_blank';src.append(a)}
   else src.append(node('span','','No verified global source'));
   fig.append(src);
