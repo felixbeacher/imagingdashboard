@@ -127,6 +127,7 @@ jobs:
                                 offline=False, fetch_financing=financing_background)
           for series in macro.get('financing', []):
               count = len(series.get('history') or [])
+              print(f"::notice::{series.get('label', 'US financing')}: {count} verified monthly observations, latest {series.get('period', 'unavailable')}")
               summary.append(f"{series.get('label', 'US financing')}: {count} verified monthly trend points")
               if count < 12:
                   print(f"::warning::{series.get('label', 'US financing')}: historical chart unavailable or incomplete; no substituted values.")
