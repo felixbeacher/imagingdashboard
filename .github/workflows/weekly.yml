@@ -55,8 +55,8 @@ jobs:
           from collections import Counter
           import csv, io
           datasets=[
-            'OECD.ELS.HD,DSD_HEALTH_PROC@DF_DIAG_EXAM,/CHE..EXM_10P3PS...............',
-            'OECD.ELS.HD,DSD_HEALTH_REAC_HOSP@DF_MED_TECH,/CHE..10P6HB......_T'
+            'OECD.ELS.HD,DSD_HEALTH_PROC@DF_DIAG_EXAM,/CHE+USA+GBR+DEU+FRA+CAN+AUS+JPN..EXM_10P3PS...............',
+            'OECD.ELS.HD,DSD_HEALTH_REAC_HOSP@DF_MED_TECH,/CHE+USA+GBR+DEU+FRA+CAN+AUS+JPN..10P6HB......_T'
           ]
           for ds in datasets:
             url='https://sdmx.oecd.org/public/rest/v1/data/'+ds+'?startPeriod=2019'
@@ -68,7 +68,7 @@ jobs:
                   data=resp.read(500000).decode('utf-8-sig',errors='replace')
                   print('STATUS',resp.status,'TYPE',resp.headers.get('Content-Type'),'ACCEPT',accept,'SAMPLE',repr(data[:500]),flush=True)
                   rows=list(csv.DictReader(io.StringIO(data)))
-                  print('ROWS',len(rows),'UNIQUE PROVIDERS',dict(Counter(row.get('PROVIDER','') for row in rows)),'TECH',dict(Counter(row.get('MEDICAL_TECH',row.get('HEALTH_FACILITY','')) for row in rows)),'MEASURE',dict(Counter(row.get('MEASURE','') for row in rows)),flush=True)
+                  print('ROWS',len(rows),'COUNTRIES',dict(Counter(row.get('REF_AREA','') for row in rows)),'UNIQUE PROVIDERS',dict(Counter(row.get('PROVIDER','') for row in rows)),'TECH',dict(Counter(row.get('MEDICAL_TECH',row.get('HEALTH_FACILITY','')) for row in rows)),'MEASURE',dict(Counter(row.get('MEASURE','') for row in rows)),flush=True)
                   print('EXAMPLE MRI',repr([row for row in rows if row.get('HEALTH_FACILITY')=='MRI'][:6]),flush=True)
                 break
               except Exception as e:
