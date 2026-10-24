@@ -76,7 +76,9 @@ class FinancingTests(unittest.TestCase):
   root=Path(__file__).parent
   for name in ('global-macro.html','global-macro.template.html'):
    page=(root/name).read_text(encoding='utf-8')
-   self.assertIn('id="financing-trends"',page)
+   self.assertIn('class="financing-indicator-grid"',page)
+   self.assertIn('card.append(financeTrend(m,rate))',page)
+   self.assertNotIn('id="financing-trends"',page)
    self.assertIn('function financeTrend(',page)
    self.assertIn('See exact monthly figures',page)
    self.assertIn('year earlier',page)
