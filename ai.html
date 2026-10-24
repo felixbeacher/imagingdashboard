@@ -55,7 +55,7 @@
 Imaging AI includes tools for image analysis, prioritisation and clinical workflow support. Its usefulness depends on the intended task, validation in the relevant care setting, integration and a sustainable purchasing model. Regulatory authorisation, registered research and routine clinical adoption are different measures; the indicators below should be read separately.
 </p>
 </div>
-<p class="metric-desc" style="margin-bottom:20px">For growth, inflation and broader market pressures, see <a href="global-macro.html" id="macro-link">Glob Econ</a>.</p>
+
 <div class="dashboard-grid">
 <!-- Sector Outlook Summary Unit -->
 <div class="card col-12 outlook-box">
@@ -243,10 +243,11 @@ function plot(id,title,labels,values,note,key){
  canvas.hidden=!hasData||typeof Chart==='undefined';
  if(hasData&&typeof Chart!=='undefined'){
  charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Research study count'},beginAtZero:id!=='macroChart'}}}});
- }else if(hasData){add(caption,'p','Chart library could not load. Data are shown below.');}
- // Accessible numeric alternative, also works if the CDN is blocked.
+ }else if(hasData){add(caption,'p',id==='fdaTrendChart'?'Chart unavailable; use the linked FDA source for exact annual counts.':'Chart library could not load. Data are shown below.');}
+ // Keep an accessible numeric alternative for registered-study comparisons.
+ // The FDA annual-value table duplicated the labelled historical chart and is deliberately omitted.
  let table=card.querySelector('[data-chart-table]');if(table)table.remove();
- if(hasData){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Rate (%)':'Research study count');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
+ if(hasData&&id!=='fdaTrendChart'){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Research study count');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
 }
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
@@ -266,7 +267,6 @@ function update(regionKey){
  text('clinical-evidence-title','Worldwide Clinical Evidence — Recent Published Studies');
  text('deployment-adoption-title','Deployment and Adoption — Worldwide Context');
  text('vendor-revenues-title','Worldwide Imaging AI Vendors — Selected Examples');
- const macroLink=document.getElementById('macro-link');if(macroLink)macroLink.href='global-macro.html?region='+encodeURIComponent(key);
  const visibleMetrics=r.metrics.filter((m,i)=>usBenchmark||![0,2,3].includes(i));
  const available=visibleMetrics.filter(m=>m.value!==null).length;
  text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
