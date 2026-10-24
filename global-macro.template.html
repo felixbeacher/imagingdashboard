@@ -270,6 +270,20 @@ function renderOverview(key,reg){
  byId('overview-grid').replaceChildren(...items);
 }
 
+function explainEconomicChange(regionData){
+ const notes=[];
+ for(const item of regionData.cards||[]){
+  const history=Array.isArray(item.history)?item.history:[];
+  const estimate=history.find(p=>p.kind==='estimate'&&Number.isFinite(p.value));
+  const past=estimate&&history.find(p=>p.year===estimate.year-1&&Number.isFinite(p.value));
+  if(!estimate||!past)continue;
+  const diff=estimate.value-past.value;
+  const label=/growth/i.test(item.label)?'Growth':'Consumer inflation';
+  const direction=Math.abs(diff)<.05?'is similar to':diff>0?'is above':'is below';
+  notes.push(label+' for '+estimate.year+' '+direction+' '+past.year+' by '+Math.abs(diff).toFixed(1)+' percentage points (IMF published figures).');
+ }
+ return (notes.length?notes.join(' '):'Comparable annual figures are unavailable.')+' These are economic trends, not measured changes in imaging demand.';
+}
 function region(key,push=false){
  if(!Object.hasOwn(data.economics,key))key='global';byId('macro-region').value=key;const r=data.economics[key],panel=byId('economic-cards');panel.replaceChildren();
  const coverage=r.coverage;
@@ -292,7 +306,7 @@ function region(key,push=false){
   panel.append(card);
  }
  renderOverview(key,r);
- byId('economic-summary').textContent='Growth and inflation help explain the financial backdrop, but neither directly tells us how many scans will be performed or how much imaging will cost.';
+ byId('economic-summary').textContent=explainEconomicChange(r);
  byId('economic-date').textContent=data.economic_mode==='offline'?'Offline build — economic sources were not fetched.':(r.status==='available'?'Economic sources retrieved: '+r.retrieved:'Economic data '+r.status+' · retrieval attempted '+r.attempted_at+'; see individual indicators.')+' · estimates and projections retain their stated years.';
  const briefing=data.briefing, entry=briefing?.regions?.[key], box=byId('macro-briefing');box.replaceChildren();
  if(entry){box.append(node('h3','','Economic briefing · '+byId('macro-region').selectedOptions[0].textContent),node('p','meta',briefing.status==='generated'?'Gemini interpretation · '+briefing.model+' · generated '+briefing.generated_at:'Summary of published figures'),node('p','',entry.summary),node('h4','','What this could mean for imaging'),node('p','',entry.implication),node('p','meta',entry.uncertainty),node('p','meta','Interpretation is not a measured forecast of imaging demand. Risk evidence ends '+data.risk.end+'.'));
