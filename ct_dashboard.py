@@ -166,6 +166,45 @@ REGIONAL_GROUPS = {
     'asiaPacific': {'name': 'Asia-Pacific', 'countries': ['AUS', 'JPN']},
 }
 
+
+def ct_trend_scenario(points, mode, through=2027):
+    """Illustrative trend extension from recent, dated OECD observations.
+
+    Based on the latest three actual annual points. Geometric annualised
+    endpoint growth is capped at +/-5% (scanners) or +/-8% (examinations).
+    Widening +/-2 percentage-point yearly sensitivity is NOT a confidence band.
+    """
+    if mode not in ('equipment', 'exams'):
+        raise ValueError('Unsupported CT trend kind')
+    clean=sorted((p['year'],float(p['value'])) for p in points)
+    if len(clean)<3 or len({y for y,_ in clean})!=len(clean):
+        return {'status':'unavailable','reason':'At least three distinct annual OECD observations are required','points':[]}
+    sample=clean[-3:]
+    first,last=sample[0],sample[-1]
+    elapsed=last[0]-first[0]
+    if (elapsed<2 or elapsed>6 or last[0]<through-4 or
+            first[1]<=0 or last[1]<=0):
+        return {'status':'unavailable','reason':'Recent, positive and sufficiently close observations are required','points':[]}
+    raw=(last[1]/first[1])**(1/elapsed)-1
+    cap=0.05 if mode=='equipment' else 0.08
+    trend=max(-cap,min(cap,raw))
+    future=[]
+    for year in range(last[0]+1,through+1):
+        elapsed_from_latest=year-last[0]
+        middle=last[1]*(1+trend)**elapsed_from_latest
+        lower=last[1]*max(.01,1+trend-.02)**elapsed_from_latest
+        upper=last[1]*(1+trend+.02)**elapsed_from_latest
+        future.append({'year':year,'value':round(middle,3),
+                       'low':round(lower,3),'high':round(upper,3),
+                       'status':'modelled'})
+    return {'status':'illustrative','base_year':last[0],'base_value':round(last[1],3),
+            'start_year':first[0],'start_value':round(first[1],3),
+            'raw_annual_rate':round(raw,6),'annual_rate':round(trend,6),
+            'capped':abs(raw)>cap,'max_rate':cap,'sensitivity_pp':2,
+            'points':future,
+            'method':'Latest three annual actual observations; annualised endpoint growth with transparent cap and +/-2 percentage-point sensitivity.'}
+
+
 def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, market_fetch=None):
     today=today or date.today()
     data=(oecd_fetch or oecd_imaging.fetch)(offline=offline)
@@ -186,6 +225,9 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
                 valid.append((yr,float(value)))
             if len({year for year,_ in valid})!=len(valid):
                 raise ValueError('Duplicate CT observation years')
+            country[mode]['projection'] = ct_trend_scenario(
+                series, mode, through=max(today.year+1, 2027)
+            )
     for region in REGIONAL_GROUPS.values():
         if any(code not in data['countries'] for code in region['countries']):
             raise ValueError('Regional CT sample contains a country without OECD coverage')
