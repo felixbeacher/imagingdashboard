@@ -81,6 +81,37 @@ def _kind(title):
     return 'CT clinical / technical study'
 
 
+CT_RESEARCH_CATEGORIES = (
+    ('Photon-counting CT', r'photon.counting'),
+    ('Spectral CT', r'spectral|dual.energy'),
+    ('Cardiac / vascular CT', r'cardiac|coronary|angiograph|vascular'),
+    ('Neuro CT', r'stroke|cerebral|brain|neuro'),
+    ('Dose / reconstruction', r'dose|radiation|reconstruction|iterative'),
+    ('Oncology CT', r'cancer|tumou?r|oncolog|lung screening'),
+)
+
+
+def ct_research_priority(title, journal, types, has_results):
+    """Editorial DISCOVERY heuristic; not a clinical-quality or impact score."""
+    title_low = title.casefold()
+    journal_low = journal.casefold()
+    category = next((name for name, pattern in CT_RESEARCH_CATEGORIES
+                     if re.search(pattern, title_low)), 'Other CT clinical research')
+    if 'Randomized Controlled Trial' in types:
+        design_points = 12
+    elif 'Clinical Trial' in types:
+        design_points = 9
+    elif any(t in types for t in ('Validation Study', 'Multicenter Study',
+                                  'Comparative Study', 'Observational Study')):
+        design_points = 6
+    else:
+        design_points = 0
+    specialist = any(k in journal_low for k in
+                     ('radiology', 'roentgen', 'imaging', 'computed tomography'))
+    score = design_points + (4 if specialist else 0) + (2 if has_results else 0)
+    return category, score
+
+
 def parse_pubmed(xml, expected_ids, limit=10):
     """Validated PubMed output; never infer a trial design from title/abstract."""
     root=ET.fromstring(xml)
@@ -99,22 +130,48 @@ def parse_pubmed(xml, expected_ids, limit=10):
             continue
         journal=_text(art.find('.//Journal/Title')) or 'Journal not supplied'
         types=[_text(t) for t in art.findall('.//PublicationType') if _text(t)]
+        if any(t in types for t in ('Case Reports', 'Editorial', 'Letter', 'Comment',
+                                     'Review', 'Systematic Review', 'Meta-Analysis')):
+            continue
+        if re.search(r'\bcase report\b|\bcase presentation\b|a rare case of|\bcase series\b',title,re.I):
+            continue
         design=next((t for t in types if t in (
-            'Randomized Controlled Trial','Clinical Trial','Observational Study',
-            'Multicenter Study','Comparative Study')), None)
+            'Randomized Controlled Trial','Clinical Trial','Validation Study',
+            'Multicenter Study','Comparative Study','Observational Study')), None)
         sections=art.findall('.//Abstract/AbstractText')
         results=next((a for a in sections if a.get('NlmCategory') == 'RESULTS'
                       or a.get('Label','').upper()=='RESULTS'),None)
         words=_text(results).split() if results is not None else []
         excerpt=' '.join(words[:18])+('…' if len(words)>18 else '')
+        category, priority=ct_research_priority(title,journal,types,bool(words))
         result.append(dict(
             title=title[:330],url='https://pubmed.ncbi.nlm.nih.gov/'+pmid+'/',
             journal=journal[:160],date=_date(art),kind=_kind(title),
+            category=category,priority=priority,
+            selection_basis=('Verified indexed study type: '+design if design else
+                             'CT topic and date; design not indexed'),
             design=design or 'Study design not verified by this feed',
             excerpt=excerpt,
         ))
-    result.sort(key=lambda paper: (paper['date'] if re.fullmatch(r'\d{4}-\d{2}-\d{2}',paper['date']) else paper['date'][:4]+'-00-00',paper['title']), reverse=True)
-    return result[:limit]
+    def published(paper):
+        d=paper['date']
+        return d if re.fullmatch(r'\d{4}-\d{2}-\d{2}',d) else d[:4]+'-00-00'
+    # Indexed design and specialist-journal relevance are editorial discovery
+    # signals, not a validated clinical-quality assessment.
+    result.sort(key=lambda paper: (paper['priority'],published(paper),paper['title']),
+                reverse=True)
+    selected=[]
+    counts={}
+    for paper in result:
+        category=paper['category']
+        if counts.get(category,0)>=2:
+            continue
+        selected.append(paper)
+        counts[category]=counts.get(category,0)+1
+        if len(selected)>=limit:
+            break
+    selected.sort(key=lambda paper: published(paper),reverse=True)
+    return selected
 
 
 def pubmed_feed(offline=False, today=None):
@@ -127,7 +184,7 @@ def pubmed_feed(offline=False, today=None):
     try:
         search_url=PUBMED_BASE+'esearch.fcgi?'+urlencode({
             'db':'pubmed','term':CT_QUERY,'sort':'pub date','retmode':'json',
-            'retmax':24,'reldate':365,'datetype':'pdat',
+            'retmax':80,'reldate':365,'datetype':'pdat',
             'tool':'MedicalImagingCTDashboard',
         })
         data=json.loads(_read(search_url).decode('utf-8'))
