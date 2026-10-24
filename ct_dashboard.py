@@ -18,6 +18,7 @@ from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
 import oecd_imaging
+import ct_market
 
 LOG = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
@@ -155,7 +156,7 @@ def empty_oecd():
     return oecd_imaging.fetch(offline=True)
 
 
-def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None):
+def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, market_fetch=None):
     today=today or date.today()
     data=(oecd_fetch or oecd_imaging.fetch)(offline=offline)
     if not isinstance(data,dict) or 'countries' not in data:
@@ -178,9 +179,11 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None):
     publication=(pubmed_fetch or pubmed_feed)(offline=offline,today=today)
     if not isinstance(publication,dict) or 'items' not in publication:
         raise ValueError('Invalid publication feed')
+    market=(market_fetch or ct_market.refresh)(ct_market.read_reference(),offline=offline,today=today)
+    ct_market.validate(market)
     return dict(schema_version=1,
                 generated_at=datetime.now(timezone.utc).isoformat(),
-                oecd=data,pubmed=publication,
+                oecd=data,pubmed=publication,market=market,
                 purpose='CT modality data and recent CT research, not AI-sector commercial metrics')
 
 
@@ -208,6 +211,9 @@ def main():
               for k in ('exams','equipment'))
     LOG.info('CT page written: %s; OECD CT observations=%d; PubMed %s',
              args.output,count,payload['pubmed']['status'])
+    print('CT market research: %d publisher estimates (%s); %d vendor-share categories (%s)' % (
+          len(payload['market']['size']['entries']),payload['market']['size']['year'],
+          len(payload['market']['shares']['entries']),payload['market']['shares']['publication_date']))
     print('CT build: %d verified OECD annual CT points; PubMed: %s (%s titles); data checked %s' %
           (count,payload['pubmed']['status'],len(payload['pubmed']['items']),
            payload['oecd'].get('checked') or 'not available'))
