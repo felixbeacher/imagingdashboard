@@ -50,6 +50,24 @@ jobs:
       - name: Validate collectors and rendering
         run: python -m unittest discover -p 'test_*.py'
 
+      - name: Check Glob Econ browser JavaScript
+        # Python tests validate data and markup; Node catches client-side syntax errors.
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          for name in ('global-macro.template.html', 'global-macro.html'):
+              html = Path(name).read_text(encoding='utf-8')
+              matches = re.findall(r"<script>'use strict';(.*?)</script>", html, re.S)
+              if len(matches) != 1:
+                  raise SystemExit(f'{name}: expected one inline dashboard script')
+              Path(name + '.validate.js').write_text("'use strict';" + matches[0], encoding='utf-8')
+          PY
+          node --check global-macro.template.html.validate.js
+          node --check global-macro.html.validate.js
+          rm global-macro.template.html.validate.js global-macro.html.validate.js
+
       # Collectors and macro Gemini REST integration use the standard library.
       - name: Fetch data and build AI and Glob Econ dashboards
         env:
