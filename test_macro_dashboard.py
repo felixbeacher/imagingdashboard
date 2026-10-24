@@ -118,7 +118,10 @@ class MacroTests(unittest.TestCase):
             self.assertIn('id="economic-trends"', html)
             self.assertIn('function economicTrend(', html)
             self.assertIn('See annual figures and publication status', html)
-            self.assertIn("byId('economic-trends').replaceChildren()", html)
+            self.assertIn('class="economic-indicator-grid"', html)
+            self.assertIn('card.append(economicTrend(m,growth,scope))', html)
+            self.assertIn("const panel=node('div','trend-panel')", html)
+            self.assertNotIn('id="economic-trends"', html)
 
     def test_navigation_in_every_tab(self):
         for name in ['ai.html','index.html','ct.html','mri.html','pet.html','xray.html']:
