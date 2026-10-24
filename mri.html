@@ -15,7 +15,7 @@
 .mri-card h2{font-size:1.2rem;margin:0 0 13px;border-bottom:1px solid #35485a;padding-bottom:11px}
 .mri-card h3{font-size:1.02rem;margin:0 0 9px;color:#e9f6ff}.mri-muted{color:#b5cad8;font-size:.87rem;line-height:1.65}
 .mri-control{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:20px 0 5px}.mri-control label{font-size:.92rem;font-weight:700;color:#d4e6f2}.mri-control select{background:#091726;color:#f0faff;border:1px solid #57768f;border-radius:8px;padding:10px 13px;font-size:1rem;min-height:44px;min-width:220px}
-.mri-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:19px 0 15px}
+.mri-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:19px 0 15px}
 .mri-stat{border-radius:10px;border:1px solid #38556a;background:#0e1c2e;padding:15px;min-width:0}
 .mri-stat h3{font-size:.85rem;margin:0 0 11px;color:#bedcea}.mri-value{font-size:1.7rem;line-height:1.25;color:#f4fbff;font-weight:750;overflow-wrap:anywhere}.mri-stat small{display:block;color:#a9bfce;font-size:.76rem;line-height:1.55;margin-top:8px}
 .mri-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.mri-indicator{border:1px solid #38516a;background:#0d1b2c;border-radius:10px;padding:18px;min-width:0}
@@ -441,11 +441,9 @@ function regionalBars(containerId,records,unit){
 function setRegionalOverview(regionKey){
  const region=REGIONS[regionKey],name=region?.name||'Region';
  const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
- const total=region?.countries?.length||0,pub=mriData.pubmed||{};
+ const total=region?.countries?.length||0;
  const latestPoint=items=>items.filter(r=>r.point).sort((a,b)=>b.point.year-a.point.year||a.name.localeCompare(b.name))[0];
  const latestS=latestPoint(scanners),latestE=latestPoint(exams);
- const recentS=scanners.filter(r=>r.point&&r.point.year>=2024).length;
- const recentE=exams.filter(r=>r.point&&r.point.year>=2024).length;
  const includedYears=[...scanners,...exams].filter(x=>x.point).map(x=>x.point.year);
  const youngest=Math.max(0,...includedYears),oldest=includedYears.length?Math.min(...includedYears):null;
  $('mri-region-scope').textContent=name+' · '+total+' OECD country samples. The region selector changes MRI service statistics only; market, vendor shares and selected research are global.';
@@ -458,11 +456,7 @@ function setRegionalOverview(regionKey){
   stat('Latest MRI scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
        latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
   stat('Latest MRI examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
-       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation'),
-  stat('Recent country coverage',recentS+' / '+total+' scanners',
-       recentE+' / '+total+' exams · observations from 2024 onwards; not a regional total'),
-  stat('Selected MRI studies',pub.status==='live'?String((pub.items||[]).length):'Unavailable',
-       'Worldwide PubMed · selected from '+(pub.count==null?'unavailable':fmt(pub.count,0))+' MRI search matches')
+       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
  regionalBars('mri-region-scanners',scanners,'scanners per million');
  regionalBars('mri-region-exams',exams,'examinations per 1,000');
