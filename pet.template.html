@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PET | The Medical Imaging Dashboard</title>
+<meta name="description" content="Regional PET equipment and examination trends, global PET market and selected manufacturers, clinical innovation and selected research.">
+<link rel="stylesheet" href="styles.css">
+<style>
+.pet-page{max-width:1450px}.pet-page a{color:#8bd4f5}.pet-page a:focus-visible,.pet-page select:focus-visible,.pet-page summary:focus-visible{outline:2px solid #92e2ff;outline-offset:3px}
+.pet-page h2{color:#ecf7ff}.pet-lead{background:linear-gradient(125deg,#13283d,#101b2c);border:1px solid #35566d;border-radius:14px;padding:clamp(22px,3vw,38px);margin-bottom:20px}
+.pet-eyebrow{color:#86d4f9;font-size:.79rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase}.pet-lead h2{font-size:clamp(1.7rem,3.4vw,2.9rem);line-height:1.12;margin:9px 0 15px}.pet-lead p{font-size:1rem;max-width:900px;color:#c7d7e5;line-height:1.7}
+.pet-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.pet-nav a{padding:10px 12px;border-radius:8px;background:#142235;border:1px solid #38566b;color:#d9edfa;font-size:.84rem;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.pet-card{background:#131d2b;border:1px solid #334a60;border-radius:12px;padding:clamp(17px,2vw,25px);margin:0 0 19px;min-width:0}
+.pet-card h2{font-size:1.2rem;margin:0 0 13px;border-bottom:1px solid #35485a;padding-bottom:11px}
+.pet-card h3{font-size:1.02rem;margin:0 0 9px;color:#e9f6ff}.pet-muted{color:#b5cad8;font-size:.87rem;line-height:1.65}
+.pet-control{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:20px 0 5px}.pet-control label{font-size:.92rem;font-weight:700;color:#d4e6f2}.pet-control select{background:#091726;color:#f0faff;border:1px solid #57768f;border-radius:8px;padding:10px 13px;font-size:1rem;min-height:44px;min-width:220px}
+.pet-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:19px 0 15px}
+.pet-stat{border-radius:10px;border:1px solid #38556a;background:#0e1c2e;padding:15px;min-width:0}
+.pet-stat h3{font-size:.85rem;margin:0 0 11px;color:#bedcea}.pet-value{font-size:1.7rem;line-height:1.25;color:#f4fbff;font-weight:750;overflow-wrap:anywhere}.pet-stat small{display:block;color:#a9bfce;font-size:.76rem;line-height:1.55;margin-top:8px}
+.pet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.pet-indicator{border:1px solid #38516a;background:#0d1b2c;border-radius:10px;padding:18px;min-width:0}
+.pet-indicator h3{margin-bottom:8px}.pet-definition{font-size:.84rem;color:#c1d4e0;line-height:1.6;margin:8px 0}.pet-definition strong{display:block;color:#86d6f8;margin-bottom:3px;font-weight:700}
+.pet-reading{font-size:1.42rem;color:#ebf9ff;font-weight:750;margin:15px 0 6px}.pet-reading small{font-size:.76rem;font-weight:400;color:#b4c9d7}
+.pet-source{font-size:.78rem;line-height:1.55;color:#afc3d3;margin-top:10px;overflow-wrap:anywhere}
+.pet-chart{width:100%;overflow-x:auto;margin:15px 0 7px}.pet-chart svg{width:100%;min-width:400px;display:block;height:auto}.pet-no-data{color:#c7d6e1;font-size:.83rem;line-height:1.65;padding:22px 10px}
+.pet-page details{margin:12px 0}.pet-page details>summary{color:#9fdefc;cursor:pointer;min-height:36px;display:flex;align-items:center;font-size:.84rem}.pet-page table{width:100%;border-collapse:collapse;font-size:.82rem}.pet-page th,.pet-page td{text-align:left;padding:7px;border-bottom:1px solid #30485b}.pet-page td:last-child,.pet-page th:last-child{text-align:right}
+.pet-insight{background:#0b2433;border-left:3px solid #5fc4ec;padding:16px 19px;border-radius:3px;margin:15px 0;color:#cbe1ed;font-size:.91rem;line-height:1.65}
+.pet-topic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.pet-topic{border-radius:9px;border:1px solid #375166;background:#0c1a2a;padding:17px;min-width:0}
+.pet-topic h3{font-size:.95rem}.pet-topic p{font-size:.84rem;line-height:1.6;color:#bfd1df;margin:7px 0 0}
+.pet-paper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:16px 0}
+.pet-paper{border:1px solid #375166;background:#0d1b2b;border-radius:10px;padding:16px;min-width:0}.pet-paper h3{font-size:.95rem;line-height:1.5}
+.pet-paper p{color:#bcd0df;font-size:.83rem;line-height:1.6;margin:9px 0}
+.pet-tag{border:1px solid #446276;border-radius:5px;padding:3px 7px;color:#b9dfef;font-size:.73rem;display:inline-block;margin-bottom:9px}
+.pet-source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pet-source-list article{background:#0f1f2e;border:1px solid #385266;border-radius:9px;padding:14px;min-width:0}.pet-source-list h3{font-size:.94rem}.pet-source-list p{font-size:.8rem;line-height:1.6;color:#b9ccdb;margin-top:7px}
+.pet-method{font-size:.85rem;line-height:1.65;color:#c2d6e3}
+.pet-method li{margin:7px 0 7px 20px}
+.pet-chart-legend{font-size:.77rem;color:#a9cee1;margin:5px 0}
+@media(max-width:1100px){.pet-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pet-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.pet-grid,.pet-paper-grid,.pet-source-list,.pet-topic-grid{grid-template-columns:1fr}.pet-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pet-lead{padding:20px}.pet-page{padding:16px}.pet-chart svg{min-width:380px}}
+@media(max-width:460px){.pet-stat-grid{grid-template-columns:1fr}.pet-control select{width:100%}.pet-stat{padding:14px}}
+@media(prefers-reduced-motion:reduce){.pet-page *{scroll-behavior:auto}}
+
+/* PET market reports: evidence-led comparison rather than an invented market time series */
+.pet-market-section{border-color:#47677d;background:linear-gradient(138deg,#17293b,#111b2a 48%,#111b2a)}
+.pet-market-feature-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:18px}
+.pet-market-big{font-size:clamp(1.7rem,2.75vw,2.5rem);font-weight:750;color:#e8f8ff;margin:14px 0 5px;letter-spacing:-.035em}
+.pet-market-estimates{display:flex;flex-direction:column;gap:13px;margin:19px 0 15px}
+.pet-market-size-row{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 76px;align-items:center;gap:12px}
+.pet-market-size-name{color:#d3e7f4;font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
+.pet-market-size-track{background:#243c50;height:17px;border-radius:5px;overflow:hidden}
+.pet-market-size-fill{background:linear-gradient(90deg,#5fa3d8,#80d6eb);height:100%;border-radius:5px;min-width:2px}
+.pet-market-size-number{font-size:.82rem;color:#dff3ff;font-weight:700;text-align:right}
+.pet-market-source{font-size:.76rem;color:#99bdd2;display:block;margin-top:4px}
+.pet-share-bars{display:flex;flex-direction:column;gap:14px;margin:22px 0 12px}
+.pet-share-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;align-items:center;min-width:0}
+.pet-share-name{font-size:.85rem;font-weight:600;color:#dceefa;line-height:1.4;overflow-wrap:anywhere}
+.pet-share-track{height:22px;border-radius:5px;overflow:hidden;background:repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),rgba(152,190,216,.2) calc(25% - 1px),rgba(152,190,216,.2) 25%),#223648}
+.pet-share-bar{height:100%;min-width:2px;border-radius:5px;background:#76cbed;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.pet-share-percent{font-size:.93rem;font-weight:750;color:#f4fbff;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pet-share-axis{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;margin:0 0 18px}
+.pet-share-axis-scale{display:flex;justify-content:space-between;align-items:center;color:#b6cbdb;font-size:.74rem;font-variant-numeric:tabular-nums}
+.pet-share-axis-unit{color:#a9c5d6;font-size:.75rem;text-align:right}
+@media(max-width:940px){.pet-market-feature-grid{grid-template-columns:1fr}}
+@media(max-width:510px){.pet-market-size-row{grid-template-columns:100px minmax(0,1fr) 65px;gap:7px}.pet-share-row,.pet-share-axis{grid-template-columns:minmax(0,110px) minmax(0,1fr) 42px;gap:7px}.pet-market-size-name,.pet-market-size-number{font-size:.76rem}}
+
+
+/* Regional OECD sample comparisons: no inferred regional mean or total. */
+.pet-region-bars{display:flex;flex-direction:column;gap:13px;margin:18px 0}
+.pet-region-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) minmax(0,80px);gap:12px;align-items:center;min-width:0}
+.pet-region-name{color:#e4f3fd;font-size:.86rem;font-weight:650;overflow-wrap:anywhere}
+.pet-region-track{height:22px;border-radius:5px;background:#22384c;overflow:hidden}
+.pet-region-fill{height:100%;background:linear-gradient(90deg,#4e9fcf,#8ad7f3);border-radius:5px}
+.pet-region-number{font-size:.92rem;text-align:right;color:#e5f9ff;font-weight:720;font-variant-numeric:tabular-nums}
+.pet-region-meta{grid-column:1/-1;color:#abc1d0;font-size:.76rem;margin:-9px 0 4px;line-height:1.5}
+.pet-detail-picker{margin:12px 0 20px}
+@media(max-width:580px){.pet-region-row{grid-template-columns:minmax(0,110px) minmax(0,1fr) 58px;gap:7px}.pet-region-number{font-size:.83rem}}
+
+.pet-aim-title{font-size:1rem;color:#a6e4ff;margin:12px 0 4px;font-weight:740}
+.pet-lag-note{background:#162b3b;border:1px solid #48687d;border-radius:9px;color:#d0e5f2;padding:13px 17px;font-size:.84rem;line-height:1.68;margin:16px 0}
+.pet-projection-legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 12px;color:#b7cedd;font-size:.79rem}
+.pet-projection-legend>span{display:inline-flex;align-items:center;gap:6px}
+.pet-projection-legend i{width:20px;height:4px;display:inline-block;border-radius:2px}
+.pet-key-actual{background:#85ddfa}.pet-key-forecast{background:repeating-linear-gradient(90deg,#f6c06f 0 5px,transparent 5px 8px)}.pet-key-band{background:rgba(247,180,90,.4)}
+.pet-activity-implications{border-top:1px solid #436174;margin-top:26px;padding-top:19px}
+.pet-activity-implications h3{font-size:1.05rem;margin-bottom:11px}
+.pet-tech-single{display:block}
+.pet-industry-share{max-width:900px;margin:18px 0 22px}
+.pet-industry-products-title{padding-top:20px;border-top:1px solid #39546a;font-size:1.08rem}
+.pet-forecast-method{border-left:3px dashed #efbb6d;padding:9px 12px;margin:12px 0;color:#e4d2b4;font-size:.79rem;line-height:1.6;background:#2b251c}
+
+.pet-control.pet-region-primary{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:20px 24px;margin:24px 0 14px;border:1px solid #659db8;border-radius:13px;background:linear-gradient(100deg,#1a364a,#102638)}
+.pet-region-primary label{font-size:1.3rem;font-weight:850;letter-spacing:.065em;color:#c6edff;white-space:nowrap}
+.pet-region-primary select{font-size:1.08rem;font-weight:720;min-height:48px;min-width:255px;border:2px solid #8cd7ff;border-radius:9px;background:#081b2b;color:#f4faff}
+.pet-region-series-legend{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}
+.pet-region-series-legend span{display:flex;gap:7px;align-items:center;font-size:.83rem;color:#d0e4f3}
+.pet-region-series-legend i{height:4px;width:19px;display:inline-block;border-radius:2px}
+.pet-region-chart-note{font-size:.81rem;color:#b9cfdb;line-height:1.6;margin:9px 0}
+@media(max-width:650px){.pet-control.pet-region-primary{flex-direction:column;align-items:stretch;padding:16px}.pet-region-primary label{font-size:1.12rem}.pet-region-primary select{width:100%;min-width:0}}
+
+/* Interpretation-first PET information density, responsive tables and source years. */
+.pet-compare-caution{border-left:3px solid #eec077;background:#29251e;color:#e9d5b6;
+ padding:12px 16px;margin:12px 0 20px;font-size:.83rem;line-height:1.6}
+.pet-year-flag{display:inline-block;border:1px solid #57798d;color:#d4edf7;
+ background:#1c3447;border-radius:5px;padding:2px 6px;font-weight:800;font-variant-numeric:tabular-nums}
+.pet-year-flag.pet-year-old{border-color:#b68f60;background:#352d23;color:#ffe2b8}
+.pet-region-bars .pet-region-row{gap:11px 13px}
+.pet-page .pet-chart{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;scrollbar-width:thin}
+.pet-page .pet-chart svg{display:block;width:100%;min-width:700px;max-width:none;height:auto}
+.pet-page details:has(table){max-width:100%;overflow-x:auto}
+.pet-page details table{min-width:540px}
+.pet-research-topic{color:#b5e5fb;font-size:.83rem;font-weight:690}
+.pet-research-selection{font-size:.76rem;color:#adc3d4;line-height:1.55}
+.pet-stat .pet-value{font-size:clamp(1.15rem,2.1vw,1.72rem);word-break:normal;overflow-wrap:anywhere}
+.pet-stat h3{font-size:.86rem}
+@media(max-width:780px){.pet-page .pet-chart svg{min-width:630px}.pet-region-row{grid-template-columns:minmax(95px,125px) minmax(80px,1fr) minmax(52px,64px)}}
+@media(max-width:480px){.pet-page .pet-chart svg{min-width:600px}.pet-page .pet-grid{grid-template-columns:minmax(0,1fr)}
+ .pet-stat .pet-value{font-size:1.4rem}.pet-year-flag{padding:1px 4px}}
+</style>
+</head>
+<body>
+<header><div class="header-content">
+<div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
+<nav class="nav-tabs" aria-label="Dashboard pages">
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn active" aria-current="page" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a></nav></div></header>
+<main class="pet-page">
+<section class="pet-lead" aria-labelledby="pet-page-heading">
+<h2 id="pet-page-heading">PET: capacity, use and innovation</h2>
+<h3 class="pet-aim-title">Aim of this page</h3>
+<p>Explore PET scanner availability, examination trends, clinical applications and the global PET market through clearly sourced data.</p>
+<div class="pet-control pet-region-primary"><label for="pet-region">SELECT REGION</label>
+<select id="pet-region" aria-label="Select region for PET data"></select>
+</div>
+<p class="pet-muted" id="pet-region-scope">The selected region controls OECD PET equipment and examination data only. Market context, manufacturer portfolios and the research feed remain global. Country observations are selected samples, not regional averages.</p>
+</section>
+<nav class="pet-nav" aria-label="On this page">
+<a href="#pet-overview">At a glance</a><a href="#pet-regional-comparison">Regional comparisons</a><a href="#pet-market">PET market</a><a href="#pet-activity">Capacity &amp; use</a><a href="#pet-research">Latest PET research</a><a href="#pet-clinical">Clinical uses</a><a href="#pet-technology">Technology</a><a href="#pet-industry">PET industry</a><a href="#pet-sources">Sources &amp; methodology</a>
+</nav>
+<section class="pet-card" id="pet-overview" aria-labelledby="pet-overview-heading">
+<h2 id="pet-overview-heading">PET at a glance</h2>
+<p class="pet-muted">A concise regional snapshot of PET capacity and examinations, alongside global research, with country names and actual observation years. No regional mean is inferred.</p>
+<div class="pet-stat-grid" id="pet-stat-grid" aria-live="polite"></div>
+</section>
+<section class="pet-card" id="pet-regional-comparison" aria-labelledby="pet-regional-heading">
+<h2 id="pet-regional-heading">Regional PET comparison · selected OECD countries</h2>
+<p class="pet-muted" id="pet-comparison-note">Latest available country readings: years and provider scope differ. These bars are not same-year rankings or regional averages.</p>
+<p class="pet-compare-caution" id="pet-comparison-warning" aria-live="polite">Reporting-year and provider-scope differences are shown below.</p>
+<div class="pet-grid">
+<article class="pet-indicator"><h3>PET scanners per million people</h3><div id="pet-region-scanners" class="pet-region-bars" aria-live="polite"></div></article>
+<article class="pet-indicator"><h3>PET examinations per 1,000 people</h3><div id="pet-region-exams" class="pet-region-bars" aria-live="polite"></div></article>
+</div>
+<p class="pet-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Provider totals can have country-specific exclusions: OECD notes, for example, public-sector/hospital coverage limitations in the UK and reimbursement-related coverage in Australia. Consult the <a target="_blank" rel="noopener noreferrer" href="https://www.oecd.org/en/publications/health-at-a-glance-2025_8f9e3f98-en/full-report/diagnostic-technologies_9039027d.html">OECD diagnostic technologies methodology</a> before comparing countries. Missing readings are never treated as zero.</p>
+</section>
+<section class="pet-card pet-market-section" id="pet-market" aria-labelledby="pet-market-heading">
+<h2 id="pet-market-heading">Global PET market · published estimate</h2>
+<p class="pet-muted">Equipment, associated software and services form a different market from PET examinations and radiopharmaceuticals. Check the publisher’s segment boundaries before comparing estimates.</p>
+<article class="pet-indicator"><h3>Global PET market · 2025</h3><p class="pet-definition"><strong>What it measures</strong>A commercial estimate covering PET systems, cyclotrons, software and services; this is broader than scanner hardware alone.</p>
+<div class="pet-market-big">US$2.56bn</div><p class="pet-muted">Mordor Intelligence · 2025 historical estimate · report updated 11 September 2026</p>
+<p class="pet-source"><a href="https://www.mordorintelligence.com/industry-reports/positron-emission-tomography-pet-market" target="_blank" rel="noopener noreferrer">Publisher’s market estimate and segment definitions →</a></p></article>
+<div class="pet-insight">A planning benchmark rather than audited sales. No regional allocation, vendor revenue or manufacturer shares are inferred from this estimate. Radiopharmaceutical and clinical-service revenues are not added to it.</div>
+</section>
+<section class="pet-card" id="pet-activity" aria-labelledby="pet-activity-heading">
+<h2 id="pet-activity-heading">Scanner availability and examination activity</h2>
+<p class="pet-muted">View the OECD histories for countries within your selected region, displayed together. Each series is a published country observation, not a constructed regional average.</p>
+<div class="pet-grid">
+<article class="pet-indicator" id="pet-scanners"></article>
+<article class="pet-indicator" id="pet-exams"></article>
+</div>
+<div class="pet-lag-note" id="pet-data-lag" aria-live="polite"></div>
+<div class="pet-projection-legend"><span><i class="pet-key-actual"></i> Solid lines: observed OECD figures</span><span><i class="pet-key-forecast"></i> Dashed lines: modelled scenarios</span><span><i class="pet-key-band"></i> Shading: sensitivity, not confidence limits</span></div>
+<p class="pet-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
+<div id="pet-interpretation" class="pet-activity-implications" aria-labelledby="pet-interpretation-heading">
+<h3 id="pet-interpretation-heading">From PET trends to imaging decisions</h3>
+<p class="pet-muted">The historical commentary below is generated from actual OECD observations. Forward scenarios are shown separately and are not official OECD data.</p>
+<div class="pet-grid"><article class="pet-indicator"><h3>What the observed series show</h3><div id="pet-reading" class="pet-insight" aria-live="polite"></div></article>
+<article class="pet-indicator"><h3>What to investigate before acting</h3><div id="pet-next" class="pet-insight"></div></article></div>
+</div>
+</section>
+
+<section class="pet-card" id="pet-research" aria-labelledby="pet-research-heading">
+<h2 id="pet-research-heading">Recently published PET research</h2>
+<p class="pet-muted">A selected PubMed discovery feed prioritising indexed clinical study designs, specialist-journal relevance and PET topic diversity. Case reports, editorials and reviews are excluded. This is not a systematic review or a validated study-quality ranking.</p>
+<div id="pet-papers" class="pet-paper-grid" aria-live="polite"></div>
+<p class="pet-source" id="pet-pubmed-source"></p>
+</section>
+<section class="pet-card" id="pet-clinical" aria-labelledby="pet-clinical-heading"><h2 id="pet-clinical-heading">Where PET fits in to clinical care</h2>
+<p class="pet-muted">PET maps radiotracer distribution. PET/CT adds CT localisation and attenuation correction; PET/MRI combines PET with MR information. Tracer choice determines the biological question, and uptake is not itself a diagnosis.</p><div class="pet-topic-grid">
+<article class="pet-topic"><h3>FDG oncology</h3><p>Glucose-metabolism imaging supports staging and treatment-response assessment in selected cancers. Inflammation and physiological uptake can complicate interpretation.</p></article>
+<article class="pet-topic"><h3>Prostate cancer</h3><p>PSMA-targeted PET supports selected staging and recurrence pathways. Eligibility, interpretation and treatment decisions depend on guideline-defined clinical context.</p></article>
+<article class="pet-topic"><h3>Neuroendocrine tumours</h3><p>Somatostatin-receptor PET characterises receptor expression and can support selection for receptor-targeted therapy within specialist pathways.</p></article>
+<article class="pet-topic"><h3>Brain and neurological disease</h3><p>FDG, amyloid and tau tracers address different questions. Imaging needs specialist interpretation alongside clinical assessment and local eligibility rules.</p></article>
+<article class="pet-topic"><h3>Cardiac PET</h3><p>Tracer-specific protocols evaluate myocardial perfusion, metabolism or inflammation. Stress services, tracer access and quantitative expertise affect capacity.</p></article>
+<article class="pet-topic"><h3>Infection and inflammation</h3><p>FDG can support selected specialist investigations. Preparation, timing and clinical context are essential because increased uptake is non-specific.</p></article></div>
+<p class="pet-source">Clinical references: <a href="https://eanm.org/publications/guidelines/overview/oncology/" target="_blank" rel="noopener noreferrer">EANM oncology procedure guidelines</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10027805/" target="_blank" rel="noopener noreferrer">joint EANM/SNMMI PSMA PET/CT guideline</a>. Follow indication-specific standards and local authorisations.</p></section>
+<section class="pet-card" id="pet-technology" aria-labelledby="pet-technology-heading"><h2 id="pet-technology-heading">Technology and service considerations</h2><article class="pet-indicator"><h3>Technology developments to track</h3>
+<p class="pet-definition"><strong>Digital detectors and time of flight</strong>Detector timing and sensitivity affect image quality and protocol choices. Compare validated task-specific performance rather than a single headline specification.</p>
+<p class="pet-definition"><strong>Long axial field of view</strong>Extended coverage collects more simultaneous information and enables dynamic research. The balance between acquisition time, activity and image quality remains protocol-dependent.</p>
+<p class="pet-definition"><strong>Reconstruction and quantification</strong>AI reconstruction, motion correction and harmonised calibration require clinical validation. Consistent preparation, uptake timing and reconstruction matter for longitudinal measurements.</p>
+<p class="pet-definition"><strong>Tracer supply and operational capacity</strong>Radioactive decay, production slots, transport, uptake rooms, radiation protection and staffing can constrain a service even when scanner time is available.</p>
+<p class="pet-source">Examples: <a href="https://www.siemens-healthineers.com/molecular-imaging/pet-ct/biograph-vision-quadra" target="_blank" rel="noopener noreferrer">Siemens long-axial-field PET/CT</a>; <a href="https://global.united-imaging.com/en/product-service/products/mi/uexplorer" target="_blank" rel="noopener noreferrer">United Imaging total-body PET/CT</a>. Manufacturer descriptions, not independent comparative evidence.</p></article></section>
+<section class="pet-card" id="pet-industry" aria-labelledby="pet-industry-heading"><h2 id="pet-industry-heading">Selected PET equipment manufacturers</h2><p class="pet-muted">Product portfolios for context, not a ranking. A comparable public dataset of manufacturer market shares has not been established for this page, so percentages are not shown. Availability and regulatory status vary by jurisdiction.</p><div class="pet-topic-grid">
+<article class="pet-topic"><h3>Siemens Healthineers</h3><p>Biograph PET/CT systems, including long axial field-of-view configurations.</p><p><a href="https://www.siemens-healthineers.com/molecular-imaging/pet-ct/biograph-vision-quadra" target="_blank" rel="noopener noreferrer">Manufacturer portfolio →</a></p></article>
+<article class="pet-topic"><h3>GE HealthCare</h3><p>Omni Legend PET/CT and associated reconstruction and workflow technology.</p><p><a href="https://www.gehealthcare.com/en/products/molecular-imaging/pet-ct/omni-legend" target="_blank" rel="noopener noreferrer">Manufacturer portfolio →</a></p></article>
+<article class="pet-topic"><h3>United Imaging Healthcare</h3><p>uEXPLORER total-body PET/CT and molecular imaging systems.</p><p><a href="https://global.united-imaging.com/en/product-service/products/mi/uexplorer" target="_blank" rel="noopener noreferrer">Manufacturer portfolio →</a></p></article>
+<article class="pet-topic"><h3>Canon Medical Systems</h3><p>Cartesion Prime PET/CT and PET reconstruction technology.</p><p><a href="https://us.medical.canon/promo/molecular-imaging/cartesion-prime/aice/" target="_blank" rel="noopener noreferrer">Manufacturer portfolio →</a></p></article></div>
+<div class="pet-insight"><strong>For purchasing and service planning:</strong> assess tracer logistics, uptake-space capacity, staffed hours, maintenance, quality assurance, radiation protection and clinical case mix alongside scanner specifications.</div></section>
+<section class="pet-card" id="pet-sources" aria-labelledby="pet-sources-heading">
+<h2 id="pet-sources-heading">Sources, coverage and methodology</h2>
+<div class="pet-source-list" id="pet-source-list"></div>
+<details><summary>Detailed interpretation and update rules</summary><div class="pet-method"><ul>
+<li>OECD capacity is PET scanners per million people. Examination activity is PET examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
+<li>Each country in the selected region has its own colour. Published observations are shown as solid lines; sufficiently supported modelled extensions are dashed in the same colour, with sensitivity shading. Gaps remain gaps, and no regional mean or total is calculated.</li>
+<li>PET projections require four consecutive annual source observations ending in 2024 or later. A model fitted to the first three predicts the fourth as a one-year historical holdout; forecasts are withheld if the relative error exceeds 10% for scanner density or 15% for examinations. If the holdout is adequate, an annualised trend is fitted on all four readings, capped at ±5% and ±8% respectively. The widening ±2-percentage-point annual-growth sensitivity is <strong>not</strong> a statistical confidence interval, and the result is not an OECD forecast. Actual published readings always take precedence over modelled ones.</li>
+<li>PubMed searches PET-specific titles from the preceding 365 days and evaluates a recent candidate pool; case reports, editorials, reviews and non-PET articles are excluded. Verified indexed publication types and specialist-journal relevance inform an editorial prioritisation that limits repeated topics. Displayed papers are a selected discovery sample, not a systematic review, validated quality ranking or measure of clinical benefit.</li>
+<li>Data are retrieved at automated rebuild time; "retrieved" is not the date that a study or annual PET observation was recorded. Any unavailable source is labelled as such.</li>
+</ul></div></details>
+</section>
+</main>
+<footer><div>© 2026 Felix Beacher. All rights reserved.</div><p class="footer-disclaimer">Information for industry and clinical context; not individual medical advice, an investment recommendation or a validated forecast. Follow local clinical guidelines and review the original sources.</p></footer>
+<script id="pet-data" type="application/json"><!-- PET_DATA --></script>
+<script>
+'use strict';
+const petData=JSON.parse(document.getElementById('pet-data').textContent);
+const $=id=>document.getElementById(id);
+function el(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x}
+function put(parent,...els){parent.replaceChildren(...els)}
+function latest(points){return points.length?points[points.length-1]:null}
+function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
+function obs(country,kind){const k=petData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.PET)?k.series.PET:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
+function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
+function stat(title,value,period){const box=el('article','pet-stat');box.append(el('h3','',title),el('div','pet-value',value),el('small','',period));return box}
+const regionSelect=$('pet-region'),REGIONS=petData.regional_groups||{};
+const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1'];
+function regionalHistory(regionKey,kind,label,unit){
+ const group=REGIONS[regionKey],countries=petData.oecd?.countries||{};
+ const rows=(group?.countries||[]).filter(code=>countries[code]).map((code,i)=>{
+  const data=obs(code,kind),last=latest(data.points);
+  const forecast=data.projection?.status==='illustrative'&&last?
+   (data.projection.points||[]).filter(p=>p.year>last.year&&p.year<=2027):[];
+  return {name:countries[code].name,data,forecast,color:CT_COUNTRY_COLORS[i%CT_COUNTRY_COLORS.length]};
+ });
+ const all=rows.flatMap(r=>r.data.points.map(p=>({year:p.year,value:p.value}))
+  .concat(r.forecast.flatMap(p=>[{year:p.year,value:p.low},{year:p.year,value:p.high}])));
+ const box=el('div','pet-chart');
+ if(!all.length){box.append(el('p','pet-no-data','No available OECD observations in this regional sample.'));return {box,rows}}
+ const start=Math.min(...all.map(p=>p.year)),end=Math.max(...all.map(p=>p.year));
+ const ymax=Math.max(1,...all.map(p=>p.value))*1.12;
+ const x0=54,x1=683,y1=208;
+ const X=y=>x0+(y-start)/Math.max(1,end-start)*(x1-x0),Y=v=>y1-v/ymax*185;
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox','0 0 720 253');svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',group.name+' '+label+': separate country lines; solid historical, dashed modelled. No regional averages.');
+ const shape=(tag,attrs,text)=>{
+  const n=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);
+  if(text!==undefined)n.textContent=text;return n;
+ };
+ svg.append(shape('title',{},group.name+' · '+label+' · OECD observations by reporting country'));
+ for(let i=0;i<=4;i++){
+  const v=ymax*i/4,y=Y(v);
+  svg.append(shape('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'#35546b','stroke-dasharray':'3 5'}));
+  svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#bacfdf','font-size':12},fmt(v,0)));
+  const yr=start+Math.round((end-start)*i/4);
+  svg.append(shape('text',{x:X(yr),y:y1+24,'text-anchor':'middle',fill:'#bacfdf','font-size':12},String(yr)));
+ }
+ for(const r of rows){
+  for(const [i,p] of r.data.points.entries()){
+   const prev=r.data.points[i-1];
+   if(prev&&p.year===prev.year+1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
+   const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+   dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit));svg.append(dot);
+  }
+  if(r.forecast.length){
+   const last=latest(r.data.points);
+   const polygon=[[X(last.year),Y(last.value)],...r.forecast.map(p=>[X(p.year),Y(p.high)]),
+    ...[...r.forecast].reverse().map(p=>[X(p.year),Y(p.low)])];
+   svg.append(shape('polygon',{points:polygon.map(p=>p.join(',')).join(' '),fill:r.color,'fill-opacity':.13}));
+   let prev=last;
+   for(const p of r.forecast){
+    svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),
+      stroke:r.color,'stroke-width':2.7,'stroke-dasharray':'7 5'}));
+    const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+    dot.append(shape('title',{},r.name+' · modelled '+p.year+': '+fmt(p.value)+
+      ' '+unit+'; sensitivity '+fmt(p.low)+'–'+fmt(p.high)));svg.append(dot);
+    prev=p;
+   }
+  }
+ }
+ box.append(svg);return {box,rows};
+}
+function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
+ const root=el('div');root.append(el('h3','',title));
+ for(const [heading,content] of [['What it measures',what],['Why it matters for imaging',why]]){
+  const p=el('p','pet-definition');p.append(el('strong','',heading),document.createTextNode(content));root.append(p);
+ }
+ const plot=regionalHistory(regionKey,kind,title,unit);root.append(plot.box);
+ const legend=el('div','pet-region-series-legend');
+ for(const r of plot.rows){
+  const item=el('span'),mark=el('i');mark.style.backgroundColor=r.color;
+  const recent=latest(r.data.points);
+  item.append(mark,document.createTextNode(r.name+' · '+(recent?fmt(recent.value)+' ('+recent.year+')':'unavailable')));legend.append(item);
+ }
+ root.append(legend);
+ root.append(el('p','pet-region-chart-note','Solid lines: reported OECD observations. Dashed segments and shaded sensitivity ranges: country-specific modelled scenarios where source history allows, not a regional forecast.'));
+ const details=el('details');details.append(el('summary','','View dated observations and modelled estimates'));
+ const table=el('table'),head=el('thead'),tr=el('tr');
+ for(const label of ['Country','Year','Type',unit,'Sensitivity']){const th=el('th','',label);th.scope='col';tr.append(th)}
+ head.append(tr);table.append(head);
+ const body=el('tbody');
+ for(const r of plot.rows){
+  for(const p of [...r.data.points].reverse()){
+   const row=el('tr');for(const item of [r.name,String(p.year),'OECD observed',fmt(p.value),'—'])row.append(el('td','',item));body.append(row);
+  }
+  for(const p of r.forecast){
+   const row=el('tr');for(const item of [r.name,String(p.year),'Modelled',fmt(p.value),fmt(p.low)+'–'+fmt(p.high)])row.append(el('td','',item));body.append(row);
+  }
+ }
+ table.append(body);details.append(table);root.append(details);
+ const source=el('p','pet-source','OECD Health Statistics · checked '+(petData.oecd?.checked||'unavailable')+'. ');
+ appendLink(source,url,'Original source');root.append(source);
+ $(id).replaceChildren(...root.childNodes);
+}
+function reportRegionalAnalysis(regionKey){
+ const group=REGIONS[regionKey],notes=[],dates=[],differences=[],signals=[];
+ let projected=0;
+ for(const code of group.countries){
+  const name=petData.oecd?.countries?.[code]?.name;if(!name)continue;
+  const s=obs(code,'equipment'),e=obs(code,'exams'),sp=latest(s.points),ep=latest(e.points);
+  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
+   '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
+  dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
+  // Compare growth rates only over exactly the same two consecutive
+  // observation years, with full provider coverage on both series.
+  const ss=s.points,ee=e.points;
+  if(ss.length>=2&&ee.length>=2&&s.scope==='All healthcare providers'&&
+     e.scope==='All healthcare providers'){
+   const lastS=ss[ss.length-1],prevS=ss[ss.length-2];
+   const lastE=ee[ee.length-1],prevE=ee[ee.length-2];
+   if(prevS.year===prevE.year&&lastS.year===lastE.year&&
+      lastS.year-prevS.year===1&&lastS.year>=2023&&
+      prevS.value>0&&prevE.value>0){
+    const gS=100*(lastS.value/prevS.value-1),gE=100*(lastE.value/prevE.value-1);
+    if(gE-gS>1.5){
+     signals.push(name+' ('+prevS.year+'–'+lastS.year+'): PET examinations per capita rose '+
+       fmt(gE,1)+'% versus scanner density '+fmt(gS,1)+
+       '%. This may indicate increasing utilisation pressure, but does not measure scanner throughput directly.');
+    }
+   }
+  }
+  if(sp&&ep&&sp.year!==ep.year)differences.push(name+' has observations from different years.');
+  if(s.scope!==e.scope)differences.push(name+' has differing provider scope.');
+  if(s.projection.status==='illustrative'&&s.projection.points.length)projected++;
+  if(e.projection.status==='illustrative'&&e.projection.points.length)projected++;
+ }
+ const list=el('ul');for(const note of notes)list.append(el('li','',note));
+ $('pet-reading').replaceChildren(el('p','',group.name+' · selected published country observations, not a regional average.'),list);
+ $('pet-next').textContent=(signals.length?signals.join(' '):
+   'No suitable same-year, full-provider series establish examination growth substantially faster than scanner density in this sample. ')+
+   ' '+(differences.join(' ')||'')+
+   ' '+projected+' separately backtested country-series extensions are modelled, not regional forecasts. Check scanner age, staffing, case mix, referral appropriateness, local waiting times and actual throughput before planning procurement.';
+ $('pet-data-lag').textContent='OECD PET statistics are released after annual national reporting and validation, so the latest year differs across countries. For '+
+  group.name+': '+dates.join('; ')+'. Missing years are not zero. Scenario extensions are not OECD observations.';
+}
+function sampleRecords(key,kind){
+ const r=REGIONS[key],countryData=petData.oecd?.countries||{};
+ return (r?.countries||[]).filter(code=>countryData[code]).map(code=>{
+  const observed=obs(code,kind);
+  return {code,name:countryData[code].name,point:latest(observed.points),scope:observed.scope};
+ });
+}
+function regionalBars(containerId,records,unit){
+ const target=$(containerId);target.replaceChildren();
+ const valid=records.filter(x=>x.point);
+ if(!valid.length){target.append(el('p','pet-no-data','No verified observations are available in this regional country sample.'));return;}
+ const max=Math.max(...valid.map(x=>x.point.value),1);
+ // Keep the configured country order: sorting mismatched reporting years
+ // by value implies a same-year ranking that the source cannot support.
+ for(const x of records){
+  const row=el('div','pet-region-row');row.setAttribute('role','group');
+  row.setAttribute('aria-label',x.name+': '+(x.point?fmt(x.point.value)+' '+unit+' in '+x.point.year:'unavailable'));
+  row.append(el('span','pet-region-name',x.name));
+  const track=el('div','pet-region-track');
+  if(x.point){
+   const fill=el('div','pet-region-fill');fill.style.width=(100*x.point.value/max).toFixed(2)+'%';track.append(fill);
+  }
+  row.append(track,el('strong','pet-region-number',x.point?fmt(x.point.value):'N/A'));
+  const year=el('span','pet-year-flag'+(x.point&&x.point.year<2024?' pet-year-old':''),
+   x.point?String(x.point.year):'No data');
+  const meta=el('small','pet-region-meta');
+  meta.append(year,document.createTextNode(' · '+(x.scope||'Provider scope unavailable')+
+    (x.point&&x.point.year<2024?' · Historic observation; compare with caution':'')));
+  row.append(meta);
+  target.append(row);
+ }
+}
+function setRegionalOverview(regionKey){
+ const region=REGIONS[regionKey],name=region?.name||'Region';
+ const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
+ const total=region?.countries?.length||0,pub=petData.pubmed||{};
+ const latestPoint=items=>items.filter(r=>r.point).sort((a,b)=>b.point.year-a.point.year||a.name.localeCompare(b.name))[0];
+ const latestS=latestPoint(scanners),latestE=latestPoint(exams);
+ const recentS=scanners.filter(r=>r.point&&r.point.year>=2024).length;
+ const recentE=exams.filter(r=>r.point&&r.point.year>=2024).length;
+ const includedYears=[...scanners,...exams].filter(x=>x.point).map(x=>x.point.year);
+ const youngest=Math.max(0,...includedYears),oldest=includedYears.length?Math.min(...includedYears):null;
+ $('pet-region-scope').textContent=name+' · '+total+' OECD country samples. The region selector changes PET service statistics only; market context, manufacturer portfolios and selected research are global.';
+ $('pet-regional-heading').textContent=name+' · PET country comparisons';
+ $('pet-comparison-note').textContent='Country readings refer to different observation years and, sometimes, different healthcare-provider coverage. Countries follow the listed sample order, not a ranking.';
+ $('pet-comparison-warning').textContent=oldest===null?
+  'No verified country observations are available for this region.':
+  'Source observation years range from '+oldest+' to '+youngest+' across available PET indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
+ put($('pet-stat-grid'),
+  stat('Latest PET scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
+       latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
+  stat('Latest PET examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
+       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation'),
+  stat('Recent country coverage',recentS+' / '+total+' scanners',
+       recentE+' / '+total+' exams · observations from 2024 onwards; not a regional total'),
+  stat('Selected PET studies',pub.status==='live'?String((pub.items||[]).length):'Unavailable',
+       'Worldwide PubMed · selected from '+(pub.count==null?'unavailable':fmt(pub.count,0))+' PET search matches')
+ );
+ regionalBars('pet-region-scanners',scanners,'scanners per million');
+ regionalBars('pet-region-exams',exams,'examinations per 1,000');
+}
+function chooseRegion(regionKey){
+ const group=REGIONS[regionKey];if(!group)return;
+ regionSelect.value=regionKey;setRegionalOverview(regionKey);
+ renderRegionalIndicator('pet-scanners',regionKey,'equipment','PET scanner availability',
+   'PET scanners per million inhabitants reported for each country.',
+   'Shows reported equipment availability, not staffed scan hours, clinical capacity or hospital demand.',
+   'scanners per million',petData.oecd?.sources?.equipment);
+ renderRegionalIndicator('pet-exams',regionKey,'exams','PET examinations per population',
+   'Annual examinations per 1,000 inhabitants reported in each country’s provider scope.',
+   'Tracks service activity, not clinical necessity, outcomes or market sales.',
+   'examinations per 1,000',petData.oecd?.sources?.exams);
+ reportRegionalAnalysis(regionKey);
+ const u=new URL(location.href);u.searchParams.set('region',regionKey);u.searchParams.delete('country');
+ history.replaceState(null,'',u);
+}
+function renderPapers(){
+ const pub=petData.pubmed||{},area=$('pet-papers');area.replaceChildren();
+ if(!(pub.items||[]).length)area.append(el('p','pet-no-data',pub.error?'Latest PubMed retrieval unavailable: '+pub.error:'No PET articles returned by this exact search and time window.'));
+ for(const paper of (pub.items||[])){
+  const art=el('article','pet-paper');art.append(el('span','pet-tag',paper.kind||'PET publication'));
+  const h=el('h3');appendLink(h,paper.url,paper.title);art.append(h);
+  art.append(el('p','pet-research-topic',paper.category||paper.kind||'PET research'));
+  art.append(el('p','',paper.journal+' · '+paper.date));
+  if(paper.design)art.append(el('p','',paper.design));
+  if(paper.selection_basis)art.append(el('p','pet-research-selection','Selection: '+paper.selection_basis));
+  if(paper.excerpt){const details=el('details');details.append(el('summary','','Read reported abstract excerpt'),el('p','',paper.excerpt));art.append(details)}
+  art.append(el('p','pet-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
+  area.append(art);
+ }
+ const note=$('pet-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
+ appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'positron emission tomography'),'Search PubMed');
+}
+function renderSources(){
+ const container=$('pet-source-list');container.replaceChildren();
+ const entries=[
+  {heading:'OECD · scanner availability',url:petData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:petData.oecd?.checked||'Unverified'},
+  {heading:'OECD · PET examinations',url:petData.oecd?.sources?.exams,detail:'Annual PET examinations per 1,000; some country data cover hospitals only.',status:petData.oecd?.checked||'Unverified'},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent PET publications via NCBI E-utilities; explicit PET search and source dates.',status:petData.pubmed?.status+' · '+(petData.pubmed?.checked||'date unavailable')},
+  {heading:'EANM procedure guidelines',url:'https://eanm.org/publications/guidelines/overview/oncology/',detail:'Tracer-specific clinical indications, preparation, acquisition and interpretation standards.',status:'Clinical reference; follow local authorisations'}
+ ];
+ for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
+}
+for(const [key,region] of Object.entries(REGIONS)){
+ const option=el('option','',region.name);option.value=key;regionSelect.append(option);
+}
+const params=new URLSearchParams(location.search),regionParam=params.get('region'),oldCountry=params.get('country');
+const inferred=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
+const initial=REGIONS[regionParam]?regionParam:inferred||Object.keys(REGIONS)[0];
+regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
+if(initial)chooseRegion(initial);else $('pet-stat-grid').textContent='No regional PET data configured.';
+renderPapers();renderSources();
+</script>
+</body>
+</html>
