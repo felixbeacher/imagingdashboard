@@ -4,7 +4,7 @@ import unittest
 import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from global_valuation import parse_etf,parse_world,fetch,render,validate_history,merge_history,valuation_trend,write_history,read_history
+from global_valuation import parse_etf,parse_world,fetch,render,validate_history,merge_history,valuation_trend,write_history,read_history,buffett_gauge
 
 class GlobalValuationTests(unittest.TestCase):
     def test_fundamentals_require_values_and_dates(self):
@@ -31,6 +31,21 @@ class GlobalValuationTests(unittest.TestCase):
         page=render(dict(buffett=dict(history=[dict(year=2024,value=120)],percentile=95,median=85,comparison_count=20)))
         self.assertIn('Elevated relative to history',page);self.assertIn('does not prove they are overpriced',page)
         self.assertIn('Buffett Indicator',page);self.assertNotIn('Institutional View',page)
+
+
+    def test_buffett_gauge_scale_and_historical_median(self):
+        page=render(dict(buffett=dict(history=[dict(year=2025,value=148.5)],
+                                      percentile=100,median=91.8,comparison_count=29)))
+        self.assertIn('148.5%',page)
+        self.assertIn('scale 0 to 200% of GDP',page)
+        self.assertIn('stroke-dasharray="74.25 100"',page)
+        self.assertIn('Historical median 91.8% of GDP',page)
+        self.assertIn('100th historical percentile is a separate ranking',page)
+
+    def test_buffett_gauge_extends_beyond_200_if_needed(self):
+        svg=buffett_gauge(235.0,95.0,2025)
+        self.assertIn('scale 0 to 250% of GDP',svg)
+        self.assertIn('stroke-dasharray="94.00 100"',svg)
 
     def test_single_latest_valuation_has_no_fake_line_chart(self):
         data={'etf':{'status':'available','pe':{'value':24.72,'period':'2026-10-15'},
