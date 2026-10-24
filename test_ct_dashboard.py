@@ -1,0 +1,101 @@
+"""CT modality dashboard source, analytics and layout tests (no network needed)."""
+import json
+from pathlib import Path
+import unittest
+from unittest.mock import patch
+import xml.etree.ElementTree as ET
+import ct_dashboard as ct
+
+ROOT=Path(__file__).parent
+
+
+class CTDashboardTests(unittest.TestCase):
+    def fake_oecd(self,offline=False):
+        obj=ct.empty_oecd()
+        obj['checked']='2026-10-24'
+        c=obj['countries']['CHE']
+        c['equipment'].update(status='available',scope='All healthcare providers',
+            series={'CT':[{'year':2021,'value':24.2},{'year':2023,'value':25.6}],
+                    'MRI':[],'PET':[]})
+        c['exams'].update(status='available',scope='Hospitals only (not all examinations)',
+            series={'CT':[{'year':2021,'value':151.4},{'year':2022,'value':157.3}],
+                    'MRI':[],'PET':[]})
+        return obj
+
+    def fake_pubmed(self,offline=False,today=None):
+        return dict(status='live',checked='2026-10-24',count=42,
+                    items=[{'title':'Computed tomography in stroke care',
+                            'journal':'Journal Example','date':'2026',
+                            'url':'https://pubmed.ncbi.nlm.nih.gov/123/',
+                            'kind':'CT clinical / technical study','design':'Study design not verified by this feed',
+                            'excerpt':''}],query=ct.CT_QUERY)
+
+    def test_page_is_real_ct_not_ai_dashboard(self):
+        t=(ROOT/'ct.template.html').read_text(encoding='utf-8')
+        for label in ('CT at a glance','Scanner availability and examination activity',
+                      'What it measures','Why it matters for imaging',
+                      'Recently published CT research','From CT trends to imaging decisions',
+                      'Radiation and appropriateness','ct-country'):
+            self.assertIn(label,t)
+        for stale in ('AI Approvals vs. MedTech Venture Capital Investment',
+                      'Vendor AI Revenue Breakdown','Radiologist Vacancy Rate'):
+            self.assertNotIn(stale,t)
+        self.assertIn('name="viewport"',t)
+        self.assertIn('ct.template.html',str(ROOT/'ct.template.html'))
+
+    def test_valid_observations_and_scope_are_not_aggregated(self):
+        d=ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
+            oecd_fetch=self.fake_oecd,pubmed_fetch=self.fake_pubmed)
+        self.assertEqual(d['oecd']['countries']['CHE']['equipment']['series']['CT'][1]['year'],2023)
+        self.assertEqual(d['oecd']['countries']['CHE']['exams']['scope'],
+            'Hospitals only (not all examinations)')
+        self.assertEqual(d['pubmed']['count'],42)
+        self.assertFalse(d['oecd']['countries']['USA']['equipment']['series']['CT'])
+
+    def test_reject_future_and_duplicate_year(self):
+        for invalid in [
+            [{'year':2028,'value':10}],
+            [{'year':2021,'value':10},{'year':2021,'value':11}],
+            [{'year':2020,'value':-1}],
+        ]:
+            def bad(offline=False):
+                obj=self.fake_oecd()
+                obj['countries']['CHE']['equipment']['series']['CT']=invalid
+                return obj
+            with self.assertRaises(ValueError):
+                ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
+                    oecd_fetch=bad,pubmed_fetch=self.fake_pubmed)
+
+    def test_pubmed_does_not_invent_design(self):
+        xml=b'''<PubmedArticleSet><PubmedArticle><MedlineCitation><PMID>123</PMID>
+        <Article><ArticleTitle>Photon-counting CT for vascular imaging</ArticleTitle>
+        <Journal><Title>Radiology Example</Title></Journal>
+        <Abstract><AbstractText NlmCategory="RESULTS">Some observed evidence requiring careful interpretation and study-design assessment.</AbstractText></Abstract>
+        </Article></MedlineCitation></PubmedArticle></PubmedArticleSet>'''
+        res=ct.parse_pubmed(xml,['123'])
+        self.assertEqual(len(res),1)
+        self.assertEqual(res[0]['kind'],'Photon-counting CT')
+        self.assertIn('not verified',res[0]['design'])
+        self.assertEqual(res[0]['url'],'https://pubmed.ncbi.nlm.nih.gov/123/')
+
+    def test_escape_script_data_and_build(self):
+        payload=ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
+            oecd_fetch=self.fake_oecd,pubmed_fetch=self.fake_pubmed)
+        payload['pubmed']['items'][0]['title']='</script><script>alert(1)</script>'
+        rendered=ct.render((ROOT/'ct.template.html').read_text(encoding='utf-8'),payload)
+        self.assertEqual(rendered.count('</script>'),2)
+        self.assertNotIn('</script><script>alert',rendered)
+        self.assertIn(r'\u003c/script\u003e',rendered)
+        self.assertEqual(rendered.count('id="ct-overview"'),1)
+        self.assertIn('2021',rendered)
+
+    def test_offline_sources_are_empty_not_imagined(self):
+        d=ct.generate(offline=True)
+        self.assertIsNone(d['pubmed']['count'])
+        self.assertEqual(d['pubmed']['status'],'unavailable')
+        self.assertTrue(all(not d['oecd']['countries'][k]['equipment']['series']['CT']
+                            for k in d['oecd']['countries']))
+
+
+if __name__ == '__main__':
+    unittest.main()
