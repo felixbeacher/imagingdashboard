@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "scope": "Global MRI equipment market, published commercial-research estimates with varying definitions; no public audited global sales series",
+  "size": {
+    "unit": "USD billions",
+    "year": 2025,
+    "entries": [
+      {
+        "publisher": "Global Market Insights",
+        "value": 6.8,
+        "publication_date": "2026-04",
+        "source": "https://www.gminsights.com/industry-analysis/magnetic-resonance-imaging-mri-systems-market",
+        "match_phrase": "global magnetic resonance imaging systems market was valued at USD 6.8 billion in 2025",
+        "basis": "MRI systems; commercial research estimate."
+      },
+      {
+        "publisher": "Fortune Business Insights",
+        "value": 8.15,
+        "publication_date": "2026-10-05",
+        "source": "https://www.fortunebusinessinsights.com/industry-reports/magnetic-resonance-imaging-mri-equipment-market-100087",
+        "match_phrase": "global magnetic resonance imaging (MRI) equipment market size was valued at USD 8.15 billion in 2025",
+        "basis": "MRI equipment by field strength, design, application and end user."
+      },
+      {
+        "publisher": "IMARC Group",
+        "value": 8.4,
+        "publication_date": "2026-03-12",
+        "source": "https://www.imarcgroup.com/magnetic-resonance-imaging-systems-market",
+        "match_phrase": "global magnetic resonance imaging (MRI) systems market size reached USD 8.4 Billion in 2025",
+        "basis": "MRI systems market, 2025 base year."
+      }
+    ],
+    "note": "Commercial-market estimates published by independent providers. Different market definitions and proprietary models make them alternatives, not a statistical confidence interval."
+  },
+  "shares": {
+    "publisher": "Digital Power China consortium (2024), citing Next Move Strategy Consulting",
+    "publication_date": "2024-05",
+    "reference_year": 2022,
+    "source": "https://timruhlig.eu/ctf/assets/x93kiko5rt7l/77L6q7DdWpiXpDuLHAhRw3/a7d98a4cf82de06b517dc8b4c78f80a9/DPC_-_GESAMT_Final.pdf",
+    "source_page": "104 (report), Figure 1; PDF page 103",
+    "geography": "Global",
+    "label": "Global MRI manufacturer shares (2022 historical research estimate)",
+    "denominator": "Underlying share basis not specified in the reproduced public figure; do not assume revenue, placements or installed base.",
+    "entries": [
+      {
+        "name": "Siemens Healthineers",
+        "value": 33
+      },
+      {
+        "name": "GE HealthCare",
+        "value": 23
+      },
+      {
+        "name": "Philips",
+        "value": 18
+      },
+      {
+        "name": "Other manufacturers",
+        "value": 17
+      },
+      {
+        "name": "Canon Medical Systems",
+        "value": 5
+      },
+      {
+        "name": "Fujifilm",
+        "value": 4
+      }
+    ],
+    "note": "Historical 2022 MRI manufacturer share estimate reproduced in the May 2024 Digital Power China report, Figure 1, attributed to Next Move Strategy Consulting. This is NOT a 2025 or 2026 vendor-share measurement. The displayed supplier figures sum to 100%; definitions and sample methodology are not public. Do not apply percentages to independently published 2025 market-size figures."
+  }
+}
