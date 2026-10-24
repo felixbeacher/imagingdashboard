@@ -249,8 +249,6 @@ function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith(
 function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
 function stat(title,value,period){const box=el('article','ct-stat');box.append(el('h3','',title),el('div','ct-value',value),el('small','',period));return box}
 const regionSelect=$('ct-region'),REGIONS=ctData.regional_groups||{};
-const regionSelect=$('ct-region');
-const REGIONS=ctData.regional_groups||{};
 const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1'];
 function regionalHistory(regionKey,kind,label,unit){
  const group=REGIONS[regionKey],countries=ctData.oecd?.countries||{};
