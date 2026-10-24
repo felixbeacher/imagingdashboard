@@ -90,7 +90,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -150,6 +150,11 @@ jobs:
           if not ct_match:
               raise SystemExit('CT dashboard source data are missing')
           ct = json.loads(ct_match.group(1))
+          ct_market = ct.get('market', {})
+          if not ct_market.get('size', {}).get('entries') or not ct_market.get('shares', {}).get('entries'):
+              raise SystemExit('CT market source data missing')
+          print('::notice::CT CT-market publishers='+str(len(ct_market['size']['entries']))+
+                '; vendor categories='+str(len(ct_market['shares']['entries'])))
           ct_coverage = {
               mode: sum(len(country[mode]['series']['CT'])
                         for country in ct['oecd']['countries'].values())
@@ -279,7 +284,7 @@ jobs:
           inspector=Inspector();inspector.feed(page)
           if len(inspector.ids)!=len(set(inspector.ids)):
               raise SystemExit('Duplicate CT dashboard IDs')
-          sections=('ct-overview','ct-activity','ct-interpretation','ct-research',
+          sections=('ct-overview','ct-market','ct-activity','ct-interpretation','ct-research',
                     'ct-clinical','ct-technology','ct-industry','ct-sources')
           if not all(key in inspector.ids for key in sections):
               raise SystemExit('CT sections missing in generated page')
@@ -293,6 +298,13 @@ jobs:
           obj=json.loads(match.group(1))
           if not obj.get('oecd',{}).get('countries') or 'pubmed' not in obj:
               raise SystemExit('Invalid CT data payload')
+          market=obj.get('market',{})
+          if len(market.get('size',{}).get('entries',[])) < 2:
+              raise SystemExit('Fewer than two sourced market estimates')
+          if round(sum(x['value'] for x in market.get('shares',{}).get('entries',[])),5)!=100:
+              raise SystemExit('CT source-referenced vendor shares do not total 100%')
+          if 'function renderMarket()' not in page or 'id="ct-share-stack"' not in page:
+              raise SystemExit('CT market chart controls missing')
           scripts=re.findall(r'<script>([\s\S]*?)</script>',page)
           if len(scripts)!=1:
               raise SystemExit('CT runtime script missing or duplicated')
