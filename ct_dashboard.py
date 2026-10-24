@@ -25,7 +25,8 @@ PUBMED_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 CT_QUERY = ('("computed tomography"[Title] OR "CT angiography"[Title] OR '
             '"photon-counting CT"[Title] OR "spectral CT"[Title] OR "coronary CT"[Title]) '
             'NOT (review[Publication Type] OR meta-analysis[Publication Type] '
-            'OR protocol[Title])')
+            'OR protocol[Title] OR photoacoustic[Title] OR "electron tomography"[Title] '
+            'OR "optical coherence tomography"[Title])')
 DOI_RE = re.compile(r'^10\.\d{4,9}/[-._;()/:A-Za-z0-9]+$')
 
 
@@ -93,7 +94,7 @@ def parse_pubmed(xml, expected_ids, limit=10):
             continue
         if not re.search(r'computed tomography|CT angiograph|photon.counting CT|spectral CT|coronary CT',title,re.I):
             continue
-        if re.search(r'\b(?:review|meta-analysis|protocol)\b',title,re.I):
+        if re.search(r'\b(?:review|meta-analysis|protocol|photoacoustic)\b|electron tomography|optical coherence tomography',title,re.I):
             continue
         journal=_text(art.find('.//Journal/Title')) or 'Journal not supplied'
         types=[_text(t) for t in art.findall('.//PublicationType') if _text(t)]
@@ -111,8 +112,8 @@ def parse_pubmed(xml, expected_ids, limit=10):
             design=design or 'Study design not verified by this feed',
             excerpt=excerpt,
         ))
-        if len(result)>=limit:break
-    return result
+    result.sort(key=lambda paper: (paper['date'] if re.fullmatch(r'\d{4}-\d{2}-\d{2}',paper['date']) else paper['date'][:4]+'-00-00',paper['title']), reverse=True)
+    return result[:limit]
 
 
 def pubmed_feed(offline=False, today=None):
