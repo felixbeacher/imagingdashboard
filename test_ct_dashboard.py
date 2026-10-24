@@ -86,6 +86,12 @@ class CTDashboardTests(unittest.TestCase):
         rendered=ct.render((ROOT/'ct.template.html').read_text(encoding='utf-8'),payload)
         self.assertIn('id="ct-market"',rendered)
         self.assertIn('function renderMarket()',rendered)
+        self.assertIn('id="ct-share-bars"',rendered)
+        self.assertIn('class="ct-share-bar"',rendered)
+        self.assertIn('.sort((a,b)=>b.value-a.value',rendered)
+        self.assertIn("el('strong','ct-share-percent',fmt(item.value,0)+'%')",rendered)
+        self.assertNotIn('id="ct-share-stack"',rendered)
+        self.assertNotIn('id="ct-share-legend"',rendered)
         self.assertIn('CT manufacturer shares',rendered)
         self.assertIn('DBS CIO Industry Guide',rendered)
         import re

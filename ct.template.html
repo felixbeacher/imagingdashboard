@@ -53,14 +53,17 @@
 .ct-market-size-fill{background:linear-gradient(90deg,#5fa3d8,#80d6eb);height:100%;border-radius:5px;min-width:2px}
 .ct-market-size-number{font-size:.82rem;color:#dff3ff;font-weight:700;text-align:right}
 .ct-market-source{font-size:.76rem;color:#99bdd2;display:block;margin-top:4px}
-.ct-share-stack{display:flex;height:48px;overflow:hidden;border-radius:8px;border:1px solid #527185;background:#233b51;margin:18px 0 19px}
-.ct-share-segment{height:100%;display:flex;align-items:center;justify-content:center;color:#091520;font-weight:800;font-size:.75rem;min-width:0;overflow:hidden;white-space:nowrap}
-.ct-share-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0 0 12px}
-.ct-share-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:.83rem;color:#dcebf6;border-bottom:1px solid #345269;padding-bottom:8px}
-.ct-share-swatch{width:11px;height:11px;display:inline-block;border-radius:3px;margin:4px 6px 0 0;flex-shrink:0}
-.ct-share-company{flex:1;min-width:0;line-height:1.4}.ct-share-percent{font-weight:700;color:#f4fbff;white-space:nowrap}
+.ct-share-bars{display:flex;flex-direction:column;gap:14px;margin:22px 0 12px}
+.ct-share-row{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;align-items:center;min-width:0}
+.ct-share-name{font-size:.85rem;font-weight:600;color:#dceefa;line-height:1.4;overflow-wrap:anywhere}
+.ct-share-track{height:22px;border-radius:5px;overflow:hidden;background:repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),rgba(152,190,216,.2) calc(25% - 1px),rgba(152,190,216,.2) 25%),#223648}
+.ct-share-bar{height:100%;min-width:2px;border-radius:5px;background:#76cbed;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.ct-share-percent{font-size:.93rem;font-weight:750;color:#f4fbff;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ct-share-axis{display:grid;grid-template-columns:minmax(0,155px) minmax(0,1fr) 52px;gap:11px;margin:0 0 18px}
+.ct-share-axis-scale{display:flex;justify-content:space-between;align-items:center;color:#b6cbdb;font-size:.74rem;font-variant-numeric:tabular-nums}
+.ct-share-axis-unit{color:#a9c5d6;font-size:.75rem;text-align:right}
 @media(max-width:940px){.ct-market-feature-grid{grid-template-columns:1fr}}
-@media(max-width:510px){.ct-market-size-row{grid-template-columns:100px minmax(0,1fr) 65px;gap:7px}.ct-share-legend{grid-template-columns:1fr}.ct-market-size-name,.ct-market-size-number{font-size:.76rem}}
+@media(max-width:510px){.ct-market-size-row{grid-template-columns:100px minmax(0,1fr) 65px;gap:7px}.ct-share-row,.ct-share-axis{grid-template-columns:minmax(0,110px) minmax(0,1fr) 42px;gap:7px}.ct-market-size-name,.ct-market-size-number{font-size:.76rem}}
 
 </style>
 </head>
@@ -105,8 +108,8 @@
 <h3>Global CT manufacturer shares · DBS estimate</h3>
 <p class="ct-definition"><strong>What it measures</strong>CT manufacturer shares reported in DBS's August 2025 industry guide. The public table does not disclose whether the figures refer to sales revenue, shipments or installed base.</p>
 <p class="ct-definition"><strong>Why it matters for imaging</strong>Shows the estimated competitive concentration of major CT suppliers. It is not a comparison of innovation, equipment performance or CT systems in any selected country.</p>
-<div id="ct-share-stack" class="ct-share-stack" role="img" aria-label="Global CT manufacturer market shares from DBS, August 2025"></div>
-<div id="ct-share-legend" class="ct-share-legend" aria-label="Manufacturer percentage shares"></div>
+<div id="ct-share-bars" class="ct-share-bars" role="list" aria-label="DBS reported CT manufacturer shares, descending order"></div>
+<div id="ct-share-axis" class="ct-share-axis" aria-hidden="true"></div>
 <p class="ct-source" id="ct-share-citation"></p>
 </article>
 </div>
@@ -322,19 +325,30 @@ function renderMarket(){
  }
  const spread=hi-lo;
  $('ct-market-variance').textContent='Difference between these published estimates: US$'+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
- const stacked=$('ct-share-stack'),legend=$('ct-share-legend');
- stacked.replaceChildren();legend.replaceChildren();
- const shares=market.shares.entries;
+ const bars=$('ct-share-bars'),axis=$('ct-share-axis');
+ bars.replaceChildren();axis.replaceChildren();
+ const shares=[...market.shares.entries].filter(x=>Number.isFinite(x.value)&&x.value>=0)
+   .sort((a,b)=>b.value-a.value || a.name.localeCompare(b.name));
+ // Scale is a percentage axis, not a share of the maximum supplier.
+ // A rounded upper bound leaves headroom and keeps small vendors legible.
+ const maxShare=Math.max(1,...shares.map(x=>x.value));
+ const scale=Math.max(10,Math.ceil(maxShare/10)*10);
  for(const [i,item] of shares.entries()){
   const colour=CT_SHARE_COLOURS[i%CT_SHARE_COLOURS.length];
-  const segment=el('div','ct-share-segment',item.value>=12?fmt(item.value,0)+'%':'');
-  segment.style.width=item.value+'%';segment.style.backgroundColor=colour;
-  segment.title=item.name+': '+fmt(item.value,0)+'%';stacked.append(segment);
-  const row=el('div','ct-share-item'),mark=el('span','ct-share-swatch');
-  mark.style.backgroundColor=colour;
-  row.append(mark,el('span','ct-share-company',item.name),el('strong','ct-share-percent',fmt(item.value,0)+'%'));
-  legend.append(row);
+  const row=el('div','ct-share-row');row.setAttribute('role','listitem');
+  const name=el('span','ct-share-name',item.name);
+  const track=el('div','ct-share-track'),bar=el('div','ct-share-bar');
+  bar.style.width=(100*item.value/scale).toFixed(2)+'%';
+  bar.style.backgroundColor=colour;
+  bar.title=item.name+': '+fmt(item.value,0)+'%';
+  bar.setAttribute('aria-hidden','true');
+  track.append(bar);
+  row.append(name,track,el('strong','ct-share-percent',fmt(item.value,0)+'%'));
+  bars.append(row);
  }
+ const spacer=el('span'),ticks=el('div','ct-share-axis-scale'),axisUnit=el('span','ct-share-axis-unit','%');
+ for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
+ axis.append(spacer,ticks,axisUnit);
  const source=$('ct-share-citation');source.replaceChildren(document.createTextNode(
   'DBS CIO Industry Guide · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
   ));

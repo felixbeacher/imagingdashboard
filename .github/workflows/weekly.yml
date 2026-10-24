@@ -303,7 +303,7 @@ jobs:
               raise SystemExit('Fewer than two sourced market estimates')
           if round(sum(x['value'] for x in market.get('shares',{}).get('entries',[])),5)!=100:
               raise SystemExit('CT source-referenced vendor shares do not total 100%')
-          if 'function renderMarket()' not in page or 'id="ct-share-stack"' not in page:
+          if 'function renderMarket()' not in page or 'id="ct-share-bars"' not in page:
               raise SystemExit('CT market chart controls missing')
           scripts=re.findall(r'<script>([\s\S]*?)</script>',page)
           if len(scripts)!=1:
