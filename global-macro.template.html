@@ -25,6 +25,19 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 @media(max-width:750px){.indicator-grid,.indicator-grid.three{grid-template-columns:1fr}}
 
 .risk-explainer{display:grid;gap:12px;margin:12px 0 18px}
+
+/* Financing series are shown separately: monthly rates and annual medical-care inflation must not be conflated. */
+.financing-trends{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:10px 0 24px}
+.trend-panel{background:#101e2c;border:1px solid #36546b;border-radius:10px;padding:18px;min-width:0}
+.trend-panel h3{font-size:1rem;line-height:1.45;color:#f1f7fe;margin:0 0 6px}
+.trend-panel .trend-subtitle{font-size:.83rem;color:#bed1e0;margin:0 0 14px;line-height:1.55}
+.trend-panel svg{display:block;width:100%;height:auto;max-height:290px;overflow:visible}
+.trend-panel .trend-caption{font-size:.8rem;line-height:1.65;color:#b7cddd;margin:12px 0 0}
+.trend-panel .trend-source{font-size:.8rem;line-height:1.5;margin:8px 0 0}
+.trend-panel details{margin:10px 0 0}
+.trend-panel details summary{font-size:.8rem}
+.trend-panel table{font-variant-numeric:tabular-nums}
+@media(max-width:960px){.financing-trends{grid-template-columns:1fr}}
 </style></head><body><a class="skip" href="#main">Skip to economic dashboard</a><header>
 <div class="header-content">
 <div class="title-area">
@@ -46,7 +59,7 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 <main id="main"><div class="macro-head"><div><h2>Global Economic Background</h2></div></div>
 <section class="aim-box" aria-labelledby="aim-title"><h2 id="aim-title">Aim of this page</h2><p>To provide a range of economic and financial indicators, to help you understand the context and outlook for the medical imaging sector.</p></section><nav class="section-nav" aria-label="On this page"><a href="#financing-section">01 · Financing &amp; costs</a><a href="#risk-section">02 · Historical pressures</a><a href="#economy-section">03 · Economic outlook</a><a href="#valuation-section">04 · Market valuations</a><a href="#imaging-section">05 · Imaging decisions</a><a href="#methods-section">06 · Sources &amp; method</a></nav>
 <div class="macro-layout">
-<section id="financing-section" aria-labelledby="financing-title" class="card"><span class="scope-tag">Published benchmarks · United States</span><h2 id="financing-title">Financing &amp; healthcare cost pressure</h2><p class="explain section-intro">Two useful clues to borrowing conditions and healthcare prices. (US benchmarks)</p><div class="stats two" id="financing-cards"></div><p class="muted-note">These are US measures, not the actual interest rate a hospital would pay or the price of buying and running imaging equipment.</p><details><summary>UK context and source routes</summary><p class="explain">For UK decisions, check <a href="https://www.bankofengland.co.uk/monetary-policy/interest-rates-and-bank-rate" target="_blank" rel="noopener">Bank of England Bank Rate</a>, <a href="https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices/current" target="_blank" rel="noopener">ONS consumer-price data</a>.</p></details></section>
+<section id="financing-section" aria-labelledby="financing-title" class="card"><span class="scope-tag">Published benchmarks · United States</span><h2 id="financing-title">Financing &amp; healthcare cost pressure</h2><p class="explain section-intro">Two useful clues to borrowing conditions and healthcare prices. (US benchmarks)</p><div class="stats two" id="financing-cards"></div><div class="financing-trends" id="financing-trends" aria-label="Monthly borrowing rates and medical-care price inflation trends"></div><p class="muted-note">These are US measures, not the actual interest rate a hospital would pay or the price of buying and running imaging equipment.</p><details><summary>UK context and source routes</summary><p class="explain">For UK decisions, check <a href="https://www.bankofengland.co.uk/monetary-policy/interest-rates-and-bank-rate" target="_blank" rel="noopener">Bank of England Bank Rate</a>, <a href="https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices/current" target="_blank" rel="noopener">ONS consumer-price data</a>.</p></details></section>
 
 
 <section id="risk-section" aria-labelledby="risk-title" class="card"><p class="eyebrow">Global historical context</p><h2 id="risk-title">Global pressure composite</h2><p class="explain section-intro">Five complementary indicators track geopolitical tension, financial stress, supply chains, energy and food prices. The composite is an equal-weight average of historical percentile scores—not a crisis probability or a forecast.</p><div class="risk-explainer" aria-label="How to read the global pressure composite"><p class="indicator-line"><strong class="indicator-key">What it measures</strong>How unusually high these pressures are compared with their own past.</p><p class="indicator-line"><strong class="indicator-key">Why it matters for imaging</strong>Global disruptions can affect equipment deliveries, hospital costs and access to finance.</p><p class="muted-note">Each score runs from 0 to 100. It is not the chance of a future crisis.</p></div><div aria-label="Global pressure chart; scroll horizontally on smaller screens" class="chart-wrap" tabindex="0"><img alt="Global pressure composite and five monthly component charts, January 2020 to September 2026, with major events labelled along the shared time axis. Exact scores are in the table below." height="1300" src="risk.svg" width="1400"/></div>
@@ -157,6 +170,95 @@ explainValuation();
 
 
 
+
+const svgNs='http://www.w3.org/2000/svg';
+function svgElement(tag,attrs={},label){
+ const el=document.createElementNS(svgNs,tag);
+ for(const [key,val] of Object.entries(attrs))el.setAttribute(key,String(val));
+ if(label!==undefined)el.textContent=label;
+ return el;
+}
+function monthsSinceZero(month){
+ if(typeof month!=='string'||!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))return NaN;
+ return Number(month.slice(0,4))*12+Number(month.slice(5))-1;
+}
+function monthName(key){
+ return new Date(key+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});
+}
+function financeTrend(metric,interest){
+ const panel=node('article','trend-panel');
+ const title=interest?'US overnight interest rate over time':'US medical-care price inflation over time';
+ panel.append(node('h3','',title),node('p','trend-subtitle',interest?
+  'Monthly average of the daily US overnight rate · % per year · last 36 available months':
+  'Change in medical-care consumer prices from the same month a year earlier · % · last 36 available months'));
+ const points=Array.isArray(metric.history)?metric.history.filter(p=>
+  p&&Number.isFinite(p.value)&&Number.isFinite(monthsSinceZero(p.month))).slice(-36).sort((a,b)=>monthsSinceZero(a.month)-monthsSinceZero(b.month)):[];
+ const unique=points.every((p,i)=>i===0||monthsSinceZero(p.month)>monthsSinceZero(points[i-1].month));
+ if(points.length<2||!unique){
+  panel.append(node('p','meta','No verified monthly trend is available from the source at this update. The latest available reading remains in the card above.'));
+  if(metric.history_note)panel.append(node('p','trend-caption',metric.history_note));
+  return panel;
+ }
+ const minMonth=monthsSinceZero(points[0].month),maxMonth=monthsSinceZero(points[points.length-1].month);
+ const values=points.map(p=>p.value);
+ let lower=Math.floor((Math.min(...values)-.2)*2)/2;
+ let upper=Math.ceil((Math.max(...values)+.2)*2)/2;
+ if(lower>=upper)upper=lower+1;
+ const W=660,H=255,left=60,right=641,top=18,bottom=208;
+ const x=p=>left+(monthsSinceZero(p.month)-minMonth)/Math.max(1,maxMonth-minMonth)*(right-left);
+ const y=v=>bottom-(v-lower)/(upper-lower)*(bottom-top);
+ const svg=svgElement('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':title+'. Monthly verified observations from '+monthName(points[0].month)+' to '+monthName(points[points.length-1].month)+'. Open the figures table beneath for exact values.'});
+ svg.append(svgElement('title',{},title),svgElement('desc',{},'Monthly published trend in percentages, from '+monthName(points[0].month)+' to '+monthName(points[points.length-1].month)+'. The table below lists exact observations.'));
+ const scale=4;
+ for(let i=0;i<=scale;i++){
+  const value=lower+(upper-lower)*i/scale;
+  const yy=y(value);
+  svg.append(svgElement('line',{x1:left,y1:yy,x2:right,y2:yy,stroke:'#375268','stroke-width':1,'stroke-dasharray':i===0?'':'3 6'}));
+  svg.append(svgElement('text',{x:left-11,y:yy+4,'text-anchor':'end',fill:'#c0d6e5','font-size':14},Number(value.toFixed(2)).toString()+'%'));
+ }
+ const tickCount=Math.min(5,maxMonth-minMonth+1);
+ for(let i=0;i<tickCount;i++){
+  const tickMonth=minMonth+Math.round(i*(maxMonth-minMonth)/Math.max(1,tickCount-1));
+  const yr=Math.floor(tickMonth/12),mo=(tickMonth%12)+1;
+  const key=yr+'-'+String(mo).padStart(2,'0');
+  const xx=left+(tickMonth-minMonth)/Math.max(1,maxMonth-minMonth)*(right-left);
+  svg.append(svgElement('text',{x:xx,y:bottom+27,'text-anchor':i===0?'start':i===tickCount-1?'end':'middle',fill:'#b6cfe0','font-size':14},monthName(key)));
+ }
+ // A skipped month creates a visible gap rather than a misleading continuous line.
+ const groups=[];let current=[];
+ for(let i=0;i<points.length;i++){
+  if(i&&monthsSinceZero(points[i].month)-monthsSinceZero(points[i-1].month)>1){groups.push(current);current=[];}
+  current.push(points[i]);
+ }
+ if(current.length)groups.push(current);
+ const colour=interest?'#81d9ff':'#a0e4ce';
+ for(const group of groups){
+  if(group.length>1)svg.append(svgElement('polyline',{points:group.map(p=>x(p).toFixed(2)+','+y(p.value).toFixed(2)).join(' '),fill:'none',stroke:colour,'stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'}));
+ }
+ for(let i=0;i<points.length;i++){
+  const p=points[i],last=i===points.length-1;
+  const dot=svgElement('circle',{cx:x(p),cy:y(p.value),r:last?5:3,fill:last?'#f0f9ff':colour,stroke:last?colour:'none','stroke-width':2});
+  dot.append(svgElement('title',{},monthName(p.month)+': '+Number(p.value.toFixed(2)).toString()+'%'));
+  svg.append(dot);
+ }
+ panel.append(svg);
+ const note=interest?'Each point averages the published overnight rates for that month. The latest reading above is a single day, so it may be different from the newest chart point.':
+  'Each point compares prices with the same month one year earlier. A fall in the inflation rate means prices are rising more slowly, not necessarily falling.';
+ panel.append(node('p','trend-caption',note));
+ const linkP=node('p','trend-source');linkP.append(node('strong','indicator-key','Source'));
+ if(metric.source&&/^https:\/\//.test(metric.source.url||'')){
+  const a=node('a','',metric.source.name||'Original public data');a.href=metric.source.url;a.rel='noopener noreferrer';a.target='_blank';linkP.append(a);
+ }
+ panel.append(linkP);
+ const details=node('details'),summary=node('summary','','See exact monthly figures'),tbl=node('table');
+ tbl.append(node('caption','snapshot',interest?'Monthly mean overnight rate':'Medical-care price change compared with a year earlier'));
+ const head=node('thead'),tr=node('tr');for(const label of ['Month','Rate (%)']){const th=node('th','',label);th.scope='col';tr.append(th);}head.append(tr);tbl.append(head);
+ const body=node('tbody');
+ [...points].reverse().forEach(p=>{const row=node('tr');row.append(node('td','',monthName(p.month)),node('td','',p.value.toFixed(2)));body.append(row);});
+ tbl.append(body);details.append(summary,tbl);panel.append(details);
+ return panel;
+}
+
 for(const m of data.financing||[]){
  const rate=/federal funds|overnight financing/i.test(m.label),d=rate?plain.rate:plain.healthcare;
  byId('financing-cards').append(indicatorCard({
@@ -166,6 +268,7 @@ for(const m of data.financing||[]){
   status:m.retrieved?'Published data checked '+m.retrieved:(m.attempted_at?'Last checked '+m.attempted_at:''),
   detail:(m.reason?m.reason+' ':'')+(m.methodology||'')+' These US measures do not change when the economic region above changes.'
  }));
+ byId('financing-trends').append(financeTrend(m,rate));
 }
 if(!(data.financing||[]).length)byId('financing-cards').append(node('p','meta','Financing benchmarks are unavailable in this build. Use the source routes below.'));
 function scenario(){const n=byId('nominal-input'),i=byId('inflation-input');if(n.value===''||i.value===''||!n.checkValidity()||!i.checkValidity()){byId('real-output').textContent='Check inputs';byId('real-explanation').textContent='Enter values between −99% and 100%.';return;}const real=((1+Number(n.value)/100)/(1+Number(i.value)/100)-1)*100;byId('real-output').textContent=(real>0?'+':'')+fmt(real)+'%';byId('real-explanation').textContent='With these figures, spending power would '+(real>=0?'rise':'fall')+'. This is an example, not a forecast.';}
