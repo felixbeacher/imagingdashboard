@@ -1437,27 +1437,28 @@ function plot(id,title,labels,values,note,key){
 function update(regionKey){
  const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
  const r=payload.regions[key];document.getElementById('regionSelect').value=key;
- text('regional-summary-title',key==='global'?'Summary: Global Market for Imaging AI':'Summary: '+r.name+' Market for Imaging AI');
+ text('regional-summary-title',key==='global'?'Imaging AI · evidence and market context':r.name+' · imaging AI evidence and market context');
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
- // FDA observations concern US market access, not the selected overseas region.
- const usBenchmark=key==='northAmerica';
- [0,2,3].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=!usBenchmark;});
+ // FDA listings cover US regulatory decisions, irrespective of region selector.
+ // The separate registered-study count follows the selected country sample.
+ [0,2,3].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=false;});
  const studyCard=document.getElementById('ai-metric-1');
- if(studyCard)studyCard.style.gridColumn=usBenchmark?'':'span 12';
- text('ai-sector-metrics-title',usBenchmark?'North America — AI Sector Metrics':r.name+' — AI Research Activity');
- const sector=document.getElementById('ai-sector-metrics-title');
- if(sector){let note=sector.parentElement.querySelector('[data-region-coverage]');
- if(!note){note=add(sector.parentElement,'p');note.dataset.regionCoverage='';note.className='metric-desc';}
- note.textContent=usBenchmark?'FDA figures describe the United States only; they do not include Canadian authorisations. Research counts cover the named country sample.':'US FDA metrics are confined to North America. No validated comparable '+(key==='global'?'worldwide':r.name)+' authorisation dataset is configured; unrelated national figures are not substituted.';}
- text('clinical-evidence-title','Worldwide Clinical Evidence — Recent Published Studies');
- text('deployment-adoption-title','Deployment and Adoption — Worldwide Context');
- text('vendor-revenues-title','Worldwide Imaging AI Vendors — Selected Examples');
+ if(studyCard)studyCard.style.gridColumn='';
+ text('ai-sector-metrics-title','Imaging AI at a glance');
+ text('ai-overview-coverage','US FDA benchmark · selected '+r.name+' registered-study count · each card carries its source date. Research activity is not clinical validation or adoption.');
+ text('clinical-evidence-title','Clinical evidence · recent published studies (worldwide)');
+ text('deployment-adoption-title','From regulatory authorisation to clinical impact');
+ text('vendor-revenues-title','Selected imaging AI companies (worldwide)');
+ const pubmed=payload.clinicalEvidence||{};
+ text('ai-pubmed-count',pubmed.status==='live'?
+   (pubmed.items||[]).length+' selected papers in current feed':
+   'Feed unavailable');
  const macroLink=document.getElementById('macro-link');if(macroLink)macroLink.href='global-macro.html?region='+encodeURIComponent(key);
- const visibleMetrics=r.metrics.filter((m,i)=>usBenchmark||![0,2,3].includes(i));
+ const visibleMetrics=r.metrics;
  const available=visibleMetrics.filter(m=>m.value!==null).length;
- text('outlook-title',r.name==='Global'?'Global Outlook for Medical Imaging AI':r.name+' Outlook');
+ text('outlook-title','What could accelerate or hinder adoption?');
  text('outlook-badge',available+' / '+visibleMetrics.length+' metric cards populated');
- text('outlook-summary-text','Data build: '+payload.generated_at.slice(0,10)+'. Editorial context reviewed 12 October 2026; it is not an automatically refreshed market forecast.');
+ text('outlook-summary-text','Implementation considerations, not measured regional growth rates or a market forecast. Data build: '+payload.generated_at.slice(0,10)+'.');
  const intro=document.getElementById('regional-summary-text');
  let editorialNote=document.getElementById('editorial-provenance');
  if(!editorialNote){editorialNote=document.createElement('p');editorialNote.id='editorial-provenance';editorialNote.className='metric-desc';intro.after(editorialNote);}
@@ -1474,10 +1475,11 @@ function update(regionKey){
  if(key!=='global'&&charts.approvalsChart){const labels=payload.registryChart.labels;
  charts.approvalsChart.data.datasets[0].backgroundColor=labels.map(label=>label===r.name+' (sample)'?'#fbbf24':'#38bdf8');charts.approvalsChart.update();}
  const fdaSection=document.getElementById('fda-trend-section');
- if(fdaSection){fdaSection.hidden=key!=='northAmerica';
- if(key==='northAmerica'){plot('fdaTrendChart','United States — Radiology AI Authorisations: Ten-Year Trend',
- r.years,r.approvals,r.approvalNote+' Blue bars show complete calendar years; the amber YTD bar is partial and should not be compared directly with full years. This US regulatory benchmark does not represent Canadian authorisations or global adoption.',r.approvalSource);}
- else if(charts.fdaTrendChart){charts.fdaTrendChart.destroy();delete charts.fdaTrendChart;}}
+ if(fdaSection){
+  fdaSection.hidden=false;
+  plot('fdaTrendChart','United States — Radiology AI Authorisations: Historical Trend',
+   r.years,r.approvals,r.approvalNote+' Blue bars show complete years; the amber year-to-date bar is partial. This US benchmark remains visible in all region views and is not a measure of regional adoption.',r.approvalSource);
+ }
 
  const deployment=document.getElementById('deployment-evidence-feed');
  if(deployment){deployment.replaceChildren();const feed=payload.deploymentEvidence||{};
@@ -1490,11 +1492,20 @@ function update(regionKey){
  }
  const evidence=document.getElementById('clinical-evidence-feed');
  if(evidence){evidence.replaceChildren();const clinical=payload.clinicalEvidence||{};
- const intro=add(evidence,'p','Recent PubMed-indexed clinical research from the past two years, ordered by publication date. This worldwide feed is shared across region views; it is not a systematic review or evidence-quality ranking.');intro.className='metric-desc';
+ const intro=add(evidence,'p','Selected PubMed-indexed clinical research from the past two years, ordered by publication date. This worldwide feed is not a systematic review. Study design, sample size, external validation and clinically meaningful endpoints must be checked in each paper.');intro.className='metric-desc';
  if(!(clinical.items||[]).length){add(evidence,'p',clinical.reason||'Clinical evidence feed unavailable.');}
- (clinical.items||[]).forEach(study=>{const article=add(evidence,'article');article.style.marginTop='16px';const heading=add(article,'h3');heading.style.fontSize='0.95rem';const link=add(heading,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
- const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
- const result=add(article,'p',study.excerpt?'Results excerpt: “'+study.excerpt+'”':'Read the linked paper for findings; this feed does not infer results from the title.');result.className='metric-desc';});
+ const studyGrid=add(evidence,'div');studyGrid.className='ai-study-list';
+ (clinical.items||[]).forEach(study=>{
+  const article=add(studyGrid,'article');article.className='ai-study';
+  const heading=add(article,'h3');const link=add(heading,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
+  const meta=add(article,'p',study.journal+' · '+study.published);meta.className='metric-desc';
+  const design=add(article,'p','Study design: '+(study.design||'Not classified by this feed'));design.className='metric-desc';
+  const detail=add(article,'details');add(detail,'summary','Reported results and interpretation limits');
+  const excerpt=add(detail,'p',study.excerpt?'Short reported-results excerpt: “'+study.excerpt+'”':'An automatically verified results excerpt is unavailable. Read the linked paper.');
+  excerpt.className='metric-desc';
+  const caution=add(detail,'p','This abstract excerpt omits methodology, denominators and potential biases. Examine sample size, clinical endpoints and external validation in the original publication.');
+  caution.className='metric-desc';
+ });
  const note=add(evidence,'p','PubMed / NLM · '+(clinical.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(clinical.retrieved||clinical.attempted_at||'date unavailable')+'. Short excerpts may omit essential context. Read the full methods and results before applying findings; publication alone does not establish clinical benefit.');note.className='metric-desc';note.style.marginTop='16px';
  }
  const feed=document.getElementById('news-feed-container');feed.replaceChildren();
@@ -1587,7 +1598,7 @@ def render_template(template, payload, fallback_theme=False):
         output = output.replace(f'<canvas id="{cid}"></canvas>', '<p class="metric-desc">Not available — no validated comparable dataset.</p>')
     output = output.replace('grid-template-columns: repeat(3, 1fr)', 'grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))')
     output = output.replace('While metrics and figures are sourced from public registers, APIs, and market estimates,', 'Available figures are linked to public sources; unsupported metrics are labelled unavailable. Geographic subsets and source limitations are disclosed. However,')
-    status = '<section class="card" style="margin-top:24px"><h2>Source status and retrieval dates</h2><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
+    status = '<section id="ai-source-status-section" class="card" style="margin-top:24px"><h2>Sources, observation dates and limitations</h2><p class="metric-desc">Retrieval dates are not observation dates. FDA listings are not global adoption; ClinicalTrials.gov counts are research activity; the publication feed is selective.</p><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
     output = output.replace('</main>', status + '\n</main>')
 
     runtime = RUNTIME.replace('__DATA__', safe_json(payload))
