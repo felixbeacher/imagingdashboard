@@ -198,6 +198,9 @@ jobs:
                          str(mri_coverage['exams'])+' examination observations; PubMed '+
                          mri_data['pubmed']['status'])
 
+          # PET uses the same regional layout with PET-specific observations.
+          subprocess.run([sys.executable, 'pet_dashboard.py', '--output', str(output / 'pet.html')], check=True, timeout=180)
+
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
           from ai_update_data import regional_economic_background, financing_background
