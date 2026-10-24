@@ -246,146 +246,122 @@ function latest(points){return points.length?points[points.length-1]:null}
 function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
 function obs(country,kind){const k=ctData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.CT)?k.series.CT:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
 function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
-function measure(point,unit){return point?fmt(point.value,1)+' '+unit:'Unavailable'}
+function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
 function stat(title,value,period){const box=el('article','ct-stat');box.append(el('h3','',title),el('div','ct-value',value),el('small','',period));return box}
-function svgChart(points,name,unit,projection){
- const frame=el('div','ct-chart');
- if(!points.length){frame.append(el('p','ct-no-data','No verified annual OECD observations are available. No projections are calculated.'));return frame}
- const latestActual=latest(points);
- const future=projection?.status==='illustrative'?
-  (projection.points||[]).filter(p=>p.year>latestActual.year&&p.year<=2027):[];
- const allYears=[...points.map(p=>p.year),...future.map(p=>p.year)];
- const start=Math.min(...allYears),end=Math.max(...allYears);
- const x0=60,x1=620,y0=22,y1=195;
- const top=Math.max(1,...points.map(p=>p.value),...future.map(p=>p.high))*1.14;
- const X=year=>x0+(year-start)/Math.max(1,end-start)*(x1-x0);
- const Y=value=>y1-(value/top)*(y1-y0);
+const regionSelect=$('ct-region'),REGIONS=ctData.regional_groups||{};
+const regionSelect=$('ct-region');
+const REGIONS=ctData.regional_groups||{};
+const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1'];
+function regionalHistory(regionKey,kind,label,unit){
+ const group=REGIONS[regionKey],countries=ctData.oecd?.countries||{};
+ const rows=(group?.countries||[]).filter(code=>countries[code]).map((code,i)=>{
+  const data=obs(code,kind),last=latest(data.points);
+  const forecast=data.projection?.status==='illustrative'&&last?
+   (data.projection.points||[]).filter(p=>p.year>last.year&&p.year<=2027):[];
+  return {name:countries[code].name,data,forecast,color:CT_COUNTRY_COLORS[i%CT_COUNTRY_COLORS.length]};
+ });
+ const all=rows.flatMap(r=>r.data.points.map(p=>({year:p.year,value:p.value}))
+  .concat(r.forecast.flatMap(p=>[{year:p.year,value:p.low},{year:p.year,value:p.high}])));
+ const box=el('div','ct-chart');
+ if(!all.length){box.append(el('p','ct-no-data','No available OECD observations in this regional sample.'));return {box,rows}}
+ const start=Math.min(...all.map(p=>p.year)),end=Math.max(...all.map(p=>p.year));
+ const ymax=Math.max(1,...all.map(p=>p.value))*1.12;
+ const x0=54,x1=683,y1=208;
+ const X=y=>x0+(y-start)/Math.max(1,end-start)*(x1-x0),Y=v=>y1-v/ymax*185;
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
- svg.setAttribute('viewBox','0 0 650 243');
- svg.setAttribute('role','img');
- svg.setAttribute('aria-label',name+': blue OECD observations through '+latestActual.year+
-   (future.length?'; dashed amber modelled trend for '+future[0].year+'–'+future[future.length-1].year+
-   ', with a sensitivity band (not a confidence interval)':'')+'. Values are tabulated below.');
- function shape(tag,attrs,text){
+ svg.setAttribute('viewBox','0 0 720 253');svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',group.name+' '+label+': separate country lines; solid historical, dashed modelled. No regional averages.');
+ const shape=(tag,attrs,text)=>{
   const n=document.createElementNS('http://www.w3.org/2000/svg',tag);
   for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);
-  if(text!==undefined)n.textContent=text;
-  return n
+  if(text!==undefined)n.textContent=text;return n;
+ };
+ svg.append(shape('title',{},group.name+' · '+label+' · OECD observations by reporting country'));
+ for(let i=0;i<=4;i++){
+  const v=ymax*i/4,y=Y(v);
+  svg.append(shape('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'#35546b','stroke-dasharray':'3 5'}));
+  svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#bacfdf','font-size':12},fmt(v,0)));
+  const yr=start+Math.round((end-start)*i/4);
+  svg.append(shape('text',{x:X(yr),y:y1+24,'text-anchor':'middle',fill:'#bacfdf','font-size':12},String(yr)));
  }
- svg.append(shape('title',{},name+' · OECD observations'+(future.length?' and illustrative scenario':'')+'; annual values tabulated below'));
- for(let n=0;n<=4;n++){
-  const v=top*n/4,y=Y(v);
-  svg.append(shape('line',{x1:x0,x2:x1,y1:y,y2:y,stroke:'#355269','stroke-dasharray':'3 5'}));
-  svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#b9d1e0','font-size':'13'},fmt(v,0)));
- }
- for(let n=0;n<5;n++){
-  const year=start+Math.round((end-start)*n/4);
-  svg.append(shape('text',{x:X(year),y:y1+27,'text-anchor':'middle',fill:'#b9d1e0','font-size':'13'},String(year)));
- }
- if(future.length){
-  const envelope=[...future.map(p=>[X(p.year),Y(p.high)]),
-    ...[...future].reverse().map(p=>[X(p.year),Y(p.low)])];
-  svg.append(shape('polygon',{points:envelope.map(v=>v.join(',')).join(' '),fill:'#eab46b','fill-opacity':'.23'}));
-  let prev=latestActual;
-  for(const p of future){
-   svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),
-     stroke:'#f7c277','stroke-width':'3','stroke-dasharray':'7 6','stroke-linecap':'round'}));
-   const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:'4.5',fill:'#fac576'});
-   dot.append(shape('title',{},p.year+' scenario: '+fmt(p.value)+' '+unit+
-     ' (sensitivity: '+fmt(p.low)+'–'+fmt(p.high)+')'));
-   svg.append(dot);
-   svg.append(shape('text',{x:X(p.year),y:y1+42,'text-anchor':'middle',fill:'#f7c277','font-size':'11'},String(p.year)+'E'));
-   prev=p;
+ for(const r of rows){
+  for(const [i,p] of r.data.points.entries()){
+   const prev=r.data.points[i-1];
+   if(prev&&p.year===prev.year+1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
+   const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+   dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit));svg.append(dot);
+  }
+  if(r.forecast.length){
+   const last=latest(r.data.points);
+   const polygon=[[X(last.year),Y(last.value)],...r.forecast.map(p=>[X(p.year),Y(p.high)]),
+    ...[...r.forecast].reverse().map(p=>[X(p.year),Y(p.low)])];
+   svg.append(shape('polygon',{points:polygon.map(p=>p.join(',')).join(' '),fill:r.color,'fill-opacity':.13}));
+   let prev=last;
+   for(const p of r.forecast){
+    svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),
+      stroke:r.color,'stroke-width':2.7,'stroke-dasharray':'7 5'}));
+    const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
+    dot.append(shape('title',{},r.name+' · modelled '+p.year+': '+fmt(p.value)+
+      ' '+unit+'; sensitivity '+fmt(p.low)+'–'+fmt(p.high)));svg.append(dot);
+    prev=p;
+   }
   }
  }
- for(let i=0;i<points.length;i++){
-  const p=points[i],x=X(p.year),y=Y(p.value),prev=points[i-1];
-  if(prev&&prev.year===p.year-1)
-   svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:x,y2:y,
-    stroke:'#7ed8f8','stroke-width':'3','stroke-linecap':'round'}));
-  const dot=shape('circle',{cx:x,cy:y,r:'4.5',fill:'#85ddfa'});
-  dot.append(shape('title',{},p.year+': '+fmt(p.value)+' '+unit+' (actual OECD)'));
-  svg.append(dot);
+ box.append(svg);return {box,rows};
+}
+function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
+ const root=el('div');root.append(el('h3','',title));
+ for(const [heading,content] of [['What it measures',what],['Why it matters for imaging',why]]){
+  const p=el('p','ct-definition');p.append(el('strong','',heading),document.createTextNode(content));root.append(p);
  }
- frame.append(svg);return frame;
-}
-function indicator(id,label,what,why,series,unit,url){
- const node=$(id),point=latest(series.points);
- const block=el('div');block.append(el('h3','',label));
- const p1=el('p','ct-definition');p1.append(el('strong','','What it measures'),document.createTextNode(what));block.append(p1);
- const p2=el('p','ct-definition');p2.append(el('strong','','Why it matters for imaging'),document.createTextNode(why));block.append(p2);
- const reading=el('div','ct-reading',point?measure(point,unit):'Unavailable');
- reading.append(el('small','',point?' · '+point.year:' · missing observation'));block.append(reading);
- block.append(el('p','ct-muted','Coverage: '+series.scope));
- block.append(svgChart(series.points,label,unit,series.projection));
- const projected=series.projection;
- if(projected?.status==='illustrative'&&(projected.points||[]).length){
-   const rate=100*projected.annual_rate;
-   const info=el('p','ct-forecast-method',
-     'Illustrative '+projected.points[0].year+'–'+projected.points[projected.points.length-1].year+
-     ' scenario from '+projected.start_year+' and '+projected.base_year+
-     ' observations · '+(rate>=0?'+':'')+fmt(rate,2)+'% annual trend'+
-     (projected.capped?' (capped for restraint)':'')+
-     '. ±2 percentage-point annual-growth sensitivity; not a confidence interval or official OECD figures.');
-   block.append(info);
-   const forecastDetails=el('details'),summary=el('summary','','View modelled estimates and sensitivity bounds'),table=el('table');
-   const header=el('thead'),titles=el('tr');
-   for(const title of ['Modelled year','Trend scenario','Lower sensitivity','Upper sensitivity']){const h=el('th','',title);h.scope='col';titles.append(h)}
-   header.append(titles);table.append(header);
-   const body=el('tbody');
-   for(const p of projected.points){const r=el('tr');r.append(el('td','',String(p.year)),el('td','',fmt(p.value)),el('td','',fmt(p.low)),el('td','',fmt(p.high)));body.append(r)}
-   table.append(body);forecastDetails.append(summary,table);block.append(forecastDetails);
- }else{
-   block.append(el('p','ct-forecast-method','A trend estimate is not shown: too few recent, comparable actual observations to extrapolate reliably.'));
+ const plot=regionalHistory(regionKey,kind,title,unit);root.append(plot.box);
+ const legend=el('div','ct-region-series-legend');
+ for(const r of plot.rows){
+  const item=el('span'),mark=el('i');mark.style.backgroundColor=r.color;
+  const recent=latest(r.data.points);
+  item.append(mark,document.createTextNode(r.name+' · '+(recent?fmt(recent.value)+' ('+recent.year+')':'unavailable')));legend.append(item);
  }
- const details=el('details'),summary=el('summary','','View observed annual data'),table=el('table');
- const tr=el('tr');for(const title of ['Year',unit]){const th=el('th','',title);th.scope='col';tr.append(th)}const thead=el('thead');thead.append(tr);table.append(thead);
- const tbody=el('tbody');for(const p of [...series.points].reverse()){const row=el('tr');row.append(el('td','',String(p.year)),el('td','',fmt(p.value)));tbody.append(row)}
- if(series.points.length)details.append(summary,table);table.append(tbody);if(series.points.length)block.append(details);
- const src=el('p','ct-source','Source: OECD Health Statistics · last checked '+(ctData.oecd?.checked||'date unavailable')+'. ');appendLink(src,url,'Open OECD original');block.append(src);
- if(!series.points.length)block.append(el('p','ct-muted',series.reason||'No comparable observation published for this country.'));
- put(node,...block.childNodes);
-}
-function yearDifference(points,label){
- if(points.length<2)return label+': a reliable time comparison is unavailable.';
- const recent=points[points.length-1],prior=points[points.length-2],diff=recent.value-prior.value;
- const words=Math.abs(diff)<.05?'was broadly unchanged':diff>0?'rose':'fell';
- return label+' '+words+' from '+fmt(prior.value)+' ('+prior.year+') to '+fmt(recent.value)+' ('+recent.year+'), a change of '+fmt(Math.abs(diff))+' '+(label==='CT scanner density'?'scanners per million people':'examinations per 1,000 people')+'.'+(recent.year-prior.year>1?' These observations are '+(recent.year-prior.year)+' years apart, not consecutive years.':'');
-}
-
-function projectionNarrative(label,series){
- const p=series.projection,actual=latest(series.points);
- if(!actual)return label+': no source observations are available.';
- if(p?.status!=='illustrative'||!(p.points||[]).length)
-  return label+': no estimate is presented; recent and sufficiently complete source history is required.';
- const final=p.points.find(x=>x.year===2027)||p.points[p.points.length-1];
- const annual=100*p.annual_rate;
- return label+': a modelled '+final.year+' scenario of '+fmt(final.value,1)+' (sensitivity '+fmt(final.low,1)+'–'+fmt(final.high,1)+'), compounded from the last observed '+actual.year+' value at '+(annual>=0?'+':'')+fmt(annual,2)+'% per year. This uses the latest three actual readings'+(p.capped?' with the growth rate capped for restraint':'')+'; it is not an OECD forecast.';
-}
-function updateReportingNote(code,scanners,exams){
- const name=ctData.oecd?.countries?.[code]?.name||'Selected country';
- const latestS=latest(scanners.points),latestE=latest(exams.points);
- function timing(point,label){
-  return label+': '+(point?point.year+' latest available published observation':'no published observation');
+ root.append(legend);
+ root.append(el('p','ct-region-chart-note','Solid lines: reported OECD observations. Dashed segments and shaded sensitivity ranges: country-specific modelled scenarios where source history allows, not a regional forecast.'));
+ const details=el('details');details.append(el('summary','','View dated observations and modelled estimates'));
+ const table=el('table'),head=el('thead'),tr=el('tr');
+ for(const label of ['Country','Year','Type',unit,'Sensitivity']){const th=el('th','',label);th.scope='col';tr.append(th)}
+ head.append(tr);table.append(head);
+ const body=el('tbody');
+ for(const r of plot.rows){
+  for(const p of [...r.data.points].reverse()){
+   const row=el('tr');for(const item of [r.name,String(p.year),'OECD observed',fmt(p.value),'—'])row.append(el('td','',item));body.append(row);
+  }
+  for(const p of r.forecast){
+   const row=el('tr');for(const item of [r.name,String(p.year),'Modelled',fmt(p.value),fmt(p.low)+'–'+fmt(p.high)])row.append(el('td','',item));body.append(row);
+  }
  }
- const dataYear=new Date(ctData.generated_at).getUTCFullYear()||2026;
- $('ct-data-lag').textContent='Why do the official series stop before '+dataYear+'? OECD CT statistics are annual national submissions, with country-specific reporting and validation lags. For '+name+', '+timing(latestS,'scanners')+'; '+timing(latestE,'examinations')+'. Other countries already report newer years. Missing subsequent years are not zero, and modelled trend extensions are illustrative only—not additional OECD observations.';
+ table.append(body);details.append(table);root.append(details);
+ const source=el('p','ct-source','OECD Health Statistics · checked '+(ctData.oecd?.checked||'unavailable')+'. ');
+ appendLink(source,url,'Original source');root.append(source);
+ $(id).replaceChildren(...root.childNodes);
 }
-function setCountryDetail(code){
- const scanners=obs(code,'equipment'),exams=obs(code,'exams'),latestS=latest(scanners.points),latestE=latest(exams.points);
- indicator('ct-scanners','CT scanner availability','Installed CT scanner units reported per million inhabitants, across the publisher’s indicated provider setting.','Describes equipment availability but does not establish scanner age, operating hours, capacity, throughput or clinical need.',scanners,'scanners/million',ctData.oecd?.sources?.equipment);
- indicator('ct-exams','CT examinations per population','Reported annual CT examinations per 1,000 inhabitants, in the published provider scope.','Describes the use of CT services. It can inform demand questions but cannot establish appropriateness, patient benefit or underlying demand by itself.',exams,'exams/1,000',ctData.oecd?.sources?.exams);
- $('ct-reading').textContent=yearDifference(scanners.points,'CT scanner density')+' '+yearDifference(exams.points,'CT examination activity');
- $('ct-reading').textContent+=' '+projectionNarrative('Scanner availability',scanners)+' '+projectionNarrative('Examinations',exams);
- updateReportingNote(code,scanners,exams);
- const gaps=[];
- if(latestS&&latestE&&latestS.year!==latestE.year)gaps.push('The current scanner and examination observations refer to different years ('+latestS.year+' versus '+latestE.year+').');
- if(scanners.scope!==exams.scope)gaps.push('Provider coverage differs: scanner data are '+scanners.scope+'; examinations are '+exams.scope+'.');
- if(!latestS||!latestE)gaps.push('One or both series are unavailable; do not infer demand from missing observations.');
- $('ct-next').textContent=(gaps.join(' ')||'Both series have observations, but scanner numbers cannot be used as an estimate of service throughput.')+' Before decisions, check local waiting times, actual CT examinations per operating hour, staffing, equipment condition, case mix, appropriateness and dose/protocol audits. This text is derived from source dates and coverage rather than market predictions.';
+function reportRegionalAnalysis(regionKey){
+ const group=REGIONS[regionKey],notes=[],dates=[],differences=[];
+ let projected=0;
+ for(const code of group.countries){
+  const name=ctData.oecd?.countries?.[code]?.name;if(!name)continue;
+  const s=obs(code,'equipment'),e=obs(code,'exams'),sp=latest(s.points),ep=latest(e.points);
+  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
+   '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
+  dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
+  if(sp&&ep&&sp.year!==ep.year)differences.push(name+' has observations from different years.');
+  if(s.scope!==e.scope)differences.push(name+' has differing provider scope.');
+  if(s.projection.status==='illustrative'&&s.projection.points.length)projected++;
+  if(e.projection.status==='illustrative'&&e.projection.points.length)projected++;
+ }
+ const list=el('ul');for(const note of notes)list.append(el('li','',note));
+ $('ct-reading').replaceChildren(el('p','',group.name+' · selected published country observations, not a regional average.'),list);
+ $('ct-next').textContent=(differences.join(' ')||'Provider scope and reporting years require verification when comparing countries.')+
+  ' '+projected+' individual country series have modelled extensions, not regional forecasts. Check local scanner age, staffing, waiting times, case mix, throughput and appropriateness before making service decisions.';
+ $('ct-data-lag').textContent='OECD CT statistics are released after annual national reporting and validation, so the latest year differs across countries. For '+
+  group.name+': '+dates.join('; ')+'. Missing years are not zero. Scenario extensions are not OECD observations.';
 }
-const regionSelect=$('ct-region'),countrySelect=$('ct-country');
-const REGIONS=ctData.regional_groups||{};
 function sampleRecords(key,kind){
  const r=REGIONS[key],countryData=ctData.oecd?.countries||{};
  return (r?.countries||[]).filter(code=>countryData[code]).map(code=>{
@@ -416,7 +392,6 @@ function setRegionalOverview(regionKey){
  const scanners=sampleRecords(regionKey,'equipment'),exams=sampleRecords(regionKey,'exams');
  const sc=scanners.filter(x=>x.point).length,ex=exams.filter(x=>x.point).length;
  const total=region?.countries?.length||0,pub=ctData.pubmed||{};
- $('ct-updated').textContent='Source data last retrieved: '+(ctData.generated_at||'date unavailable').slice(0,10)+'.';
  $('ct-region-scope').textContent=name+' · selected OECD countries ('+total+' included). This comparison is not a complete regional survey or an averaged regional rate.';
  $('ct-regional-heading').textContent=name+' · CT capacity and examination comparisons';
  $('ct-comparison-note').textContent='Latest available OECD CT observations for '+name+'. Country reporting years and provider scope may differ; do not interpret the bars as regional totals or same-year rankings.';
@@ -429,21 +404,19 @@ function setRegionalOverview(regionKey){
  regionalBars('ct-region-scanners',scanners,'scanners per million');
  regionalBars('ct-region-exams',exams,'examinations per 1,000');
 }
-function chooseRegion(regionKey,preferredCode){
- const region=REGIONS[regionKey];
- if(!region)return;
- regionSelect.value=regionKey;
- countrySelect.replaceChildren();
- const codes=region.countries.filter(code=>ctData.oecd?.countries?.[code]);
- for(const code of codes){
-  const opt=el('option','',ctData.oecd.countries[code].name);opt.value=code;countrySelect.append(opt);
- }
- countrySelect.value=codes.includes(preferredCode)?preferredCode:codes[0];
- setRegionalOverview(regionKey);
- if(countrySelect.value)setCountryDetail(countrySelect.value);
- const u=new URL(location.href);
- u.searchParams.set('region',regionKey);
- u.searchParams.delete('country');
+function chooseRegion(regionKey){
+ const group=REGIONS[regionKey];if(!group)return;
+ regionSelect.value=regionKey;setRegionalOverview(regionKey);
+ renderRegionalIndicator('ct-scanners',regionKey,'equipment','CT scanner availability',
+   'CT scanners per million inhabitants reported for each country.',
+   'Shows reported equipment availability, not staffed scan hours, clinical capacity or hospital demand.',
+   'scanners per million',ctData.oecd?.sources?.equipment);
+ renderRegionalIndicator('ct-exams',regionKey,'exams','CT examinations per population',
+   'Annual examinations per 1,000 inhabitants reported in each country’s provider scope.',
+   'Tracks service activity, not clinical necessity, outcomes or market sales.',
+   'examinations per 1,000',ctData.oecd?.sources?.exams);
+ reportRegionalAnalysis(regionKey);
+ const u=new URL(location.href);u.searchParams.set('region',regionKey);u.searchParams.delete('country');
  history.replaceState(null,'',u);
 }
 function renderPapers(){
@@ -472,84 +445,13 @@ function renderSources(){
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
 }
 for(const [key,region] of Object.entries(REGIONS)){
- const opt=el('option','',region.name);opt.value=key;regionSelect.append(opt);
+ const option=el('option','',region.name);option.value=key;regionSelect.append(option);
 }
-const url=new URLSearchParams(location.search);
-const requestedRegion=url.get('region');
-const oldCountry=url.get('country');
-const inferredRegion=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
-const startingRegion=REGIONS[requestedRegion]?requestedRegion:inferredRegion||Object.keys(REGIONS)[0];
+const params=new URLSearchParams(location.search),regionParam=params.get('region'),oldCountry=params.get('country');
+const inferred=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
+const initial=REGIONS[regionParam]?regionParam:inferred||Object.keys(REGIONS)[0];
 regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
-countrySelect.addEventListener('change',()=>{if(countrySelect.value)setCountryDetail(countrySelect.value)});
-if(startingRegion)chooseRegion(startingRegion,oldCountry);
-else $('ct-stat-grid').textContent='No regional data samples configured.';
-const CT_SHARE_COLOURS=['#79c9ef','#9ad7c6','#edc68a','#d0afed','#f4a9ab','#8195a9'];
-function renderMarket(){
- const market=ctData.market;
- if(!market||!market.size||!market.shares){
-  $('ct-market-size-value').textContent='Market estimates unavailable';
-  $('ct-share-citation').textContent='No verified CT manufacturer share figures are available.';
-  return;
- }
- const entries=market.size.entries.filter(x=>Number.isFinite(x.value)&&x.value>0);
- const chart=$('ct-market-estimate-chart');chart.replaceChildren();
- if(!entries.length){$('ct-market-size-value').textContent='Market estimates unavailable';return;}
- const values=entries.map(x=>x.value),lo=Math.min(...values),hi=Math.max(...values);
- $('ct-market-size-value').textContent='US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn';
- $('ct-market-size-subtitle').textContent=market.size.year+' market · '+entries.length+' independent publisher estimates · not a statistical confidence interval';
- for(const record of [...entries].sort((a,b)=>a.value-b.value)){
-  const row=el('div','ct-market-size-row'),label=el('div','ct-market-size-name');
-  label.append(el('div','',record.publisher),el('small','ct-market-source','Published '+record.publication_date));
-  const track=el('div','ct-market-size-track'),bar=el('div','ct-market-size-fill');
-  bar.style.width=(100*record.value/hi).toFixed(2)+'%';
-  bar.title=record.publisher+': US$'+fmt(record.value,2)+' billion';
-  track.append(bar);row.append(label,track,el('span','ct-market-size-number','$'+fmt(record.value,2)+'bn'));
-  chart.append(row);
-  const source=el('p','ct-source');appendLink(source,record.source,'Source: '+record.publisher);
-  source.append(document.createTextNode(' · '+(record.check_status||'dated published reference')));
-  chart.append(source);
- }
- const spread=hi-lo;
- $('ct-market-variance').textContent='Difference between these published estimates: US$'+fmt(spread,2)+'bn. The publishers’ underlying definitions and boundaries can differ.';
- const bars=$('ct-share-bars'),axis=$('ct-share-axis');
- bars.replaceChildren();axis.replaceChildren();
- const shares=[...market.shares.entries].filter(x=>Number.isFinite(x.value)&&x.value>=0)
-   .sort((a,b)=>b.value-a.value || a.name.localeCompare(b.name));
- // Scale is a percentage axis, not a share of the maximum supplier.
- // A rounded upper bound leaves headroom and keeps small vendors legible.
- const maxShare=Math.max(1,...shares.map(x=>x.value));
- const scale=Math.max(10,Math.ceil(maxShare/10)*10);
- for(const [i,item] of shares.entries()){
-  const colour=CT_SHARE_COLOURS[i%CT_SHARE_COLOURS.length];
-  const row=el('div','ct-share-row');row.setAttribute('role','listitem');
-  const name=el('span','ct-share-name',item.name);
-  const track=el('div','ct-share-track'),bar=el('div','ct-share-bar');
-  bar.style.width=(100*item.value/scale).toFixed(2)+'%';
-  bar.style.backgroundColor=colour;
-  bar.title=item.name+': '+fmt(item.value,0)+'%';
-  bar.setAttribute('aria-hidden','true');
-  track.append(bar);
-  row.append(name,track,el('strong','ct-share-percent',fmt(item.value,0)+'%'));
-  bars.append(row);
- }
- const spacer=el('span'),ticks=el('div','ct-share-axis-scale'),axisUnit=el('span','ct-share-axis-unit','%');
- for(let i=0;i<=4;i++)ticks.append(el('span','',fmt(scale*i/4,0)));
- axis.append(spacer,ticks,axisUnit);
- const source=$('ct-share-citation');source.replaceChildren(document.createTextNode(
-  'DBS CIO Industry Guide · '+market.shares.publication_date+' · p. '+market.shares.source_page+'. '
-  ));
- appendLink(source,market.shares.source,'Original DBS vendor-share table');
- source.append(document.createTextNode('. Analyst estimates; the revenue/unit/installed-base denominator and observation year are not disclosed.'));
- const four=shares.filter(x=>!x.derived).slice(0,4).reduce((sum,item)=>sum+item.value,0);
- $('ct-market-analysis').textContent='The '+entries.length+' publisher estimates for '+market.size.year+' span US$'+fmt(lo,2)+'–'+fmt(hi,2)+'bn; this is a difference of US$'+fmt(spread,2)+'bn rather than a single observed market value. In the separate DBS '+market.shares.publication_date+' analysis, the four largest listed CT vendors account for '+fmt(four,0)+'% combined. Neither the original market share denominator nor the exact observation year is disclosed; do not multiply these shares by market-size estimates to infer vendor CT revenues.';
- const sl=$('ct-source-list');
- const research=el('article');research.append(el('h3','','Published CT market estimates'),el('p','','Dated commercial research estimates for '+market.size.year+'; not direct official sales or a time series.'));
- for(const record of entries){const p=el('p');appendLink(p,record.source,record.publisher+' · '+record.publication_date);research.append(p)}
- sl.append(research);
- const dbs=el('article');dbs.append(el('h3','','DBS CT manufacturer-share estimates'),el('p','','Published August 2025, page 29; basis of share percentages not specified.'));
- const p=el('p');appendLink(p,market.shares.source,'Original DBS share table');dbs.append(p);sl.append(dbs);
-}
-
+if(initial)chooseRegion(initial);else $('ct-stat-grid').textContent='No regional CT data configured.';
 renderPapers();renderSources();renderMarket();
 </script>
 </body>
