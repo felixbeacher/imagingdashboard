@@ -113,7 +113,7 @@ def merge_history(existing, latest):
 def write_history(path, observations):
     """Called by a permitted scheduled job; no source data are reconstructed."""
     clean = validate_history({'source': HISTORY_SOURCE, 'observations': observations})
-    output = json.dumps({'source': HISTORY_SOURCE, 'observations': clean}, indent=2) + '\\n'
+    output = json.dumps({'source': HISTORY_SOURCE, 'observations': clean}, indent=2) + '\n'
     Path(path).write_text(output, encoding='utf-8')
 
 
