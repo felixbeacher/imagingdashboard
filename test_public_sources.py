@@ -44,7 +44,7 @@ class PublicSourceTests(unittest.TestCase):
   points=[dict(year='2026',period='M08',value='510'),dict(year='2025',period='M08',value='500'),dict(year='2025',period='M10',value='-'),dict(year='2026',period='M13',value='999')]
   response={'status':'REQUEST_SUCCEEDED','Results':{'series':[{'seriesID':'CUUR0000SAM','data':points}]}}
   with patch.object(m,'public_json',return_value=response):d=m.us_medical_inflation()
-  self.assertAlmostEqual(d['value'],2);self.assertEqual(d['period'],'2026-08');self.assertIn('not hospital input',d['methodology'])
+  self.assertAlmostEqual(d['value'],2);self.assertEqual(d['period'],'2026-08');self.assertIn('does not tell us what hospitals pay',d['methodology'])
   response['Results']['series'][0]['data'].pop(1)
   with patch.object(m,'public_json',return_value=response),self.assertRaises(ValueError):m.us_medical_inflation()
  def test_one_source_failure_does_not_erase_others(self):
