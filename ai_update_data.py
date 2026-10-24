@@ -733,9 +733,10 @@ def us_financing():
         raise ValueError('Invalid effective federal funds observation')
     return sourced(value, 'US overnight financing rate proxy', '%', 'United States', day,
         'Federal Reserve Bank of New York — EFFR', 'https://www.newyorkfed.org/markets/reference-rates/effr',
-        'Latest published effective federal funds rate: volume-weighted median of reported overnight '
-        'federal funds transactions. An observed US interbank financing proxy, not a global/G7 rate '
-        'or the borrowing cost of an imaging vendor.', as_of=day)
+        'The US effective federal funds rate shows what financial institutions typically pay to borrow '
+        'money overnight. It gives a sense of US financing conditions: higher rates can make borrowing '
+        'more expensive for hospitals and imaging businesses planning to buy scanners or expand '
+        'facilities. This is a US benchmark, not the actual loan rate a provider would pay.', as_of=day)
 
 
 def us_medical_inflation():
@@ -766,10 +767,10 @@ def us_medical_inflation():
     period = f'{current[0]}-{current[1]:02d}'
     return sourced(value, 'US medical-care CPI proxy', '% YoY', 'US urban consumers', period,
         'US Bureau of Labor Statistics — CUUR0000SAM', 'https://data.bls.gov/timeseries/CUUR0000SAM',
-        'Medical-care CPI-U, not seasonally adjusted. Year-on-year change = '
-        '(latest monthly index / same month one year earlier - 1) × 100. '
-        'US-only published CPI basket; no international aggregation or averaging. '
-        'Consumer medical prices are a proxy, not hospital input costs or imaging-equipment prices.',
+        'Shows how prices paid by US consumers for medical care have changed compared with the same '
+        'month last year. These price changes can affect patients and insurers and provide '
+        'context for healthcare spending and demand for imaging. This US measure does not '
+        'tell us what hospitals pay for staff, scanners or other equipment.',
         as_of=date.today().isoformat(), status='estimated')
 
 
