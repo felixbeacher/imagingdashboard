@@ -98,6 +98,25 @@
 .ct-region-series-legend i{height:4px;width:19px;display:inline-block;border-radius:2px}
 .ct-region-chart-note{font-size:.81rem;color:#b9cfdb;line-height:1.6;margin:9px 0}
 @media(max-width:650px){.ct-control.ct-region-primary{flex-direction:column;align-items:stretch;padding:16px}.ct-region-primary label{font-size:1.12rem}.ct-region-primary select{width:100%;min-width:0}}
+
+/* Interpretation-first CT information density, responsive tables and source years. */
+.ct-compare-caution{border-left:3px solid #eec077;background:#29251e;color:#e9d5b6;
+ padding:12px 16px;margin:12px 0 20px;font-size:.83rem;line-height:1.6}
+.ct-year-flag{display:inline-block;border:1px solid #57798d;color:#d4edf7;
+ background:#1c3447;border-radius:5px;padding:2px 6px;font-weight:800;font-variant-numeric:tabular-nums}
+.ct-year-flag.ct-year-old{border-color:#b68f60;background:#352d23;color:#ffe2b8}
+.ct-region-bars .ct-region-row{gap:11px 13px}
+.ct-page .ct-chart{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;scrollbar-width:thin}
+.ct-page .ct-chart svg{display:block;width:100%;min-width:700px;max-width:none;height:auto}
+.ct-page details:has(table){max-width:100%;overflow-x:auto}
+.ct-page details table{min-width:540px}
+.ct-research-topic{color:#b5e5fb;font-size:.83rem;font-weight:690}
+.ct-research-selection{font-size:.76rem;color:#adc3d4;line-height:1.55}
+.ct-stat .ct-value{font-size:clamp(1.15rem,2.1vw,1.72rem);word-break:normal;overflow-wrap:anywhere}
+.ct-stat h3{font-size:.86rem}
+@media(max-width:780px){.ct-page .ct-chart svg{min-width:630px}.ct-region-row{grid-template-columns:minmax(95px,125px) minmax(80px,1fr) minmax(52px,64px)}}
+@media(max-width:480px){.ct-page .ct-chart svg{min-width:600px}.ct-page .ct-grid{grid-template-columns:minmax(0,1fr)}
+ .ct-stat .ct-value{font-size:1.4rem}.ct-year-flag{padding:1px 4px}}
 </style>
 </head>
 <body>
@@ -114,19 +133,19 @@
 <div class="ct-control ct-region-primary"><label for="ct-region">SELECT REGION</label>
 <select id="ct-region" aria-label="Select region for CT data"></select>
 </div>
-<p class="ct-muted" id="ct-region-scope">Select a region to compare its available OECD country observations. These are country samples, not a complete regional dataset or calculated regional aggregate.</p>
+<p class="ct-muted" id="ct-region-scope">The selected region controls OECD CT equipment and examination data only. Market values, manufacturer shares and the research feed remain global. Country observations are selected samples, not regional averages.</p>
 </section>
 <nav class="ct-nav" aria-label="On this page">
 <a href="#ct-overview">At a glance</a><a href="#ct-regional-comparison">Regional comparisons</a><a href="#ct-market">CT market</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-industry">CT industry</a><a href="#ct-sources">Sources &amp; methodology</a>
 </nav>
 <section class="ct-card" id="ct-overview" aria-labelledby="ct-overview-heading">
 <h2 id="ct-overview-heading">CT at a glance</h2>
-<p class="ct-muted">A regional view of available OECD country observations, with source year and provider scope identified. Country data are not averaged into an unsupported regional total.</p>
+<p class="ct-muted">A concise regional snapshot of CT capacity, examinations and research, with country names and actual observation years. No regional mean is inferred.</p>
 <div class="ct-stat-grid" id="ct-stat-grid" aria-live="polite"></div>
 </section>
 <section class="ct-card" id="ct-regional-comparison" aria-labelledby="ct-regional-heading">
 <h2 id="ct-regional-heading">Regional CT comparison · selected OECD countries</h2>
-<p class="ct-muted" id="ct-comparison-note">Compare the available published readings for countries in the chosen region. Bars are not regional averages: observation years and providers may differ.</p>
+<p class="ct-muted" id="ct-comparison-note">Latest available country readings: years and provider scope differ. These bars are not same-year rankings or regional averages.</p>
 <div class="ct-grid">
 <article class="ct-indicator"><h3>CT scanners per million people</h3><div id="ct-region-scanners" class="ct-region-bars" aria-live="polite"></div></article>
 <article class="ct-indicator"><h3>CT examinations per 1,000 people</h3><div id="ct-region-exams" class="ct-region-bars" aria-live="polite"></div></article>
@@ -176,7 +195,7 @@
 
 <section class="ct-card" id="ct-research" aria-labelledby="ct-research-heading">
 <h2 id="ct-research-heading">Recently published CT research</h2>
-<p class="ct-muted">Automatically retrieved from PubMed using an explicit computed-tomography search. Publications are selected by date and relevance, not quality or clinical importance. Research relates to a technology and may involve AI, but the focus here is CT itself.</p>
+<p class="ct-muted">A selected PubMed discovery feed prioritising indexed clinical study designs, specialist-journal relevance and CT topic diversity. Case reports, editorials and reviews are excluded. This is not a systematic review or a validated study-quality ranking.</p>
 <div id="ct-papers" class="ct-paper-grid" aria-live="polite"></div>
 <p class="ct-source" id="ct-pubmed-source"></p>
 </section>
@@ -219,6 +238,7 @@
 <article class="ct-topic"><h3>GE HealthCare</h3><p>Revolution CT portfolio and newer detector technologies.</p><p><a href="https://www.gehealthcare.com/en/products/computed-tomography" target="_blank" rel="noopener noreferrer">Manufacturer CT range →</a></p></article>
 <article class="ct-topic"><h3>Philips</h3><p>CT systems, including spectral imaging and workflow technologies.</p><p><a href="https://www.usa.philips.com/healthcare/diagnostic-imaging/computed-tomography/ct-systems" target="_blank" rel="noopener noreferrer">Manufacturer CT systems →</a></p></article>
 <article class="ct-topic"><h3>Canon Medical Systems</h3><p>Aquilion CT systems and associated reconstruction technology.</p><p><a href="https://us.medical.canon/products/computed-tomography/aquilion-one-prism/" target="_blank" rel="noopener noreferrer">Manufacturer product information →</a></p></article>
+<article class="ct-topic"><h3>United Imaging Healthcare</h3><p>uCT scanner portfolio, spanning routine and premium CT systems. Share estimate above: 6%.</p><p><a href="https://global.united-imaging.com/en/product-service/products/ct" target="_blank" rel="noopener noreferrer">Manufacturer CT product range →</a></p></article>
 </div>
 <div class="ct-insight"><strong>For purchasing and service planning:</strong> combine the source-backed country trends above with local scanner age, utilisation, clinical case mix, uptime, maintenance support, reconstruction and dose requirements. Public OECD counts do not reveal manufacturers' sales or hospital procurement pipelines.</div>
 </section>
