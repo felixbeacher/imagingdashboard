@@ -125,6 +125,16 @@ jobs:
           from macro_dashboard import publish_macro
           macro = publish_macro(output, root, regional_economic_background,
                                 offline=False, fetch_financing=financing_background)
+          for region, coverage in macro.get('economics', {}).items():
+              yearly_counts = [
+                  sum(isinstance(point.get('value'), (int, float)) and
+                      not isinstance(point.get('value'), bool)
+                      for point in card.get('history', []))
+                  for card in coverage.get('cards', [])
+              ]
+              print(f'::notice::IMF {region}: annual growth/inflation chart observations {yearly_counts}')
+              if any(n < 3 for n in yearly_counts):
+                  print(f'::warning::IMF {region}: some charts have fewer than 3 valid annual points; gaps are not filled.')
           for series in macro.get('financing', []):
               count = len(series.get('history') or [])
               print(f"::notice::{series.get('label', 'US financing')}: {count} verified monthly observations, latest {series.get('period', 'unavailable')}")
