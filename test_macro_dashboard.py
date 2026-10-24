@@ -1,4 +1,5 @@
 import importlib.util
+from datetime import date
 import json
 import re
 import shutil
@@ -75,6 +76,50 @@ class MacroTests(unittest.TestCase):
             self.assertIn('>Glob Econ</a>',page)
             self.assertIn('src="risk.svg"',page)
             self.assertIn('Further information',page);self.assertIn('Why it matters for imaging',page)
+    def test_imf_annual_charts_keep_country_coverage_and_forecast_status(self):
+        current = date.today().year
+        years = range(current - 10, current + 3)
+        def mock_feed(url):
+            growth = 'NGDP_RPCH' in url
+            code = 'NGDP_RPCH' if growth else 'PCPIPCH'
+            world = {str(y): (0 if y == current else (-2 if y == current - 3 else 2.5))
+                     for y in years}
+            us = {str(y): (0 if y == current else 3.0) for y in years}
+            ca = {str(y): (4 if y == current else 1.0) for y in years}
+            # One missing country-year must make the median unavailable, not
+            # silently turn the North America view into a US-only time series.
+            ca.pop(str(current - 5))
+            return {'values': {code: {'WEOWORLD': world, 'USA': us, 'CAN': ca}}}
+        with patch.object(ai, 'public_json', side_effect=mock_feed):
+            regions = ai.regional_economic_background()
+        for code in ('global', 'northAmerica'):
+            for card in regions[code]['cards']:
+                self.assertEqual(len(card['history']), 13)
+                self.assertEqual(card['history'][0]['year'], current - 10)
+                self.assertEqual(card['history'][-1]['year'], current + 2)
+                self.assertEqual(card['history'][-3]['kind'], 'estimate')
+                self.assertEqual(card['history'][-2]['kind'], 'projection')
+                self.assertEqual(card['history'][-1]['kind'], 'projection')
+                self.assertEqual(card['history'][-3]['value'], card['value'])
+        north = regions['northAmerica']['cards'][0]
+        self.assertEqual(north['value'], 2.0)
+        self.assertIsNone(next(r['value'] for r in north['history'] if r['year'] == current - 5))
+        world = regions['global']['cards'][0]
+        self.assertEqual(next(r['value'] for r in world['history'] if r['year'] == current), 0.0)
+        self.assertEqual(next(r['value'] for r in world['history'] if r['year'] == current - 3), -2.0)
+
+    def test_imf_history_offline_is_not_invented(self):
+        with patch.object(ai, 'public_json', side_effect=AssertionError('Network call')):
+            regions = ai.regional_economic_background(offline=True)
+        self.assertTrue(all(card['history'] == [] for region in regions.values()
+                            for card in region['cards']))
+        for name in ('global-macro.html', 'global-macro.template.html'):
+            html = (ROOT / name).read_text(encoding='utf-8')
+            self.assertIn('id="economic-trends"', html)
+            self.assertIn('function economicTrend(', html)
+            self.assertIn('See annual figures and publication status', html)
+            self.assertIn("byId('economic-trends').replaceChildren()", html)
+
     def test_navigation_in_every_tab(self):
         for name in ['ai.html','index.html','ct.html','mri.html','pet.html','xray.html']:
             self.assertIn('href="global-macro.html"',(ROOT/name).read_text())
