@@ -186,6 +186,37 @@ def mini_chart(points,unit):
         if i in (0,len(points)-1):out.append(f'<text x="{x(i):.1f}" y="115" text-anchor="middle" fill="#afc2d3" font-size="9">{esc(label)}</text>')
     return ''.join(out)+'</svg>'
 
+
+def buffett_gauge(value, median, year):
+    """The dial shows market capitalisation as % of GDP, not historical percentile."""
+    if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0
+           for v in (value, median)):
+        raise ValueError('Invalid Buffett Indicator gauge input')
+    maximum = max(200, math.ceil(max(value, median) / 50) * 50)
+    progress = min(100, value / maximum * 100)
+    angle = math.pi * (1 - min(1, median / maximum))
+    median_x = 90 + 58 * math.cos(angle)
+    median_y = 92 - 58 * math.sin(angle)
+    return (
+        f'<svg viewBox="0 0 180 133" role="img" '
+        f'aria-label="World stock-market value in {int(year)}: {value:.1f}% of GDP; '
+        f'scale 0 to {maximum}% of GDP, historical median {median:.1f}%">'
+        f'<title>World stock-market value relative to GDP</title>'
+        f'<path d="M32 92 A58 58 0 0 1 148 92" fill="none" stroke="#304451" stroke-width="10"/>'
+        f'<path d="M32 92 A58 58 0 0 1 148 92" fill="none" stroke="#73c9ef" '
+        f'stroke-width="10" pathLength="100" stroke-dasharray="{progress:.2f} 100"/>'
+        f'<circle cx="{median_x:.2f}" cy="{median_y:.2f}" r="5" '
+        f'fill="#f4c981" stroke="#101c2b" stroke-width="1.5">'
+        f'<title>Historical median {median:.1f}% of GDP</title></circle>'
+        f'<text x="20" y="113" fill="#c6dbe9" font-size="11">0</text>'
+        f'<text x="90" y="22" text-anchor="middle" fill="#c6dbe9" font-size="10">{maximum/2:g}</text>'
+        f'<text x="160" y="113" text-anchor="end" fill="#c6dbe9" font-size="11">{maximum:g}</text>'
+        f'<text x="90" y="77" text-anchor="middle" fill="#f3f8ff" font-size="23" '
+        f'font-weight="700">{value:.1f}%</text>'
+        f'<text x="90" y="95" text-anchor="middle" fill="#c6dbe9" font-size="10">of world GDP</text>'
+        f'</svg>'
+    )
+
 def render(data):
     b=data.get('buffett',{});e=data.get('etf',{});history=b.get('history',[]);rank=b.get('percentile')
     if rank is not None:
@@ -193,11 +224,11 @@ def render(data):
         latest=history[-1]
         summary=f"The world stock-market value-to-GDP ratio is {latest['value']:.1f}% in {latest['year']}, compared with a typical past level of {b['median']:.1f}% across {b['comparison_count']} earlier years of data. It is at the {rank:.0f}th percentile of the available history."
         conclusion='This makes shares look expensive compared with the past, but does not prove they are overpriced.' if rank>=80 else 'This makes shares look cheaper compared with the past, but does not prove they are underpriced.' if rank<=20 else 'On its own, this measure does not show clearly whether shares look cheap or expensive.'
-        arc=math.pi*55
-        meter=f'<svg viewBox="0 0 160 110" role="img" aria-label="World Buffett Indicator historical percentile {rank:.0f}"><path d="M25 75 A55 55 0 0 1 135 75" fill="none" stroke="#304451" stroke-width="10"/><path d="M25 75 A55 55 0 0 1 135 75" fill="none" stroke="#e6ba75" stroke-width="10" stroke-dasharray="{arc*rank/100:.1f} {arc:.1f}"/><text x="80" y="68" text-anchor="middle" fill="#f1dfbd" font-size="25">{rank:.0f}</text><text x="80" y="94" text-anchor="middle" fill="#bfcfdb" font-size="10">Past-year ranking</text></svg>'
+        meter=buffett_gauge(latest['value'], b['median'], latest['year'])
     else:
         label='Assessment unavailable';summary='A sufficiently complete world market-capitalisation/GDP history is not available for this refresh.';conclusion='No global undervalued or overvalued classification has been substituted.';meter='<p class="metric">—</p>'
-    output=[f'<div class="ftse-summary"><div><h3>Do world share prices look high or low?</h3><p class="explain">{summary} {conclusion}</p><article class="ftse-view" style="margin-top:14px"><h4>A cautious view of financial markets (Austrian School)</h4><p class="explain">This viewpoint asks whether cheap borrowing has pushed share prices too high or encouraged projects that may struggle when interest rates rise. For imaging businesses, check debt, the cost of renewing loans and the buying power of budgets. This is a perspective, not a separate score.</p></article></div><aside class="ftse-meter"><h3>World Buffett Indicator</h3>{meter}<p class="meta">{label}</p><p class="muted-note">Historical ranking, not a 0–100 valuation score. 100 means the latest value is above all earlier years in the stated comparison. It can remain at 100 if markets rise further; it does not mean shares are 100% overpriced. Annual observations only.</p></aside></div><h3>Global share-market indicators</h3><p class="meta">Checked when the dashboard refreshes. Each figure keeps its own observation date. Annual figures are not live market prices.</p><div class="ftse-group"><h3>1 · Share prices compared with profits and assets</h3><div class="mini-charts">']
+    gauge_note=(f'Blue arc: market value as % of world GDP. Gold dot: historical median {b["median"]:.1f}% of GDP. The scale normally runs from 0 to 200% of GDP, extending if necessary. The {rank:.0f}th historical percentile is a separate ranking, not a percentage of overvaluation.' if rank is not None else 'The dial measures market value as a share of GDP, not a ranking. No dial appears without reliable data.')
+    output=[f'<div class="ftse-summary"><div><h3>Do world share prices look high or low?</h3><p class="explain">{summary} {conclusion}</p><article class="ftse-view" style="margin-top:14px"><h4>A cautious view of financial markets (Austrian School)</h4><p class="explain">This viewpoint asks whether cheap borrowing has pushed share prices too high or encouraged projects that may struggle when interest rates rise. For imaging businesses, check debt, the cost of renewing loans and the buying power of budgets. This is a perspective, not a separate score.</p></article></div><aside class="ftse-meter"><h3>World Buffett Indicator · % of GDP</h3>{meter}<p class="meta">{label}</p><p class="muted-note">{gauge_note}</p></aside></div><h3>Global share-market indicators</h3><p class="meta">Checked when the dashboard refreshes. Each figure keeps its own observation date. Annual figures are not live market prices.</p><div class="ftse-group"><h3>1 · Share prices compared with profits and assets</h3><div class="mini-charts">']
     for key,title,caption in [('pe','Global-equity P/E','Share prices compared with company profits in a broad global fund. Loss-making companies are excluded from this ratio.'),('pb','Global-equity price-to-book','Share prices compared with the value of company assets on their balance sheets. Research and software are not always fully reflected in these values.')]:
         content='<p class="meta">Latest reading unavailable — '+esc(e.get('reason','No validated observation.'))+'</p>'
         points=e.get('history',{}).get(key,[])
