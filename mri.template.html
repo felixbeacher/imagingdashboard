@@ -497,7 +497,7 @@ function renderPapers(){
   area.append(art);
  }
  const note=$('mri-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
- appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'computed tomography'),'Search PubMed');
+ appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'magnetic resonance imaging'),'Search PubMed');
 }
 function renderSources(){
  const container=$('mri-source-list');container.replaceChildren();
@@ -505,7 +505,7 @@ function renderSources(){
   {heading:'OECD · scanner availability',url:mriData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:mriData.oecd?.checked||'Unverified'},
   {heading:'OECD · MRI examinations',url:mriData.oecd?.sources?.exams,detail:'Annual MRI examinations per 1,000; some country data cover hospitals only.',status:mriData.oecd?.checked||'Unverified'},
   {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent MRI publications via NCBI E-utilities; explicit MRI search and source dates.',status:mriData.pubmed?.status+' · '+(mriData.pubmed?.checked||'date unavailable')},
-  {heading:'Clinical and radiation guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria',detail:'Reference definitions and clinical appropriateness, not monthly market measurements.',status:'ACR / FDA / national references'}
+  {heading:'MRI safety and appropriateness guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/mr-safety',detail:'Magnetic-field safety, implant and patient screening context, complementing MRI appropriateness guidance.',status:'ACR MR Safety / clinical reference'}
  ];
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
 }
