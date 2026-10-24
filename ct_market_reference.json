@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "scope": "Global computed-tomography scanner equipment market (published commercial-research estimates; segment definitions may differ)",
+  "size": {
+    "unit": "USD billions",
+    "year": 2025,
+    "entries": [
+      {
+        "publisher": "IMARC Group",
+        "value": 5.2,
+        "publication_date": "2026-09-11",
+        "source": "https://www.imarcgroup.com/computed-tomography-market",
+        "match_phrase": "global computed tomography market size was valued at USD 5.2 Billion in 2025",
+        "basis": "Computed tomography market estimate; underlying detailed methodology is commercial."
+      },
+      {
+        "publisher": "Value Market Research",
+        "value": 7.71,
+        "publication_date": "2026-09-10",
+        "source": "https://www.valuemarketresearch.com/report/ct-scanner-market",
+        "match_phrase": "global CT scanner market size was valued at USD 7.71 Billion in 2025",
+        "basis": "CT scanners market; scope includes several CT device types and application sectors."
+      },
+      {
+        "publisher": "Fortune Business Insights",
+        "value": 7.8,
+        "publication_date": "2026-10-05",
+        "source": "https://www.fortunebusinessinsights.com/computed-tomography-ct-scanner-market-104461",
+        "match_phrase": "global computed tomography (CT) scanners market size was valued at USD 7.80 billion in 2025",
+        "basis": "CT scanners including cone beam and other technology/end-user segments."
+      },
+      {
+        "publisher": "The Business Research Company",
+        "value": 8.47,
+        "publication_date": "2026-09",
+        "source": "https://www.thebusinessresearchcompany.com/report/computed-tomography-CT-scanners-devices-and-equipment-global-market-report",
+        "match_phrase": "market size has reached to $8.47 billion in 2025",
+        "basis": "CT scanners, devices and equipment. Scope is not necessarily identical to other firms."
+      }
+    ],
+    "note": "Commercial research firms publish different estimates, often with non-identical device coverage and proprietary data. The chart is a comparison of reported estimates, not observed CT sales or a range with statistical confidence bounds."
+  },
+  "shares": {
+    "publisher": "DBS CIO Industry Guide",
+    "publication_date": "2025-08",
+    "source": "https://www.dbs.com/content/article/pdf/CIO/2025/202508/CIOIndustryGuide_Aug2025.pdf",
+    "source_page": 29,
+    "geography": "Global",
+    "label": "Global CT market share (DBS reported estimate)",
+    "denominator": "Not disclosed in public table (do not assume revenue, units shipped or installed base).",
+    "entries": [
+      {
+        "name": "Siemens Healthineers",
+        "value": 34
+      },
+      {
+        "name": "GE HealthCare",
+        "value": 28
+      },
+      {
+        "name": "Canon Medical Systems",
+        "value": 17
+      },
+      {
+        "name": "Philips",
+        "value": 9
+      },
+      {
+        "name": "United Imaging",
+        "value": 6
+      },
+      {
+        "name": "Other manufacturers (residual)",
+        "value": 6,
+        "derived": true
+      }
+    ],
+    "note": "DBS August 2025 report, page 29, source stated as Companies, DBS. The five named vendors total 94%; other manufacturers is the arithmetic 6% residual, not independently surveyed. Reference period and measurement basis are not specified; these are not independently audited revenue or unit shares. Shares should not be multiplied by publisher market-size estimates to imply actual vendor sales."
+  }
+}
