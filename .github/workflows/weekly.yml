@@ -47,34 +47,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Inspect public OECD imaging dataset format
-        shell: bash
-        run: |
-          python - <<'PY'
-          from urllib.request import Request, urlopen
-          from collections import Counter
-          import csv, io
-          datasets=[
-            'OECD.ELS.HD,DSD_HEALTH_PROC@DF_DIAG_EXAM,/CHE+USA+GBR+DEU+FRA+CAN+AUS+JPN..EXM_10P3PS...............',
-            'OECD.ELS.HD,DSD_HEALTH_REAC_HOSP@DF_MED_TECH,/CHE+USA+GBR+DEU+FRA+CAN+AUS+JPN..10P6HB......_T'
-          ]
-          for ds in datasets:
-            url='https://sdmx.oecd.org/public/rest/v1/data/'+ds+'?startPeriod=2019'
-            print('OECD CHECK',ds,flush=True)
-            for accept in ('csvfilewithlabels','csvfile','text/csv'):
-              try:
-                req=Request(url,headers={'Accept':accept,'User-Agent':'MedicalImagingDashboard/1.0'})
-                with urlopen(req,timeout=22) as resp:
-                  data=resp.read(500000).decode('utf-8-sig',errors='replace')
-                  print('STATUS',resp.status,'TYPE',resp.headers.get('Content-Type'),'ACCEPT',accept,'SAMPLE',repr(data[:500]),flush=True)
-                  rows=list(csv.DictReader(io.StringIO(data)))
-                  print('ROWS',len(rows),'COUNTRIES',dict(Counter(row.get('REF_AREA','') for row in rows)),'UNIQUE PROVIDERS',dict(Counter(row.get('PROVIDER','') for row in rows)),'TECH',dict(Counter(row.get('MEDICAL_TECH',row.get('HEALTH_FACILITY','')) for row in rows)),'MEASURE',dict(Counter(row.get('MEASURE','') for row in rows)),flush=True)
-                  print('EXAMPLE MRI',repr([row for row in rows if row.get('HEALTH_FACILITY')=='MRI'][:6]),flush=True)
-                break
-              except Exception as e:
-                print('RETRIEVAL',accept,type(e).__name__,str(e)[:200],flush=True)
-          PY
-
       - name: Validate collectors and rendering
         run: python -m unittest discover -p 'test_*.py'
 
@@ -118,7 +90,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -169,8 +141,18 @@ jobs:
           # Independent source failures remain clearly unavailable on the page.
           from ai_update_data import regional_economic_background, financing_background
           from macro_dashboard import publish_macro
+          from oecd_imaging import fetch as fetch_imaging
           macro = publish_macro(output, root, regional_economic_background,
-                                offline=False, fetch_financing=financing_background)
+                                offline=False, fetch_financing=financing_background,
+                                fetch_imaging=fetch_imaging)
+          for country, observation in macro.get('imaging', {}).get('countries', {}).items():
+              scans=observation.get('exams', {})
+              scanners=observation.get('equipment', {})
+              total=sum(len(values) for values in scans.get('series', {}).values())
+              capacity=sum(len(values) for values in scanners.get('series', {}).values())
+              print(f'::notice::OECD {country}: {total} examination and {capacity} scanner observations; scopes {scans.get("scope")} / {scanners.get("scope")}')
+              if not (total and capacity):
+                  print(f'::warning::OECD {country}: incomplete imaging coverage; chart shows only verified observations.')
           for region, coverage in macro.get('economics', {}).items():
               yearly_counts = [
                   sum(isinstance(point.get('value'), (int, float)) and
