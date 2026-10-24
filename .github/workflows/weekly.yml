@@ -204,7 +204,7 @@ jobs:
                          '--output', str(output / 'mri.html')]
           subprocess.run(mri_command, check=True, timeout=180)
           mri_html = (output / 'mri.html').read_text(encoding='utf-8')
-          mri_match = re.search(r'<script id="mri-data" type="application/json">([\\s\\S]*?)</script>', mri_html)
+          mri_match = re.search(r'<script id="mri-data" type="application/json">([\s\S]*?)</script>', mri_html)
           if not mri_match:
               raise SystemExit('MRI dashboard source data missing')
           mri_data = json.loads(mri_match.group(1))
@@ -466,7 +466,7 @@ jobs:
           for forbidden in ('AI Approvals vs. MedTech Venture Capital Investment',
                             'DBS estimate','photon-counting CT'):
               if forbidden in html:raise SystemExit('Obsolete MRI text: '+forbidden)
-          m=re.search(r'<script id="mri-data" type="application/json">([\\s\\S]*?)</script>',html)
+          m=re.search(r'<script id="mri-data" type="application/json">([\s\S]*?)</script>',html)
           if not m:raise SystemExit('MRI source JSON missing')
           d=json.loads(m.group(1))
           if d['market']['shares']['reference_year']!=2022:
@@ -474,7 +474,7 @@ jobs:
           if not all('MRI' in c['equipment']['series'] and 'MRI' in c['exams']['series']
                      for c in d['oecd']['countries'].values()):
               raise SystemExit('MRI modality data missing')
-          scripts=re.findall(r'<script>([\\s\\S]*?)</script>',html)
+          scripts=re.findall(r'<script>([\s\S]*?)</script>',html)
           if len(scripts)!=1:raise SystemExit('MRI JavaScript missing')
           Path('_site/mri.validate.js').write_text(scripts[0],encoding='utf-8')
           print('MRI source, dates, navigation and DOM verified')
