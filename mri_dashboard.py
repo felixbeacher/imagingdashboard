@@ -126,7 +126,7 @@ def parse_pubmed(xml, expected_ids, limit=10):
             continue
         if not re.search(r'\bMRI\b|magnetic resonance|\bMR imaging\b',title,re.I):
             continue
-        if re.search(r'\b(?:review|meta-analysis|protocol|photoacoustic)\b|\bcase report\b|\bcase presentation\b|a rare case of',title,re.I):
+        if re.search(r'\b(?:review|meta-analysis|protocol|photoacoustic|bibliometric)\b|comprehensive (?:literature )?(?:review|survey)|systematic analysis of the literature|\bcase report\b|\bcase presentation\b|a rare case of|photon.counting CT|computed tomography.*compared with MRI',title,re.I):
             continue
         journal=_text(art.find('.//Journal/Title')) or 'Journal not supplied'
         types=[_text(t) for t in art.findall('.//PublicationType') if _text(t)]

@@ -83,6 +83,23 @@ class MRIDashboardTests(unittest.TestCase):
                {'year':2025,'value':18.1}]
         self.assertFalse(mri.mri_trend_scenario(gappy,'equipment')['points'])
 
+    def test_pubmed_avoids_ct_primary_and_comprehensive_reviews(self):
+        xml=b'''<PubmedArticleSet>
+        <PubmedArticle><MedlineCitation><PMID>61</PMID><Article>
+        <ArticleTitle>Photon-counting CT compared with MRI in bone imaging</ArticleTitle>
+        </Article></MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>62</PMID><Article>
+        <ArticleTitle>Magnetic resonance imaging of stroke: a comprehensive review</ArticleTitle>
+        </Article></MedlineCitation></PubmedArticle>
+        <PubmedArticle><MedlineCitation><PMID>63</PMID><Article>
+        <ArticleTitle>Cardiac MRI for myocardial function: a comparative study</ArticleTitle>
+        </Article></MedlineCitation></PubmedArticle>
+        </PubmedArticleSet>'''
+        items=mri.parse_pubmed(xml,['61','62','63'])
+        self.assertEqual([x['url'] for x in items],
+                         ['https://pubmed.ncbi.nlm.nih.gov/63/'])
+
+
     def test_pubmed_mri_filters_and_design(self):
         content=b'''<PubmedArticleSet>
         <PubmedArticle><MedlineCitation><PMID>42</PMID><Article>
