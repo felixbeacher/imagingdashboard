@@ -52,6 +52,8 @@ jobs:
         run: |
           python - <<'PY'
           from urllib.request import Request, urlopen
+          from collections import Counter
+          import csv, io
           datasets=[
             'OECD.ELS.HD,DSD_HEALTH_PROC@DF_DIAG_EXAM,/CHE..EXM_10P3PS...............',
             'OECD.ELS.HD,DSD_HEALTH_REAC_HOSP@DF_MED_TECH,/CHE..10P6HB......_T'
@@ -63,8 +65,11 @@ jobs:
               try:
                 req=Request(url,headers={'Accept':accept,'User-Agent':'MedicalImagingDashboard/1.0'})
                 with urlopen(req,timeout=22) as resp:
-                  data=resp.read(5500).decode('utf-8-sig',errors='replace')
-                  print('STATUS',resp.status,'TYPE',resp.headers.get('Content-Type'),'ACCEPT',accept,'SAMPLE',repr(data[:1850]),flush=True)
+                  data=resp.read(500000).decode('utf-8-sig',errors='replace')
+                  print('STATUS',resp.status,'TYPE',resp.headers.get('Content-Type'),'ACCEPT',accept,'SAMPLE',repr(data[:500]),flush=True)
+                  rows=list(csv.DictReader(io.StringIO(data)))
+                  print('ROWS',len(rows),'UNIQUE PROVIDERS',dict(Counter(row.get('PROVIDER','') for row in rows)),'TECH',dict(Counter(row.get('MEDICAL_TECH',row.get('HEALTH_FACILITY','')) for row in rows)),'MEASURE',dict(Counter(row.get('MEASURE','') for row in rows)),flush=True)
+                  print('EXAMPLE MRI',repr([row for row in rows if row.get('HEALTH_FACILITY')=='MRI'][:6]),flush=True)
                 break
               except Exception as e:
                 print('RETRIEVAL',accept,type(e).__name__,str(e)[:200],flush=True)
