@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CT | The Medical Imaging Dashboard</title>
+<meta name="description" content="Source-backed CT scanner availability, examination trends, clinical research and technology developments.">
+<link rel="stylesheet" href="styles.css">
+<style>
+.ct-page{max-width:1450px}.ct-page a{color:#8bd4f5}.ct-page a:focus-visible,.ct-page select:focus-visible,.ct-page summary:focus-visible{outline:2px solid #92e2ff;outline-offset:3px}
+.ct-page h2{color:#ecf7ff}.ct-lead{background:linear-gradient(125deg,#13283d,#101b2c);border:1px solid #35566d;border-radius:14px;padding:clamp(22px,3vw,38px);margin-bottom:20px}
+.ct-eyebrow{color:#86d4f9;font-size:.79rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase}.ct-lead h2{font-size:clamp(1.7rem,3.4vw,2.9rem);line-height:1.12;margin:9px 0 15px}.ct-lead p{font-size:1rem;max-width:900px;color:#c7d7e5;line-height:1.7}
+.ct-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.ct-nav a{padding:10px 12px;border-radius:8px;background:#142235;border:1px solid #38566b;color:#d9edfa;font-size:.84rem;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.ct-card{background:#131d2b;border:1px solid #334a60;border-radius:12px;padding:clamp(17px,2vw,25px);margin:0 0 19px;min-width:0}
+.ct-card h2{font-size:1.2rem;margin:0 0 13px;border-bottom:1px solid #35485a;padding-bottom:11px}
+.ct-card h3{font-size:1.02rem;margin:0 0 9px;color:#e9f6ff}.ct-muted{color:#b5cad8;font-size:.87rem;line-height:1.65}
+.ct-control{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:20px 0 5px}.ct-control label{font-size:.92rem;font-weight:700;color:#d4e6f2}.ct-control select{background:#091726;color:#f0faff;border:1px solid #57768f;border-radius:8px;padding:10px 13px;font-size:1rem;min-height:44px;min-width:220px}
+.ct-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:19px 0 15px}
+.ct-stat{border-radius:10px;border:1px solid #38556a;background:#0e1c2e;padding:15px;min-width:0}
+.ct-stat h3{font-size:.85rem;margin:0 0 11px;color:#bedcea}.ct-value{font-size:1.7rem;line-height:1.25;color:#f4fbff;font-weight:750;overflow-wrap:anywhere}.ct-stat small{display:block;color:#a9bfce;font-size:.76rem;line-height:1.55;margin-top:8px}
+.ct-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ct-indicator{border:1px solid #38516a;background:#0d1b2c;border-radius:10px;padding:18px;min-width:0}
+.ct-indicator h3{margin-bottom:8px}.ct-definition{font-size:.84rem;color:#c1d4e0;line-height:1.6;margin:8px 0}.ct-definition strong{display:block;color:#86d6f8;margin-bottom:3px;font-weight:700}
+.ct-reading{font-size:1.42rem;color:#ebf9ff;font-weight:750;margin:15px 0 6px}.ct-reading small{font-size:.76rem;font-weight:400;color:#b4c9d7}
+.ct-source{font-size:.78rem;line-height:1.55;color:#afc3d3;margin-top:10px;overflow-wrap:anywhere}
+.ct-chart{width:100%;overflow-x:auto;margin:15px 0 7px}.ct-chart svg{width:100%;min-width:400px;display:block;height:auto}.ct-no-data{color:#c7d6e1;font-size:.83rem;line-height:1.65;padding:22px 10px}
+.ct-page details{margin:12px 0}.ct-page details>summary{color:#9fdefc;cursor:pointer;min-height:36px;display:flex;align-items:center;font-size:.84rem}.ct-page table{width:100%;border-collapse:collapse;font-size:.82rem}.ct-page th,.ct-page td{text-align:left;padding:7px;border-bottom:1px solid #30485b}.ct-page td:last-child,.ct-page th:last-child{text-align:right}
+.ct-insight{background:#0b2433;border-left:3px solid #5fc4ec;padding:16px 19px;border-radius:3px;margin:15px 0;color:#cbe1ed;font-size:.91rem;line-height:1.65}
+.ct-topic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ct-topic{border-radius:9px;border:1px solid #375166;background:#0c1a2a;padding:17px;min-width:0}
+.ct-topic h3{font-size:.95rem}.ct-topic p{font-size:.84rem;line-height:1.6;color:#bfd1df;margin:7px 0 0}
+.ct-paper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:16px 0}
+.ct-paper{border:1px solid #375166;background:#0d1b2b;border-radius:10px;padding:16px;min-width:0}.ct-paper h3{font-size:.95rem;line-height:1.5}
+.ct-paper p{color:#bcd0df;font-size:.83rem;line-height:1.6;margin:9px 0}
+.ct-tag{border:1px solid #446276;border-radius:5px;padding:3px 7px;color:#b9dfef;font-size:.73rem;display:inline-block;margin-bottom:9px}
+.ct-source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ct-source-list article{background:#0f1f2e;border:1px solid #385266;border-radius:9px;padding:14px;min-width:0}.ct-source-list h3{font-size:.94rem}.ct-source-list p{font-size:.8rem;line-height:1.6;color:#b9ccdb;margin-top:7px}
+.ct-method{font-size:.85rem;line-height:1.65;color:#c2d6e3}
+.ct-method li{margin:7px 0 7px 20px}
+.ct-chart-legend{font-size:.77rem;color:#a9cee1;margin:5px 0}
+@media(max-width:1100px){.ct-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.ct-grid,.ct-paper-grid,.ct-source-list,.ct-topic-grid{grid-template-columns:1fr}.ct-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-lead{padding:20px}.ct-page{padding:16px}.ct-chart svg{min-width:380px}}
+@media(max-width:460px){.ct-stat-grid{grid-template-columns:1fr}.ct-control select{width:100%}.ct-stat{padding:14px}}
+@media(prefers-reduced-motion:reduce){.ct-page *{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header><div class="header-content">
+<div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
+<nav class="nav-tabs" aria-label="Dashboard pages">
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn active" href="ct.html" aria-current="page">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+</nav></div></header>
+<main class="ct-page">
+<section class="ct-lead" aria-labelledby="ct-page-heading">
+<div class="ct-eyebrow">Imaging modality · computed tomography</div>
+<h2 id="ct-page-heading">CT: capacity, use and innovation</h2>
+<p>Computed tomography uses X-rays and computational reconstruction to create cross-sectional images. This dashboard follows <strong>CT equipment, examinations, clinical practice and technical progress</strong>. Unlike imaging AI—which can be used across modalities—CT is a distinct imaging modality.</p>
+<p class="ct-muted">Based on official annual healthcare statistics and current indexed research. An automated refresh does not make annual observations monthly data. <span id="ct-updated"></span></p>
+<div class="ct-control"><label for="ct-country">Explore country data</label>
+<select id="ct-country" aria-label="Selected CT country"></select>
+</div>
+</section>
+<nav class="ct-nav" aria-label="On this page">
+<a href="#ct-overview">At a glance</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-interpretation">Implications</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-sources">Sources &amp; methodology</a>
+</nav>
+<section class="ct-card" id="ct-overview" aria-labelledby="ct-overview-heading">
+<h2 id="ct-overview-heading">CT at a glance</h2>
+<p class="ct-muted">Country-specific OECD observations and worldwide CT research. All figures carry their original time period and coverage.</p>
+<div class="ct-stat-grid" id="ct-stat-grid" aria-live="polite"></div>
+</section>
+<section class="ct-card" id="ct-activity" aria-labelledby="ct-activity-heading">
+<h2 id="ct-activity-heading">Scanner availability and examination activity</h2>
+<p class="ct-muted">Two separate ways to understand CT services. Neither scanner density nor examination counts alone establishes capacity adequacy, clinical need or equipment sales.</p>
+<div class="ct-grid">
+<article class="ct-indicator" id="ct-scanners"></article>
+<article class="ct-indicator" id="ct-exams"></article>
+</div>
+<p class="ct-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
+</section>
+<section class="ct-card" id="ct-interpretation" aria-labelledby="ct-interpretation-heading">
+<h2 id="ct-interpretation-heading">From CT trends to imaging decisions</h2>
+<p class="ct-muted">The commentary below is generated from the latest verified observations, including the gap between available years. It is not a forecast.</p>
+<div class="ct-grid"><article class="ct-indicator"><h3>What the observed series show</h3><div id="ct-reading" class="ct-insight" aria-live="polite"></div></article>
+<article class="ct-indicator"><h3>What to investigate before acting</h3><div id="ct-next" class="ct-insight"></div></article></div>
+</section>
+<section class="ct-card" id="ct-research" aria-labelledby="ct-research-heading">
+<h2 id="ct-research-heading">Recently published CT research</h2>
+<p class="ct-muted">Automatically retrieved from PubMed using an explicit computed-tomography search. Publications are selected by date and relevance, not quality or clinical importance. Research relates to a technology and may involve AI, but the focus here is CT itself.</p>
+<div id="ct-papers" class="ct-paper-grid" aria-live="polite"></div>
+<p class="ct-source" id="ct-pubmed-source"></p>
+</section>
+<section class="ct-card" id="ct-clinical" aria-labelledby="ct-clinical-heading">
+<h2 id="ct-clinical-heading">Where CT fits in clinical care</h2>
+<p class="ct-muted">A concise clinical orientation, not a recommendation for an individual patient. Indications and technique depend on appropriateness criteria, radiation considerations and local protocols.</p>
+<div class="ct-topic-grid">
+<article class="ct-topic"><h3>Emergency and trauma</h3><p><strong>What it measures:</strong> CT depicts acute injuries, haemorrhage and relevant anatomy rapidly.</p><p><strong>Why it matters for imaging:</strong> emergency access depends on scanner availability, staffing, protocols and reporting capacity.</p></article>
+<article class="ct-topic"><h3>Oncology</h3><p><strong>What it measures:</strong> cross-sectional anatomy and change in tumour burden over time.</p><p><strong>Why it matters for imaging:</strong> repeat examinations and protocol consistency can influence service demand.</p></article>
+<article class="ct-topic"><h3>Cardiac and vascular CT</h3><p><strong>What it measures:</strong> contrast-enhanced vascular anatomy and selected coronary features.</p><p><strong>Why it matters for imaging:</strong> application requires appropriate acquisition, contrast management and expertise.</p></article>
+<article class="ct-topic"><h3>Chest and lung assessment</h3><p><strong>What it measures:</strong> pulmonary anatomy, focal abnormalities and interstitial patterns.</p><p><strong>Why it matters for imaging:</strong> protocols and screening suitability vary by clinical question.</p></article>
+<article class="ct-topic"><h3>Interventional and planning CT</h3><p><strong>What it measures:</strong> anatomy used in image guidance and pre-procedure planning.</p><p><strong>Why it matters for imaging:</strong> workflow, CT room access and multidisciplinary coordination affect service delivery.</p></article>
+<article class="ct-topic"><h3>Paediatric CT</h3><p><strong>What it measures:</strong> anatomy where CT is justified for a specific paediatric question.</p><p><strong>Why it matters for imaging:</strong> age-appropriate protocols, consideration of alternatives and optimisation are particularly important.</p></article>
+</div>
+<p class="ct-source">Clinical appropriateness reference: <a target="_blank" rel="noopener noreferrer" href="https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria">ACR Appropriateness Criteria</a>. Definitions are general reference material; the research cards above are live observations.</p>
+</section>
+<section class="ct-card" id="ct-technology" aria-labelledby="ct-technology-heading">
+<h2 id="ct-technology-heading">Technology and service considerations</h2>
+<div class="ct-grid">
+<article class="ct-indicator"><h3>Technology developments to track</h3><p class="ct-definition"><strong>Photon-counting CT</strong>Energy-resolving detectors offer different information from conventional energy-integrating detectors. Clinical value depends on indication, protocol and accessible evidence.</p><p class="ct-definition"><strong>Iterative and deep-learning reconstruction</strong>These approaches may affect image quality and dose trade-offs, but claims must be evaluated for particular tasks and implementations.</p><p class="ct-definition"><strong>Workflow and spectral imaging</strong>Acquisition speed, contrast protocols, spectral information and service reliability may matter as much as headline specifications.</p></article>
+<article class="ct-indicator"><h3>Radiation and appropriateness</h3><p class="ct-definition"><strong>What it measures</strong>CT uses ionising radiation. National diagnostic reference levels help compare typical exposures for defined clinical examinations; they are not individual patient dose limits.</p><p class="ct-definition"><strong>Why it matters for imaging</strong>Service development should consider justification, indication-specific protocol optimisation and diagnostic image quality alongside capacity.</p><div class="ct-source"><a target="_blank" rel="noopener noreferrer" href="https://www.gov.uk/government/publications/diagnostic-radiology-national-diagnostic-reference-levels-ndrls/ndrl">UK CT diagnostic reference levels</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.fda.gov/radiation-emitting-products/initiative-reduce-unnecessary-radiation-exposure-medical-imaging/white-paper-initiative-reduce-unnecessary-radiation-exposure-medical-imaging">FDA principles of radiation protection</a></div></article>
+</div>
+</section>
+<section class="ct-card" id="ct-sources" aria-labelledby="ct-sources-heading">
+<h2 id="ct-sources-heading">Sources, coverage and methodology</h2>
+<div class="ct-source-list" id="ct-source-list"></div>
+<details><summary>Detailed interpretation and update rules</summary><div class="ct-method"><ul>
+<li>OECD capacity is CT scanners per million people. Examination activity is CT examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
+<li>Only published numeric observations are plotted; missing years are not interpolated. The country selector is not a substitute for a validated world aggregate.</li>
+<li>Calculated changes compare two actually observed years and disclose when years are not consecutive. They do not predict future scanner demand, procurement or patient outcomes.</li>
+<li>PubMed updates use a transparent CT-specific search and the publication index. Search matches are not a systematic review, market share, CT examination volumes or proof of clinical utility.</li>
+<li>Data are retrieved at automated rebuild time; "retrieved" is not the date that a study or annual CT observation was recorded. Any unavailable source is labelled as such.</li>
+</ul></div></details>
+</section>
+</main>
+<footer><div>© 2026 Felix Beacher. All rights reserved.</div><p class="footer-disclaimer">Information for industry and clinical context; not individual medical advice, an investment recommendation or a validated forecast. Follow local clinical guidelines and review the original sources.</p></footer>
+<script id="ct-data" type="application/json"><!-- CT_DATA --></script>
+<script>
+'use strict';
+const ctData=JSON.parse(document.getElementById('ct-data').textContent);
+const $=id=>document.getElementById(id);
+function el(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x}
+function put(parent,...els){parent.replaceChildren(...els)}
+function latest(points){return points.length?points[points.length-1]:null}
+function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
+function obs(country,kind){const k=ctData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.CT)?k.series.CT:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),reason:k?.reason||''}}
+function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
+function measure(point,unit){return point?fmt(point.value,1)+' '+unit:'Unavailable'}
+function stat(title,value,period){const box=el('article','ct-stat');box.append(el('h3','',title),el('div','ct-value',value),el('small','',period));return box}
+function svgChart(points,name,unit){
+ const frame=el('div','ct-chart');if(!points.length){frame.append(el('p','ct-no-data','No verified annual observations are available. No estimated data are shown.'));return frame}
+ const allYears=points.map(p=>p.year),start=Math.min(...allYears),end=Math.max(...allYears);
+ const x0=60,x1=620,y0=22,y1=195,top=Math.max(1,...points.map(p=>p.value))*1.13;
+ const X=year=>x0+(year-start)/Math.max(1,end-start)*(x1-x0);
+ const Y=value=>y1-(value/top)*(y1-y0);
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox','0 0 650 243');svg.setAttribute('role','img');
+ svg.setAttribute('aria-label',name+' annual OECD series from '+start+' to '+end+'. Annual values follow below.');
+ function shape(tag,attrs,text){const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs||{}))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n}
+ svg.append(shape('title',{},name+' annual OECD history'));
+ for(let n=0;n<=4;n++){const v=top*n/4,y=Y(v);svg.append(shape('line',{x1:x0,x2:x1,y1:y,y2:y,stroke:'#355269','stroke-dasharray':'3 5'}));svg.append(shape('text',{x:x0-8,y:y+4,'text-anchor':'end',fill:'#b9d1e0','font-size':'13'},fmt(v,0)))}
+ for(let n=0;n<5;n++){const year=start+Math.round((end-start)*n/4);svg.append(shape('text',{x:X(year),y:y1+27,'text-anchor':'middle',fill:'#b9d1e0','font-size':'13'},String(year)))}
+ for(let i=0;i<points.length;i++){
+  const p=points[i],x=X(p.year),y=Y(p.value),prev=points[i-1];
+  if(prev&&prev.year===p.year-1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:x,y2:y,stroke:'#7ed8f8','stroke-width':'3','stroke-linecap':'round'}));
+  const circle=shape('circle',{cx:x,cy:y,r:'4.5',fill:'#85ddfa'});circle.append(shape('title',{},p.year+': '+fmt(p.value)+' '+unit));svg.append(circle);
+ }
+ frame.append(svg);return frame;
+}
+function indicator(id,label,what,why,series,unit,url){
+ const node=$(id),point=latest(series.points);
+ const block=el('div');block.append(el('h3','',label));
+ const p1=el('p','ct-definition');p1.append(el('strong','','What it measures'),document.createTextNode(what));block.append(p1);
+ const p2=el('p','ct-definition');p2.append(el('strong','','Why it matters for imaging'),document.createTextNode(why));block.append(p2);
+ const reading=el('div','ct-reading',point?measure(point,unit):'Unavailable');
+ reading.append(el('small','',point?' · '+point.year:' · missing observation'));block.append(reading);
+ block.append(el('p','ct-muted','Coverage: '+series.scope));
+ block.append(svgChart(series.points,label,unit));
+ const details=el('details'),summary=el('summary','','View observed annual data'),table=el('table');
+ const tr=el('tr');for(const title of ['Year',unit]){const th=el('th','',title);th.scope='col';tr.append(th)}const thead=el('thead');thead.append(tr);table.append(thead);
+ const tbody=el('tbody');for(const p of [...series.points].reverse()){const row=el('tr');row.append(el('td','',String(p.year)),el('td','',fmt(p.value)));tbody.append(row)}
+ if(series.points.length)details.append(summary,table);table.append(tbody);if(series.points.length)block.append(details);
+ const src=el('p','ct-source','Source: OECD Health Statistics · last checked '+(ctData.oecd?.checked||'date unavailable')+'. ');appendLink(src,url,'Open OECD original');block.append(src);
+ if(!series.points.length)block.append(el('p','ct-muted',series.reason||'No comparable observation published for this country.'));
+ put(node,...block.childNodes);
+}
+function yearDifference(points,label){
+ if(points.length<2)return label+': a reliable time comparison is unavailable.';
+ const recent=points[points.length-1],prior=points[points.length-2],diff=recent.value-prior.value;
+ const words=Math.abs(diff)<.05?'was broadly unchanged':diff>0?'rose':'fell';
+ return label+' '+words+' from '+fmt(prior.value)+' ('+prior.year+') to '+fmt(recent.value)+' ('+recent.year+'), a change of '+fmt(Math.abs(diff))+' '+(label==='CT scanner density'?'scanners per million people':'examinations per 1,000 people')+'.'+(recent.year-prior.year>1?' These observations are '+(recent.year-prior.year)+' years apart, not consecutive years.':'');
+}
+function setOverview(code){
+ const country=ctData.oecd?.countries?.[code],name=country?.name||'Selected country';
+ const scanners=obs(code,'equipment'),exams=obs(code,'exams'),latestS=latest(scanners.points),latestE=latest(exams.points);
+ const pub=ctData.pubmed||{};
+ $('ct-updated').textContent='Last attempted refresh: '+(ctData.generated_at||'date unavailable').slice(0,10)+'.';
+ put($('ct-stat-grid'),
+  stat('CT scanners',latestS?fmt(latestS.value):'Unavailable',latestS?'per million people · '+latestS.year:'No published country value'),
+  stat('CT examinations',latestE?fmt(latestE.value):'Unavailable',latestE?'per 1,000 people · '+latestE.year:'No published country value'),
+  stat('Annual source coverage',latestS||latestE?String(Math.max(latestS?.year||0,latestE?.year||0)):'Unavailable','Most recent observation across the two CT series'),
+  stat('Recent CT publications',pub.count===null||pub.count===undefined?'Unavailable':fmt(pub.count,0),
+    'PubMed query matches · last 12 months · worldwide, not clinical trial count')
+ );
+ indicator('ct-scanners','CT scanner availability','Installed CT scanner units reported per million inhabitants, across the publisher’s indicated provider setting.','Describes equipment availability but does not establish scanner age, operating hours, capacity, throughput or clinical need.',scanners,'scanners/million',ctData.oecd?.sources?.equipment);
+ indicator('ct-exams','CT examinations per population','Reported annual CT examinations per 1,000 inhabitants, in the published provider scope.','Describes the use of CT services. It can inform demand questions but cannot establish appropriateness, patient benefit or underlying demand by itself.',exams,'exams/1,000',ctData.oecd?.sources?.exams);
+ $('ct-reading').textContent=yearDifference(scanners.points,'CT scanner density')+' '+yearDifference(exams.points,'CT examination activity');
+ const gaps=[];
+ if(latestS&&latestE&&latestS.year!==latestE.year)gaps.push('The current scanner and examination observations refer to different years ('+latestS.year+' versus '+latestE.year+').');
+ if(scanners.scope!==exams.scope)gaps.push('Provider coverage differs: scanner data are '+scanners.scope+'; examinations are '+exams.scope+'.');
+ if(!latestS||!latestE)gaps.push('One or both series are unavailable; do not infer demand from missing observations.');
+ $('ct-next').textContent=(gaps.join(' ')||'Both series have observations, but scanner numbers cannot be used as an estimate of service throughput.')+' Before decisions, check local waiting times, actual CT examinations per operating hour, staffing, equipment condition, case mix, appropriateness and dose/protocol audits. This text is derived from source dates and coverage rather than market predictions.';
+}
+function renderPapers(){
+ const pub=ctData.pubmed||{},area=$('ct-papers');area.replaceChildren();
+ if(!(pub.items||[]).length)area.append(el('p','ct-no-data',pub.error?'Latest PubMed retrieval unavailable: '+pub.error:'No CT articles returned by this exact search and time window.'));
+ for(const paper of (pub.items||[])){
+  const art=el('article','ct-paper');art.append(el('span','ct-tag',paper.kind||'CT publication'));
+  const h=el('h3');appendLink(h,paper.url,paper.title);art.append(h);
+  art.append(el('p','',paper.journal+' · '+paper.date));
+  if(paper.design)art.append(el('p','',paper.design));
+  if(paper.excerpt){const details=el('details');details.append(el('summary','','Read reported abstract excerpt'),el('p','',paper.excerpt));art.append(details)}
+  art.append(el('p','ct-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
+  area.append(art);
+ }
+ const note=$('ct-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. Matching publications are a research-discovery sample, not a systematic review or an estimate of clinical value. ';
+ appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'computed tomography'),'Search PubMed');
+}
+function renderSources(){
+ const container=$('ct-source-list');container.replaceChildren();
+ const entries=[
+  {heading:'OECD · scanner availability',url:ctData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:ctData.oecd?.checked||'Unverified'},
+  {heading:'OECD · CT examinations',url:ctData.oecd?.sources?.exams,detail:'Annual CT examinations per 1,000; some country data cover hospitals only.',status:ctData.oecd?.checked||'Unverified'},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent CT publications via NCBI E-utilities; explicit CT search and source dates.',status:ctData.pubmed?.status+' · '+(ctData.pubmed?.checked||'date unavailable')},
+  {heading:'Clinical and radiation guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria',detail:'Reference definitions and clinical appropriateness, not monthly market measurements.',status:'ACR / FDA / national references'}
+ ];
+ for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}
+}
+const picker=$('ct-country');
+const entries=Object.entries(ctData.oecd?.countries||{}).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+for(const [code,c] of entries){const opt=el('option','',c.name);opt.value=code;picker.append(opt)}
+const queryCountry=new URLSearchParams(location.search).get('country');
+picker.value=entries.some(x=>x[0]===queryCountry)?queryCountry:(entries.some(x=>x[0]==='CHE')?'CHE':(entries[0]?.[0]||''));
+function update(){setOverview(picker.value);const u=new URL(location.href);u.searchParams.set('country',picker.value);history.replaceState(null,'',u)}
+picker.addEventListener('change',update);
+if(entries.length)update();else $('ct-stat-grid').textContent='Country data unavailable.';
+renderPapers();renderSources();
+</script>
+</body>
+</html>
