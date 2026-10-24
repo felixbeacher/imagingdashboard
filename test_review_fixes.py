@@ -19,6 +19,32 @@ class ReviewFixTests(unittest.TestCase):
   self.assertEqual(card['value'],'17 studies');self.assertIn('completed prospective',card['description'])
   self.assertEqual(card['source'],'https://example.org/studies');self.assertEqual(v['registryChart']['values'][0],17)
   self.assertIn('Check Scope',v['registryChart']['title'])
+ def test_ai_evidence_first_layout_survives_automatic_render(self):
+  template=(Path(__file__).with_name('ai.template.html')).read_text(encoding='utf-8')
+  payload=a.template_view(a.build_dashboard(offline=True))
+  rendered=a.render_template(template,payload)
+  for text in ('id="ai-overview-section"','id="ai-research-section"',
+               'id="ai-evidence-section"','id="ai-adoption-section"',
+               'id="ai-industry-section"','id="ai-news-section"',
+               'ai-evidence-stages','id="ai-source-status-section"',
+               "fdaSection.hidden=false"):
+   self.assertIn(text,rendered)
+  self.assertNotIn('AI Approvals vs. MedTech Venture Capital Investment',rendered)
+  self.assertNotIn('Prospective Clinical Validation',rendered)
+  self.assertNotIn('fdaSection.hidden=key',rendered)
+  self.assertLess(rendered.index('id="ai-overview-section"'),rendered.index('id="fda-trend-section"'))
+  self.assertLess(rendered.index('id="fda-trend-section"'),rendered.index('id="ai-research-section"'))
+  self.assertLess(rendered.index('id="ai-research-section"'),rendered.index('id="ai-evidence-section"'))
+  self.assertLess(rendered.index('id="ai-evidence-section"'),rendered.index('id="ai-adoption-section"'))
+ def test_homepage_viewport_and_responsive_scaling(self):
+  root=Path(__file__).parent
+  page=(root/'index.html').read_text(encoding='utf-8')
+  css=(root/'styles.css').read_text(encoding='utf-8')
+  self.assertEqual(page.count('name="viewport"'),1)
+  self.assertIn('class="dashboard-home"',page)
+  self.assertIn('.dashboard-home .hero-banner h2',css)
+  self.assertIn('grid-template-columns:1fr',css)
+
  def test_imf_failure_has_no_success_date(self):
   with patch.object(a,'public_json',side_effect=ValueError('failed')):e=a.regional_economic_background()
   self.assertEqual(e['global']['status'],'unavailable');self.assertIsNone(e['global']['retrieved'])
