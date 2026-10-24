@@ -313,6 +313,22 @@ jobs:
               raise SystemExit('CT source-referenced vendor shares do not total 100%')
           if 'function renderMarket()' not in page or 'id="ct-share-bars"' not in page:
               raise SystemExit('CT market chart controls missing')
+          if 'id="ct-data-lag"' not in page or 'Aim of this page' not in page:
+              raise SystemExit('CT page aim or annual reporting-lag notice missing')
+          if '<h3>Radiation and appropriateness</h3>' in page or 'Unlike imaging AI' in page:
+              raise SystemExit('Removed CT content has reappeared')
+          if 'function updateReportingNote(code,scanners,exams)' not in page:
+              raise SystemExit('CT reporting-lag explanation missing')
+          for country in obj['oecd']['countries'].values():
+              for kind in ('equipment','exams'):
+                  scenario=country[kind].get('projection')
+                  if not isinstance(scenario,dict) or 'points' not in scenario:
+                      raise SystemExit('CT country projection metadata missing')
+                  last=country[kind]['series'].get('CT',[])
+                  if last and scenario['points'] and scenario['points'][0]['year'] <= max(x['year'] for x in last):
+                      raise SystemExit('CT projections overwrite an observed year')
+          if page.index('id="ct-industry"') > page.index('Global CT manufacturer shares · DBS estimate'):
+              raise SystemExit('CT manufacturer share plot not beside vendor products')
           scripts=re.findall(r'<script>([\s\S]*?)</script>',page)
           if len(scripts)!=1:
               raise SystemExit('CT runtime script missing or duplicated')

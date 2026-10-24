@@ -35,13 +35,21 @@ class CTDashboardTests(unittest.TestCase):
         for label in ('CT at a glance','Scanner availability and examination activity',
                       'What it measures','Why it matters for imaging',
                       'Recently published CT research','From CT trends to imaging decisions',
-                      'Radiation and appropriateness','ct-region', 'ct-country', 'ct-region-scanners'):
+                      'Aim of this page', 'ct-data-lag', 'ct-region', 'ct-country', 'ct-region-scanners'):
             self.assertIn(label,t)
         for stale in ('AI Approvals vs. MedTech Venture Capital Investment',
                       'Vendor AI Revenue Breakdown','Radiologist Vacancy Rate'):
             self.assertNotIn(stale,t)
         self.assertIn('name="viewport"',t)
         self.assertIn('ct.template.html',str(ROOT/'ct.template.html'))
+        self.assertNotIn('Imaging modality · computed tomography',t)
+        self.assertNotIn('Unlike imaging AI',t)
+        self.assertNotIn('<h3>Radiation and appropriateness</h3>',t)
+        self.assertLess(t.index('id="ct-market"'), t.index('id="ct-industry"'))
+        self.assertLess(t.index('id="ct-industry"'), t.index('Global CT manufacturer shares · DBS estimate'))
+        self.assertLess(t.index('Global CT manufacturer shares · DBS estimate'), t.index('Selected CT product portfolios'))
+        self.assertLess(t.index('id="ct-activity"'),t.index('id="ct-interpretation"'))
+        self.assertLess(t.index('id="ct-interpretation"'),t.index('id="ct-research"'))
 
     def test_valid_observations_and_scope_are_not_aggregated(self):
         d=ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
@@ -50,6 +58,8 @@ class CTDashboardTests(unittest.TestCase):
         self.assertEqual(d['oecd']['countries']['CHE']['exams']['scope'],
             'Hospitals only (not all examinations)')
         self.assertEqual(d['pubmed']['count'],42)
+        self.assertIn('projection',d['oecd']['countries']['CHE']['equipment'])
+        self.assertEqual(d['oecd']['countries']['CHE']['equipment']['projection']['status'],'unavailable')
         self.assertEqual(d['regional_groups']['europe']['countries'],['CHE','GBR','DEU','FRA'])
         self.assertEqual(d['regional_groups']['northAmerica']['countries'],['USA','CAN'])
         self.assertEqual(d['regional_groups']['asiaPacific']['countries'],['AUS','JPN'])
@@ -68,6 +78,33 @@ class CTDashboardTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 ct.generate(offline=True,today=__import__('datetime').date(2026,10,24),
                     oecd_fetch=bad,pubmed_fetch=self.fake_pubmed)
+
+    def test_2025_2026_2027_ct_scenario_from_2024_actuals(self):
+        points=[{'year':2022,'value':20},{'year':2023,'value':20.5},
+                {'year':2024,'value':22}]
+        forecast=ct.ct_trend_scenario(points,'equipment',through=2027)
+        self.assertEqual(forecast['status'],'illustrative')
+        self.assertEqual([x['year'] for x in forecast['points']],[2025,2026,2027])
+        self.assertTrue(forecast['capped'])  # 2022-2024 annualised growth exceeds 5%
+        self.assertAlmostEqual(forecast['annual_rate'],0.05,places=4)
+        self.assertAlmostEqual(forecast['points'][0]['value'],23.1)
+        self.assertTrue(all(x['low'] < x['value'] < x['high'] for x in forecast['points']))
+        self.assertGreater(forecast['points'][2]['high']-forecast['points'][2]['low'],
+                           forecast['points'][0]['high']-forecast['points'][0]['low'])
+        self.assertEqual(points[-1]['year'],2024)  # actual history remains unchanged
+
+    def test_actual_2025_supersedes_projected_2025_and_sparse_history_does_not_infer(self):
+        points=[{'year':2023,'value':100},{'year':2024,'value':104},
+                {'year':2025,'value':107}]
+        forecast=ct.ct_trend_scenario(points,'exams',through=2027)
+        self.assertEqual([x['year'] for x in forecast['points']],[2026,2027])
+        self.assertFalse(ct.ct_trend_scenario(points[:2],'exams')['points'])
+        self.assertFalse(ct.ct_trend_scenario([
+            {'year':2016,'value':80},{'year':2018,'value':83},
+            {'year':2021,'value':89}],'exams')['points'])
+        self.assertFalse(ct.ct_trend_scenario([
+            {'year':2021,'value':0},{'year':2023,'value':2},
+            {'year':2024,'value':4}],'exams')['points'])
 
     def test_ct_market_estimates_are_dated_and_source_backed(self):
         import ct_market
@@ -145,6 +182,9 @@ class CTDashboardTests(unittest.TestCase):
         self.assertEqual(rendered.count('id="ct-region"'),1)
         self.assertIn('function setRegionalOverview(regionKey)',rendered)
         self.assertIn('function chooseRegion(regionKey,preferredCode)',rendered)
+        self.assertIn('Modelled trend (2025–2027, where applicable)',rendered)
+        self.assertIn('function updateReportingNote(code,scanners,exams)',rendered)
+        self.assertIn("svgChart(series.points,label,unit,series.projection)",rendered)
         self.assertNotIn('Explore country data',rendered)
         self.assertIn('Country detail within this region',rendered)
         self.assertIn('2021',rendered)

@@ -288,6 +288,7 @@ function svgChart(points,name,unit,projection){
    dot.append(shape('title',{},p.year+' scenario: '+fmt(p.value)+' '+unit+
      ' (sensitivity: '+fmt(p.low)+'–'+fmt(p.high)+')'));
    svg.append(dot);
+   svg.append(shape('text',{x:X(p.year),y:y1+42,'text-anchor':'middle',fill:'#f7c277','font-size':'11'},String(p.year)+'E'));
    prev=p;
   }
  }

@@ -226,7 +226,7 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
             if len({year for year,_ in valid})!=len(valid):
                 raise ValueError('Duplicate CT observation years')
             country[mode]['projection'] = ct_trend_scenario(
-                series, mode, through=max(today.year+1, 2027)
+                series, mode, through=2027
             )
     for region in REGIONAL_GROUPS.values():
         if any(code not in data['countries'] for code in region['countries']):
