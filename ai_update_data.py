@@ -1064,7 +1064,12 @@ def regional_economic_background(offline=False):
                                   'and later years are forecasts. Missing country observations are not filled.'),
                               methodology=description, reason=('Offline: sources were not requested.' if offline else failures.get(code, 'The complete country sample is unavailable.')) if values[year] is None else ''))
             summaries.append(label + ' — ' + '; '.join(details) + '.')
-        result[key] = dict(cards=cards, overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
+        result[key] = dict(cards=cards, coverage=dict(
+            name=name,
+            scope='IMF published world aggregate' if key == 'global' else 'Equal-weight median of selected countries',
+            countries=[country_name for _, country_name in countries],
+            count=len(countries),
+            is_regional_aggregate=(key == 'global')), overview=name + (' economic outlook: ' if key == 'global' else ' economic outlook for the selected country sample: ')
             + ' '.join(summaries) + (' These are IMF-published world aggregates. ' if key == 'global' else ' These are unweighted country medians, not an IMF regional aggregate. ')
             + 'These are economic estimates and forecasts, not predictions of imaging demand. The numerical source does not explain the causes of regional risks.',
             source=cards[0]['source'], retrieved=date.today().isoformat() if all(c['retrieved'] for c in cards) else None,

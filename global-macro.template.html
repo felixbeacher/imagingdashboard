@@ -170,7 +170,7 @@ function economicTrend(m,growth,coverage){
  const series=Array.isArray(m.history)?m.history.filter(p=>p&&Number.isInteger(p.year)&&p.year>=1900&&p.year<=2200&&(p.value===null||typeof p.value==='number'&&Number.isFinite(p.value))&&['earlier','estimate','projection'].includes(p.kind)).sort((a,b)=>a.year-b.year):[];
  const valid=series.filter(p=>p.value!==null);
  if(valid.length<2||new Set(series.map(p=>p.year)).size!==series.length){
-  panel.append(node('p','meta','A verified annual trend is not available from this data refresh. The current-year estimate, if published, is shown in the card above.'));
+  panel.append(node('p','meta','A verified annual trend is not available from this data refresh. The current-year estimate, if published, is shown in this card.'));
   return panel;
  }
  const first=series[0].year,last=series[series.length-1].year;
@@ -248,9 +248,35 @@ function economicTrend(m,growth,coverage){
  return panel;
 }
 
+function renderOverview(key,reg){
+ const items=[];
+ const codes=(reg.cards||[]);
+ const grow=codes.find(m=>/growth/i.test(m.label));
+ const prices=codes.find(m=>/inflation/i.test(m.label));
+ const rate=(data.financing||[]).find(m=>/federal funds|overnight financing/i.test(m.label));
+ const risk=data.risk;
+ const viewName=byId('macro-region').selectedOptions[0].textContent;
+ const base=[
+  {title:'Economic growth · '+viewName,reading:grow?pct(grow):'Unavailable',period:grow?.period||'No valid estimate',insight:'Expected annual growth. This provides context for healthcare funding, not scanner demand.',section:'#economy-section'},
+  {title:'Consumer inflation · '+viewName,reading:prices?pct(prices):'Unavailable',period:prices?.period||'No valid estimate',insight:'General consumer-price pressure. Hospital costs may differ.',section:'#economy-section'},
+  {title:'US overnight interest rate',reading:rate?pct(rate):'Unavailable',period:rate?.period||'Source date unavailable',insight:'US daily financing benchmark, not a hospital loan quotation.',section:'#financing-section'},
+  {title:'Global pressure · historical',reading:Number.isFinite(risk?.latest)?new Intl.NumberFormat('en-GB',{maximumFractionDigits:1}).format(risk.latest)+' / 100':'Unavailable',period:risk?.end?'Historical snapshot · '+month(risk.end):'No verified snapshot',insight:'Exploratory historical comparison; the original percentile calibration has not been independently verified.',section:'#risk-section'}
+ ];
+ for(const b of base){
+  const item=node('article','overview-tile');
+  item.append(node('h3','',b.title),node('p','overview-value',b.reading),node('p','overview-period',b.period),node('p','overview-context',b.insight));
+  const link=node('a','','View indicator →');link.href=b.section;item.append(link);items.push(item);
+ }
+ byId('overview-grid').replaceChildren(...items);
+}
+
 function region(key,push=false){
  if(!Object.hasOwn(data.economics,key))key='global';byId('macro-region').value=key;const r=data.economics[key],panel=byId('economic-cards');panel.replaceChildren();
- byId('economic-scope').textContent=key==='global'?'IMF figures for the whole world. Estimates and forecasts may change.':'Middle values for a selection of countries, not an overall regional figure. The country list and future years are in each card.';
+ const coverage=r.coverage;
+ const coverageText=coverage&&Array.isArray(coverage.countries)
+  ? (key==='global'?'IMF world figure.': 'Sample median · '+coverage.count+' equally weighted countries: '+coverage.countries.join(', ')+'. This is not the regional growth or inflation rate.')
+  : (key==='global'?'IMF world figure.':'Country sample median; this is not an overall regional rate. Check the indicator details for country coverage.');
+ byId('economic-scope').textContent=coverageText+' Figures include estimates and forecasts and can be revised.';
 
  for(const m of r.cards||[]){
   const growth=/growth/i.test(m.label),type=growth?plain.growth:plain.inflation;
@@ -265,6 +291,7 @@ function region(key,push=false){
   card.append(economicTrend(m,growth,scope));
   panel.append(card);
  }
+ renderOverview(key,r);
  byId('economic-summary').textContent='Growth and inflation help explain the financial backdrop, but neither directly tells us how many scans will be performed or how much imaging will cost.';
  byId('economic-date').textContent=data.economic_mode==='offline'?'Offline build — economic sources were not fetched.':(r.status==='available'?'Economic sources retrieved: '+r.retrieved:'Economic data '+r.status+' · retrieval attempted '+r.attempted_at+'; see individual indicators.')+' · estimates and projections retain their stated years.';
  const briefing=data.briefing, entry=briefing?.regions?.[key], box=byId('macro-briefing');box.replaceChildren();
@@ -286,11 +313,14 @@ const drivers={
  'Food price pressure':['How high global food commodity prices are compared with the past.','Food costs may reduce the money available to households and governments for healthcare. This is an indirect link.','https://www.worldbank.org/en/research/commodity-markets','World Bank food price data']
 };
 byId('risk-drivers').replaceChildren(...risk.components.map(m=>{
- const d=drivers[m.name];
- return indicatorCard({title:m.name,what:d[0],why:d[1],reading:fmt(m.score)+' / 100',
-  period:'Historical score for '+month(risk.end)+' · not a live reading',
-  source:d[2],sourceName:d[3],status:'Reproduced from the supplied dated risk snapshot.',
-  detail:'This score compares the measure with historical observations. A higher score means more pressure relative to the past. It is not a probability or a forecast.'});
+ const d=drivers[m.name],box=node('article','risk-compact');
+ const head=node('div','risk-compact-head');head.append(node('h4','',m.name),node('p','risk-score',fmt(m.score)+' / 100'));box.append(head);
+ const detail=node('details');detail.append(node('summary','','Why this matters for imaging'));
+ const about=node('p');about.append(node('strong','indicator-key','What it measures'),document.createTextNode(d[0]));
+ const significance=node('p');significance.append(node('strong','indicator-key','Why it matters for imaging'),document.createTextNode(d[1]));
+ const context=node('p','snapshot','Historical reading: '+month(risk.end)+'. This score is not a forecast. Original percentile calibration is not independently verified.');
+ const source=node('a','',d[3]);source.href=d[2];source.target='_blank';source.rel='noopener noreferrer';
+ detail.append(about,significance,context,source);box.append(detail);return box;
 }));
 function explainValuation(){
  const rules=[
