@@ -87,7 +87,7 @@ class CTDashboardTests(unittest.TestCase):
         self.assertIn('id="ct-market"',rendered)
         self.assertIn('function renderMarket()',rendered)
         self.assertIn('id="ct-share-bars"',rendered)
-        self.assertIn('class="ct-share-bar"',rendered)
+        self.assertIn("el('div','ct-share-bar')",rendered)
         self.assertIn('.sort((a,b)=>b.value-a.value',rendered)
         self.assertIn("el('strong','ct-share-percent',fmt(item.value,0)+'%')",rendered)
         self.assertNotIn('id="ct-share-stack"',rendered)
