@@ -122,6 +122,38 @@ class MacroTests(unittest.TestCase):
             self.assertIn("const panel=node('div','trend-panel')", html)
             self.assertNotIn('id="economic-trends"', html)
 
+    def test_economic_page_structure_and_evidence_labels(self):
+        for filename in ('global-macro.html','global-macro.template.html'):
+            page=(ROOT/filename).read_text(encoding='utf-8')
+            order=[page.index('id="'+section+'"') for section in
+                   ('overview-section','economy-section','financing-section',
+                    'risk-section','imaging-section','valuation-section','methods-section')]
+            self.assertEqual(order,sorted(order))
+            self.assertIn('id="overview-grid"',page)
+            self.assertIn('renderOverview(key,r)',page)
+            self.assertIn('id="financing-cards"',page)
+            self.assertIn('card.append(financeTrend(m,rate))',page)
+            self.assertNotIn('id="financing-trends"',page)
+            self.assertIn('id="risk-drivers"',page)
+            self.assertIn('risk-evidence',page)
+            self.assertIn('underlying percentile calibration could not be independently reproduced',page)
+            self.assertIn('OECD medical technology availability data',page)
+            self.assertIn('valuation-expander',page)
+            self.assertIn('explainEconomicChange(',page)
+            self.assertIn('scope',page)
+            self.assertIn('data-status',page)
+
+    def test_imf_scope_metadata_is_not_a_regional_total(self):
+        regions=ai.regional_economic_background(offline=True)
+        world=regions['global']['coverage']
+        self.assertTrue(world['is_regional_aggregate'])
+        self.assertEqual(world['count'],1)
+        europe=regions['europe']['coverage']
+        self.assertFalse(europe['is_regional_aggregate'])
+        self.assertGreaterEqual(europe['count'],5)
+        self.assertIn('Switzerland',europe['countries'])
+        self.assertEqual(len(europe['countries']),europe['count'])
+
     def test_navigation_in_every_tab(self):
         for name in ['ai.html','index.html','ct.html','mri.html','pet.html','xray.html']:
             self.assertIn('href="global-macro.html"',(ROOT/name).read_text())
