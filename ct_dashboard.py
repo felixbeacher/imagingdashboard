@@ -167,42 +167,66 @@ REGIONAL_GROUPS = {
 }
 
 
-def ct_trend_scenario(points, mode, through=2027):
-    """Illustrative trend extension from recent, dated OECD observations.
+def _capped_growth(first, last, years, cap):
+    if years < 1 or first <= 0 or last <= 0:
+        raise ValueError('Valid positive observations are required')
+    raw = (last / first)**(1 / years) - 1
+    return max(-cap, min(cap, raw)), raw
 
-    Based on the latest three actual annual points. Geometric annualised
-    endpoint growth is capped at +/-5% (scanners) or +/-8% (examinations).
-    Widening +/-2 percentage-point yearly sensitivity is NOT a confidence band.
+
+def ct_trend_scenario(points, mode, through=2027):
+    """Backtested *illustrative* scenario, not an OECD or statistical forecast.
+
+    Require four consecutive annual observations ending 2024 or later. Fit
+    annualised growth on the first three observations, predict the held-out
+    fourth year, and withhold projections when the held-out relative error is
+    too large. Refit using the latest four actual readings. The +/-2 pp band
+    expresses scenario sensitivity, not a statistical confidence interval.
     """
     if mode not in ('equipment', 'exams'):
         raise ValueError('Unsupported CT trend kind')
-    clean=sorted((p['year'],float(p['value'])) for p in points)
-    if len(clean)<3 or len({y for y,_ in clean})!=len(clean):
-        return {'status':'unavailable','reason':'At least three distinct annual OECD observations are required','points':[]}
-    sample=clean[-3:]
-    first,last=sample[0],sample[-1]
-    elapsed=last[0]-first[0]
-    if (elapsed<2 or elapsed>6 or last[0]<through-4 or
-            first[1]<=0 or last[1]<=0):
-        return {'status':'unavailable','reason':'Recent, positive and sufficiently close observations are required','points':[]}
-    raw=(last[1]/first[1])**(1/elapsed)-1
-    cap=0.05 if mode=='equipment' else 0.08
-    trend=max(-cap,min(cap,raw))
-    future=[]
-    for year in range(last[0]+1,through+1):
-        elapsed_from_latest=year-last[0]
-        middle=last[1]*(1+trend)**elapsed_from_latest
-        lower=last[1]*max(.01,1+trend-.02)**elapsed_from_latest
-        upper=last[1]*(1+trend+.02)**elapsed_from_latest
-        future.append({'year':year,'value':round(middle,3),
-                       'low':round(lower,3),'high':round(upper,3),
-                       'status':'modelled'})
-    return {'status':'illustrative','base_year':last[0],'base_value':round(last[1],3),
-            'start_year':first[0],'start_value':round(first[1],3),
-            'raw_annual_rate':round(raw,6),'annual_rate':round(trend,6),
-            'capped':abs(raw)>cap,'max_rate':cap,'sensitivity_pp':2,
-            'points':future,
-            'method':'Latest three annual actual observations; annualised endpoint growth with transparent cap and +/-2 percentage-point sensitivity.'}
+    series = sorted((p['year'], float(p['value'])) for p in points)
+    if len(series) < 4 or len({y for y, _ in series}) != len(series):
+        return {'status': 'unavailable', 'reason': 'At least four distinct annual OECD observations are required', 'points': []}
+    sample = series[-4:]
+    if (any(sample[i][0] - sample[i-1][0] != 1 for i in range(1, 4))
+            or sample[-1][0] < 2024 or min(v for _, v in sample) <= 0):
+        return {'status': 'unavailable', 'reason': 'Four consecutive recent, positive observation years are required', 'points': []}
+    if sample[-1][0] >= through:
+        return {'status': 'unavailable', 'reason': 'No future scenario years in the requested period', 'points': []}
+    cap = 0.05 if mode == 'equipment' else 0.08
+    error_limit = 0.10 if mode == 'equipment' else 0.15
+    # One-year out-of-sample historical backtest: fit years 1-3; predict year 4.
+    trial_rate, _ = _capped_growth(sample[0][1], sample[2][1], 2, cap)
+    trial_prediction = sample[2][1] * (1 + trial_rate)
+    error = abs(trial_prediction - sample[3][1]) / sample[3][1]
+    if error > error_limit:
+        return {'status': 'unavailable', 'reason':
+                'Held-out annual backtest error exceeds ' + str(round(100 * error_limit)) + '%',
+                'backtest_error_pct': round(error * 100, 2), 'points': []}
+    # Refit across the four *observed* annual readings only.
+    rate, raw = _capped_growth(sample[0][1], sample[-1][1], 3, cap)
+    latest = sample[-1]
+    future = []
+    for year in range(latest[0] + 1, through + 1):
+        n = year - latest[0]
+        scenario = latest[1] * (1 + rate)**n
+        lower = latest[1] * max(0.01, 1 + rate - 0.02)**n
+        upper = latest[1] * (1 + rate + 0.02)**n
+        future.append({'year': year, 'value': round(scenario, 3),
+                       'low': round(lower, 3), 'high': round(upper, 3),
+                       'status': 'modelled'})
+    return {'status': 'illustrative', 'base_year': latest[0],
+            'base_value': round(latest[1], 3),
+            'start_year': sample[0][0], 'start_value': round(sample[0][1], 3),
+            'annual_rate': round(rate, 6), 'raw_annual_rate': round(raw, 6),
+            'backtest_error_pct': round(error * 100, 2),
+            'backtest_limit_pct': round(error_limit * 100, 0),
+            'capped': abs(raw) > cap, 'max_rate': cap,
+            'sensitivity_pp': 2, 'points': future,
+            'method': 'Four recent consecutive annual readings; hold-out final year backtest, '
+                      'then capped endpoint annualised growth with +/-2 percentage point '
+                      'annual-rate sensitivity.'}
 
 
 def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, market_fetch=None):
