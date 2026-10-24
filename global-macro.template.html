@@ -145,7 +145,7 @@ function explainValuation(){
   }
   fig.insertBefore(node('strong','indicator-key','Current reading'),anchor);
   const src=node('div','indicator-source');src.append(node('strong','indicator-key','Source'));
-  const groupLink=fig.closest('.ftse-group')?.querySelector(':scope > p.meta a');
+  const groupLink=/Global CAPE/i.test(heading.textContent)?null:fig.closest('.ftse-group')?.querySelector(':scope > p.meta a');
   if(groupLink){const a=node('a','',groupLink.textContent);a.href=groupLink.href;a.rel='noopener noreferrer';a.target='_blank';src.append(a)}
   else src.append(node('span','','No verified global source'));
   fig.append(src);

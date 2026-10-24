@@ -27,7 +27,7 @@ class GlobalValuationTests(unittest.TestCase):
         data=fetch();self.assertEqual(data['etf']['status'],'unavailable');self.assertNotIn('retrieved_at',data['etf']);self.assertNotIn('percentile',data['buffett'])
     def test_percentile_render_discloses_basis(self):
         page=render(dict(buffett=dict(history=[dict(year=2024,value=120)],percentile=95,median=85,comparison_count=20)))
-        self.assertIn('Elevated relative to history',page);self.assertIn('not establish overvaluation',page)
+        self.assertIn('Elevated relative to history',page);self.assertIn('does not prove they are overpriced',page)
         self.assertIn('Buffett Indicator',page);self.assertNotIn('Institutional View',page)
 
     @patch('global_valuation.urlopen')
