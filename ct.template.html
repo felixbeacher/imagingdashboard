@@ -44,7 +44,7 @@
 
 /* CT market reports: evidence-led comparison rather than an invented market time series */
 .ct-market-section{border-color:#47677d;background:linear-gradient(138deg,#17293b,#111b2a 48%,#111b2a)}
-.ct-market-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.ct-market-feature-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:18px}
 .ct-market-big{font-size:clamp(1.7rem,2.75vw,2.5rem);font-weight:750;color:#e8f8ff;margin:14px 0 5px;letter-spacing:-.035em}
 .ct-market-estimates{display:flex;flex-direction:column;gap:13px;margin:19px 0 15px}
 .ct-market-size-row{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 76px;align-items:center;gap:12px}
@@ -76,6 +76,19 @@
 .ct-region-meta{grid-column:1/-1;color:#abc1d0;font-size:.76rem;margin:-9px 0 4px;line-height:1.5}
 .ct-detail-picker{margin:12px 0 20px}
 @media(max-width:580px){.ct-region-row{grid-template-columns:minmax(0,110px) minmax(0,1fr) 58px;gap:7px}.ct-region-number{font-size:.83rem}}
+
+.ct-aim-title{font-size:1rem;color:#a6e4ff;margin:12px 0 4px;font-weight:740}
+.ct-lag-note{background:#162b3b;border:1px solid #48687d;border-radius:9px;color:#d0e5f2;padding:13px 17px;font-size:.84rem;line-height:1.68;margin:16px 0}
+.ct-projection-legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 12px;color:#b7cedd;font-size:.79rem}
+.ct-projection-legend>span{display:inline-flex;align-items:center;gap:6px}
+.ct-projection-legend i{width:20px;height:4px;display:inline-block;border-radius:2px}
+.ct-key-actual{background:#85ddfa}.ct-key-forecast{background:repeating-linear-gradient(90deg,#f6c06f 0 5px,transparent 5px 8px)}.ct-key-band{background:rgba(247,180,90,.4)}
+.ct-activity-implications{border-top:1px solid #436174;margin-top:26px;padding-top:19px}
+.ct-activity-implications h3{font-size:1.05rem;margin-bottom:11px}
+.ct-tech-single{display:block}
+.ct-industry-share{max-width:900px;margin:18px 0 22px}
+.ct-industry-products-title{padding-top:20px;border-top:1px solid #39546a;font-size:1.08rem}
+.ct-forecast-method{border-left:3px dashed #efbb6d;padding:9px 12px;margin:12px 0;color:#e4d2b4;font-size:.79rem;line-height:1.6;background:#2b251c}
 </style>
 </head>
 <body>
@@ -86,9 +99,10 @@
 </nav></div></header>
 <main class="ct-page">
 <section class="ct-lead" aria-labelledby="ct-page-heading">
-<div class="ct-eyebrow">Imaging modality · computed tomography</div>
 <h2 id="ct-page-heading">CT: capacity, use and innovation</h2>
-<p>Computed tomography uses X-rays and computational reconstruction to create cross-sectional images. This dashboard follows <strong>CT equipment, examinations, clinical practice and technical progress</strong>. Unlike imaging AI—which can be used across modalities—CT is a distinct imaging modality.</p>
+<h3 class="ct-aim-title">Aim of this page</h3>
+<p>To understand CT as a clinical imaging modality and an equipment market: track scanner availability and examination activity, compare regional reporting, follow technology developments and research, and assess competitive industry data using original sources and clearly identified assumptions.</p>
+<p>Computed tomography uses X-rays and computer reconstruction to produce cross-sectional images. The reported figures and modelled scenarios are kept visibly separate.</p>
 <p class="ct-muted">Based on official annual healthcare statistics and current indexed research. An automated refresh does not make annual observations monthly data. <span id="ct-updated"></span></p>
 <div class="ct-control"><label for="ct-region">Explore regional data</label>
 <select id="ct-region" aria-label="Select a CT data region"></select>
@@ -96,7 +110,7 @@
 <p class="ct-muted" id="ct-region-scope">Select a region to compare its available OECD country observations. These are country samples, not a complete regional dataset or calculated regional aggregate.</p>
 </section>
 <nav class="ct-nav" aria-label="On this page">
-<a href="#ct-overview">At a glance</a><a href="#ct-regional-comparison">Regional comparisons</a><a href="#ct-market">CT market</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-interpretation">Implications</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-industry">CT industry</a><a href="#ct-sources">Sources &amp; methodology</a>
+<a href="#ct-overview">At a glance</a><a href="#ct-regional-comparison">Regional comparisons</a><a href="#ct-market">CT market</a><a href="#ct-activity">Capacity &amp; use</a><a href="#ct-research">Latest CT research</a><a href="#ct-clinical">Clinical uses</a><a href="#ct-technology">Technology</a><a href="#ct-industry">CT industry</a><a href="#ct-sources">Sources &amp; methodology</a>
 </nav>
 <section class="ct-card" id="ct-overview" aria-labelledby="ct-overview-heading">
 <h2 id="ct-overview-heading">CT at a glance</h2>
@@ -113,8 +127,8 @@
 <p class="ct-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Some examinations cover hospitals only. No missing observations are treated as zero.</p>
 </section>
 <section class="ct-card ct-market-section" id="ct-market" aria-labelledby="ct-market-heading">
-<h2 id="ct-market-heading">Global CT market: size and manufacturers</h2>
-<p class="ct-muted">A commercial market view alongside the public OECD service statistics. Market-research estimates are not government-reported equipment sales. Manufacturer shares are from a separate dated analyst report, not calculations based on those revenue estimates.</p>
+<h2 id="ct-market-heading">Global CT equipment market size</h2>
+<p class="ct-muted">Published estimates of the global CT scanner and equipment market. These are commercial research estimates, not independently observed CT equipment sales. Manufacturer shares appear with the manufacturer profiles below.</p>
 <div class="ct-market-feature-grid">
 <article class="ct-indicator">
 <h3>CT scanner market size · 2025 estimates</h3>
@@ -125,16 +139,9 @@
 <div id="ct-market-estimate-chart" aria-label="Comparative published CT market-size estimates" class="ct-market-estimates"></div>
 <p class="ct-muted" id="ct-market-variance"></p>
 </article>
-<article class="ct-indicator">
-<h3>Global CT manufacturer shares · DBS estimate</h3>
-<p class="ct-definition"><strong>What it measures</strong>CT manufacturer shares reported in DBS's August 2025 industry guide. The public table does not disclose whether the figures refer to sales revenue, shipments or installed base.</p>
-<p class="ct-definition"><strong>Why it matters for imaging</strong>Shows the estimated competitive concentration of major CT suppliers. It is not a comparison of innovation, equipment performance or CT systems in any selected country.</p>
-<div id="ct-share-bars" class="ct-share-bars" role="list" aria-label="DBS reported CT manufacturer shares, descending order"></div>
-<div id="ct-share-axis" class="ct-share-axis" aria-hidden="true"></div>
-<p class="ct-source" id="ct-share-citation"></p>
-</article>
+
 </div>
-<div class="ct-insight"><strong>Market interpretation, generated from the source estimates:</strong> <span id="ct-market-analysis"></span></div>
+
 <details><summary>Source definitions, dates and estimate limitations</summary>
 <div class="ct-method">
 <p>The market-size figures are published by independent commercial research firms; their segment boundaries, reporting periods and proprietary calculations are not necessarily identical. Their variation is a publisher comparison, not a statistically calculated confidence interval. Forecasts have not been mixed with historical estimates.</p>
@@ -150,14 +157,17 @@
 <article class="ct-indicator" id="ct-scanners"></article>
 <article class="ct-indicator" id="ct-exams"></article>
 </div>
+<div class="ct-lag-note" id="ct-data-lag" aria-live="polite"></div>
+<div class="ct-projection-legend"><span><i class="ct-key-actual"></i> OECD observed</span><span><i class="ct-key-forecast"></i> Modelled trend (2025–2027, where applicable)</span><span><i class="ct-key-band"></i> Sensitivity range, not a confidence interval</span></div>
 <p class="ct-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
-</section>
-<section class="ct-card" id="ct-interpretation" aria-labelledby="ct-interpretation-heading">
-<h2 id="ct-interpretation-heading">From CT trends to imaging decisions</h2>
-<p class="ct-muted">The commentary below is generated from the latest verified observations, including the gap between available years. It is not a forecast.</p>
+<div id="ct-interpretation" class="ct-activity-implications" aria-labelledby="ct-interpretation-heading">
+<h3 id="ct-interpretation-heading">From CT trends to imaging decisions</h3>
+<p class="ct-muted">The historical commentary below is generated from actual OECD observations. Forward scenarios are shown separately and are not official OECD data.</p>
 <div class="ct-grid"><article class="ct-indicator"><h3>What the observed series show</h3><div id="ct-reading" class="ct-insight" aria-live="polite"></div></article>
 <article class="ct-indicator"><h3>What to investigate before acting</h3><div id="ct-next" class="ct-insight"></div></article></div>
+</div>
 </section>
+
 <section class="ct-card" id="ct-research" aria-labelledby="ct-research-heading">
 <h2 id="ct-research-heading">Recently published CT research</h2>
 <p class="ct-muted">Automatically retrieved from PubMed using an explicit computed-tomography search. Publications are selected by date and relevance, not quality or clinical importance. Research relates to a technology and may involve AI, but the focus here is CT itself.</p>
@@ -179,14 +189,25 @@
 </section>
 <section class="ct-card" id="ct-technology" aria-labelledby="ct-technology-heading">
 <h2 id="ct-technology-heading">Technology and service considerations</h2>
-<div class="ct-grid">
+<div class="ct-grid ct-tech-single">
 <article class="ct-indicator"><h3>Technology developments to track</h3><p class="ct-definition"><strong>Photon-counting CT</strong>Energy-resolving detectors offer different information from conventional energy-integrating detectors. Clinical value depends on indication, protocol and accessible evidence.</p><p class="ct-definition"><strong>Iterative and deep-learning reconstruction</strong>These approaches may affect image quality and dose trade-offs, but claims must be evaluated for particular tasks and implementations.</p><p class="ct-definition"><strong>Workflow and spectral imaging</strong>Acquisition speed, contrast protocols, spectral information and service reliability may matter as much as headline specifications.</p></article>
-<article class="ct-indicator"><h3>Radiation and appropriateness</h3><p class="ct-definition"><strong>What it measures</strong>CT uses ionising radiation. National diagnostic reference levels help compare typical exposures for defined clinical examinations; they are not individual patient dose limits.</p><p class="ct-definition"><strong>Why it matters for imaging</strong>Service development should consider justification, indication-specific protocol optimisation and diagnostic image quality alongside capacity.</p><div class="ct-source"><a target="_blank" rel="noopener noreferrer" href="https://www.gov.uk/government/publications/diagnostic-radiology-national-diagnostic-reference-levels-ndrls/ndrl">UK CT diagnostic reference levels</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.fda.gov/radiation-emitting-products/initiative-reduce-unnecessary-radiation-exposure-medical-imaging/white-paper-initiative-reduce-unnecessary-radiation-exposure-medical-imaging">FDA principles of radiation protection</a></div></article>
+
 </div>
 </section>
 <section class="ct-card" id="ct-industry" aria-labelledby="ct-industry-heading">
 <h2 id="ct-industry-heading">Selected CT equipment manufacturers</h2>
-<p class="ct-muted">Examples of established CT product portfolios, with direct links to manufacturers. This is <strong>not</strong> a ranking, market-share comparison or endorsement. Product features, approvals and availability vary by region. These are reference links, not automated sales data.</p>
+<p class="ct-muted">Manufacturer share estimates and examples of established CT product portfolios are shown together for context. The DBS estimates are global, historical and based on an undisclosed denominator; product links are not endorsements or live sales rankings.</p>
+<div class="ct-industry-share"><article class="ct-indicator">
+<h3>Global CT manufacturer shares · DBS estimate</h3>
+<p class="ct-definition"><strong>What it measures</strong>CT manufacturer shares reported in DBS's August 2025 industry guide. The public table does not disclose whether the figures refer to sales revenue, shipments or installed base.</p>
+<p class="ct-definition"><strong>Why it matters for imaging</strong>Shows the estimated competitive concentration of major CT suppliers. It is not a comparison of innovation, equipment performance or CT systems in any selected country.</p>
+<div id="ct-share-bars" class="ct-share-bars" role="list" aria-label="DBS reported CT manufacturer shares, descending order"></div>
+<div id="ct-share-axis" class="ct-share-axis" aria-hidden="true"></div>
+<p class="ct-source" id="ct-share-citation"></p>
+</article></div>
+<div class="ct-insight"><strong>Market interpretation, generated from the source estimates:</strong> <span id="ct-market-analysis"></span></div>
+<h3 class="ct-industry-products-title">Selected CT product portfolios</h3>
+<p class="ct-muted">Manufacturer product information, not a ranking of technological performance or reported equipment revenue.</p>
 <div class="ct-topic-grid">
 <article class="ct-topic"><h3>Siemens Healthineers</h3><p>NAEOTOM photon-counting CT product family.</p><p><a href="https://www.siemens-healthineers.com/computed-tomography/naeotom/naeotom-alpha-prime" target="_blank" rel="noopener noreferrer">Manufacturer product information →</a></p></article>
 <article class="ct-topic"><h3>GE HealthCare</h3><p>Revolution CT portfolio and newer detector technologies.</p><p><a href="https://www.gehealthcare.com/en/products/computed-tomography" target="_blank" rel="noopener noreferrer">Manufacturer CT range →</a></p></article>
@@ -200,8 +221,8 @@
 <div class="ct-source-list" id="ct-source-list"></div>
 <details><summary>Detailed interpretation and update rules</summary><div class="ct-method"><ul>
 <li>OECD capacity is CT scanners per million people. Examination activity is CT examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
-<li>Only published numeric observations are plotted; missing years are not interpolated. The country selector is not a substitute for a validated world aggregate.</li>
-<li>Calculated changes compare two actually observed years and disclose when years are not consecutive. They do not predict future scanner demand, procurement or patient outcomes.</li>
+<li>Published observations are plotted as blue solid lines; modelled extensions to 2027, where evidence is sufficient, use dashed amber lines with a sensitivity band. Missing observed years remain gaps. The country selector is not a validated regional aggregate.</li>
+<li>Trend extensions use the three latest actual observations, annualised endpoint change (cap ±5% for scanner density, ±8% for examination rates), compounded from the latest observed year. Bounds use a ±2-percentage-point annual-rate sensitivity and widen over time; they are illustrative scenarios, not statistical confidence intervals or OECD forecasts. Projections are withheld where records are too sparse or stale. Published 2025 observations, where available, always supersede a forecast for 2025.</li>
 <li>PubMed updates use a transparent CT-specific search and the publication index. Search matches are not a systematic review, market share, CT examination volumes or proof of clinical utility.</li>
 <li>Data are retrieved at automated rebuild time; "retrieved" is not the date that a study or annual CT observation was recorded. Any unavailable source is labelled as such.</li>
 </ul></div></details>
