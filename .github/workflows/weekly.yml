@@ -183,6 +183,54 @@ jobs:
                   handle.write('\n'.join(summary) + '\n')
           PY
 
+      - name: Validate generated AI dashboard and browser script
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import json
+          import re
+          page=Path('_site/ai.html').read_text(encoding='utf-8')
+          required=(
+            'ai-overview-section', 'fda-trend-section', 'ai-research-section',
+            'ai-evidence-section', 'ai-adoption-section', 'ai-industry-section',
+            'ai-news-section', 'ai-source-status-section', 'ai-pubmed-count'
+          )
+          class Inspector(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids=[]
+              def handle_starttag(self, tag, attrs):
+                  for key, value in attrs:
+                      if key == 'id':
+                          self.ids.append(value)
+          inspector=Inspector()
+          inspector.feed(page)
+          if len(inspector.ids) != len(set(inspector.ids)):
+              raise SystemExit('Duplicate AI dashboard element IDs')
+          missing=set(required)-set(inspector.ids)
+          if missing:
+              raise SystemExit('AI dashboard sections missing: '+', '.join(sorted(missing)))
+          for bad in ('AI Approvals vs. MedTech Venture Capital Investment',
+                      'Prospective Clinical Validation'):
+              if bad in page:
+                  raise SystemExit('Retired AI dashboard heading remains: '+bad)
+          if 'fdaSection.hidden=false' not in page:
+              raise SystemExit('FDA benchmark chart not visible by default')
+          match=re.search(r'<script id="ai-dashboard-runtime">([\s\S]*?)</script>',page)
+          if not match:
+              raise SystemExit('AI dashboard browser runtime missing')
+          Path('_site/ai-dashboard.validate.js').write_text(match.group(1),encoding='utf-8')
+          payload=re.search(r'<script id="dashboard-data" type="application/json">([\s\S]*?)</script>',page)
+          if not payload or not json.loads(payload.group(1)).get('fda_benchmark'):
+              raise SystemExit('Source-backed FDA data missing from AI dashboard payload')
+          print('::notice::AI navigation, evidence sections, source payload and unique DOM IDs verified')
+          PY
+          node --check _site/ai-dashboard.validate.js
+          rm _site/ai-dashboard.validate.js
+
       - name: Archive validated iShares valuation readings
         # The public provider exposes current ratios, not a historical download.
         # Preserve only verified source-dated observations for future charting.
