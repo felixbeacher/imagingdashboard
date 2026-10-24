@@ -96,6 +96,28 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 .valuation-expander>summary{font-size:.96rem;font-weight:650;line-height:1.5;min-height:44px;display:flex;align-items:center}
 .valuation-expander[open]>summary{border-bottom:1px solid #355168;margin-bottom:14px}
 @media(max-width:600px){.economic-indicator-grid .trend-panel,.financing-indicator-grid .trend-panel{overflow-x:auto}.economic-indicator-grid .trend-panel svg,.financing-indicator-grid .trend-panel svg{min-width:470px;width:100%;max-width:none}.risk-compact summary{min-height:44px;display:flex;align-items:center}}
+
+.imaging-history{margin:24px 0 16px;border-top:1px solid #36546b;padding-top:22px}
+.imaging-history h3{font-size:1.08rem;color:#ebf7ff;margin-bottom:8px}
+.imaging-history .history-lede{font-size:.85rem;color:#c8dae7;line-height:1.65;max-width:820px}
+.imaging-filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:16px 0}
+.imaging-filters label{font-size:.83rem;color:#c8ddea}
+.imaging-filters select{background:#102239;color:#eaf8ff;border:1px solid #53728c;border-radius:7px;padding:10px;min-height:44px}
+.imaging-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.imaging-history-figure{background:#101e2c;border:1px solid #36546b;border-radius:10px;padding:17px;min-width:0}
+.imaging-history-figure h4{font-size:.98rem;color:#e9f8ff;margin:0 0 7px}
+.imaging-history-figure .history-scope{font-size:.79rem;line-height:1.6;color:#bcd7e7;margin:0}
+.imaging-history-figure .history-plot{overflow-x:auto;margin:14px 0}
+.imaging-history-figure svg{display:block;width:100%;min-width:430px;height:auto}
+.imaging-history-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:#d2e2ec;margin:10px 0}
+.imaging-history-legend span{display:flex;align-items:center;gap:6px}
+.imaging-history-legend i{width:20px;display:inline-block;border-top:3px solid}
+.imaging-history-figure details{margin-top:10px}
+.imaging-history-figure .history-status{font-size:.8rem;line-height:1.55;color:#bfd3e3;margin:12px 0}
+.imaging-history .history-footnote{font-size:.81rem;line-height:1.65;color:#bbcedd;margin:14px 0}
+@media(max-width:920px){.imaging-history-grid{grid-template-columns:1fr}}
+@media(max-width:570px){.imaging-filters label{width:100%}.imaging-filters select{width:100%}}
+
 </style></head><body><a class="skip" href="#main">Skip to economic dashboard</a><header>
 <div class="header-content">
 <div class="title-area">
@@ -132,7 +154,15 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 <article class="decision-item"><h3>Equipment delivery and maintenance</h3><p><strong>Signals to check</strong> Supply-chain pressure and geopolitical events.</p><p><strong>Possible implication</strong> Delays or higher component costs may affect installation and service.</p><p><strong>Next check</strong> Vendor delivery commitments, parts coverage and maintenance contracts.</p></article>
 <article class="decision-item"><h3>Imaging service operating costs</h3><p><strong>Signals to check</strong> Local energy, staffing and general inflation.</p><p><strong>Possible implication</strong> Rising running costs can erode the value of a flat hospital budget.</p><p><strong>Next check</strong> Local utility tariffs, staffing budgets, equipment uptime and contract indexation.</p></article>
 <article class="decision-item"><h3>Sector-specific evidence</h3><p><strong>Signals to check</strong> CT, MRI and PET equipment availability and utilisation.</p><p><strong>Possible implication</strong> Economic conditions alone cannot tell us whether a region needs more scanners.</p><p><strong>Next check</strong> <a href="https://data-explorer.oecd.org/vis?df%5Bag%5D=OECD.ELS.HD&amp;df%5Bds%5D=dsDisseminateFinalDMZ&amp;df%5Bid%5D=DSD_HEALTH_REAC_HOSP%40DF_MED_TECH&amp;df%5Bvs%5D=1.1" target="_blank" rel="noopener noreferrer">OECD medical technology availability data</a>; check country definitions and observation years.</p></article>
-</div><div class="calculator" aria-labelledby="scenario-title"><div><span class="scope-tag">Illustrative scenario · user inputs</span><h3 id="scenario-title">Nominal growth versus purchasing power</h3><p class="explain">Explore how inflation changes a nominal annual budget increase. Defaults illustrate the calculation; they are not forecasts or observed data.</p><label for="nominal-input">Nominal annual budget change (%)</label><input id="nominal-input" type="number" min="-99" max="100" step="0.1" value="5"/><label for="inflation-input">Annual cost inflation (%)</label><input id="inflation-input" type="number" min="-99" max="100" step="0.1" value="3"/></div><div class="calc-result"><p class="metric-label">Implied change in purchasing power</p><output id="real-output" for="nominal-input inflation-input" aria-live="polite">+1.9%</output><p class="meta" id="real-explanation">Calculated from the illustrative inputs.</p><p class="muted-note">A budget increase does not always buy more if prices are rising too. Use inflation that reflects imaging costs, not just ordinary household prices.</p><details><summary>How this is calculated</summary><p class="meta">Purchasing-power change = (1 + budget change) / (1 + cost inflation) − 1, with percentage inputs expressed as proportions.</p></details></div></div></section>
+</div><div class="imaging-history" aria-labelledby="imaging-history-title">
+<h3 id="imaging-history-title">Medical imaging trends</h3>
+<p class="history-lede">Explore annual OECD data for CT, MRI and PET examinations and the availability of scanners. Choose a country and a scanner type. Missing observations are not filled or estimated.</p>
+<div class="imaging-filters"><label for="imaging-country">Country</label>
+<select id="imaging-country"><option value="CHE">Switzerland</option><option value="GBR">United Kingdom</option><option value="USA">United States</option><option value="DEU">Germany</option><option value="FRA">France</option><option value="CAN">Canada</option><option value="AUS">Australia</option><option value="JPN">Japan</option></select>
+<label for="imaging-type">Scanner type</label><select id="imaging-type"><option value="all">CT, MRI and PET</option><option value="CT">CT only</option><option value="MRI">MRI only</option><option value="PET">PET only</option></select></div>
+<p class="history-footnote" id="imaging-observation-status" role="status" aria-live="polite"></p>
+<div class="imaging-history-grid"><article id="imaging-exams" class="imaging-history-figure" aria-label="CT MRI and PET examinations over time"></article><article id="imaging-equipment" class="imaging-history-figure" aria-label="CT MRI and PET scanners per million people over time"></article></div>
+<p class="history-footnote">These series use different units and may cover different provider settings. They cannot, on their own, prove shortages, unused capacity, clinical demand or access to timely scanning. Data availability varies between countries and years.</p></div><div class="calculator" aria-labelledby="scenario-title"><div><span class="scope-tag">Illustrative scenario · user inputs</span><h3 id="scenario-title">Nominal growth versus purchasing power</h3><p class="explain">Explore how inflation changes a nominal annual budget increase. Defaults illustrate the calculation; they are not forecasts or observed data.</p><label for="nominal-input">Nominal annual budget change (%)</label><input id="nominal-input" type="number" min="-99" max="100" step="0.1" value="5"/><label for="inflation-input">Annual cost inflation (%)</label><input id="inflation-input" type="number" min="-99" max="100" step="0.1" value="3"/></div><div class="calc-result"><p class="metric-label">Implied change in purchasing power</p><output id="real-output" for="nominal-input inflation-input" aria-live="polite">+1.9%</output><p class="meta" id="real-explanation">Calculated from the illustrative inputs.</p><p class="muted-note">A budget increase does not always buy more if prices are rising too. Use inflation that reflects imaging costs, not just ordinary household prices.</p><details><summary>How this is calculated</summary><p class="meta">Purchasing-power change = (1 + budget change) / (1 + cost inflation) − 1, with percentage inputs expressed as proportions.</p></details></div></div></section>
 <section id="valuation-section" aria-labelledby="valuation-title" class="card"><span class="scope-tag">Global equities · source-fed observations</span><h2 id="valuation-title">Global share-market valuations</h2><p class="explain section-intro">An optional investor perspective: these are broad global share-market indicators, not evidence about the value of a scanner or an individual imaging company.</p>
 <details class="valuation-expander"><summary>Explore global share valuations (P/E, price-to-book and Buffett Indicator)</summary><!-- GLOBAL_VALUATION --></details><details><summary>Other ways to assess share prices (plain-English guide)</summary><div class="table-wrap"><table class="metric-guide"><caption class="meta">Plain-English explanations. This table does not show live figures.</caption><thead><tr><th scope="col">Measure</th><th scope="col">What it measures</th><th scope="col">Why it matters</th><th scope="col">Main limitation</th></tr></thead><tbody><tr><th scope="row">P/E and CAPE</th><td>Share prices compared with profits, sometimes averaged over several years.</td><td>Shows how highly investors value businesses.</td><td>Growing companies may deserve higher ratios, and future profits are uncertain.</td></tr><tr><th scope="row">Price-to-book and price-to-sales</th><td>Share prices compared with the assets or sales recorded by companies.</td><td>Offers other ways to compare imaging manufacturers and software businesses.</td><td>Research, software and brand value can be missed; sales do not show profits.</td></tr><tr><th scope="row">Company value and cash flow</th><td>Business value, including debt, compared with money generated by operations.</td><td>Cash generation matters for funding research, new equipment and service commitments.</td><td>Some measures leave out important costs, and definitions vary.</td></tr><tr><th scope="row">Dividends and inflation</th><td>Cash paid to shareholders compared with price rises.</td><td>Helps put investment income and purchasing power into context.</td><td>Dividends can fall and are only part of the return.</td></tr><tr><th scope="row">Shares compared with gold</th><td>How shares have changed in value relative to gold.</td><td>Offers another view of investor confidence and market conditions.</td><td>Currency choices and dividends can change the result.</td></tr><tr><th scope="row">Stock-market value compared with GDP</th><td>The value of listed shares compared with the size of an economy.</td><td>Gives broad context for whether shares look expensive.</td><td>Many businesses are private and listed companies earn money abroad.</td></tr></tbody></table></div><p class="meta">Reference methods: <a href="https://www.lseg.com/en/ftse-russell/indices/ftse100" target="_blank" rel="noopener">FTSE Russell index documentation</a> · <a href="https://shillerdata.com/" target="_blank" rel="noopener">Robert Shiller historical market data</a>. Assessment reviewed 16 October 2026.</p></details>
 </section>
@@ -472,5 +502,98 @@ for(const m of data.financing||[]){
 }
 if(!(data.financing||[]).length)byId('financing-cards').append(node('p','meta','Financing benchmarks are unavailable in this build. Use the source routes below.'));
 function scenario(){const n=byId('nominal-input'),i=byId('inflation-input');if(n.value===''||i.value===''||!n.checkValidity()||!i.checkValidity()){byId('real-output').textContent='Check inputs';byId('real-explanation').textContent='Enter values between −99% and 100%.';return;}const real=((1+Number(n.value)/100)/(1+Number(i.value)/100)-1)*100;byId('real-output').textContent=(real>0?'+':'')+fmt(real)+'%';byId('real-explanation').textContent='With these figures, spending power would '+(real>=0?'rise':'fall')+'. This is an example, not a forecast.';}
+
+const IMAGING_COLORS={CT:'#80d7f8',MRI:'#9ce1ba',PET:'#e8b67a'};
+function imagingHistoryFigure(mode,item,type,country){
+ const panel=byId(mode==='exams'?'imaging-exams':'imaging-equipment');
+ panel.replaceChildren();
+ const label=mode==='exams'?'CT, MRI and PET examinations':'CT, MRI and PET scanner availability';
+ const unit=mode==='exams'?'Examinations per 1,000 people':'Scanners per million people';
+ panel.append(node('h4','',label),node('p','history-scope',unit+' · '+(item?.scope||'Coverage unavailable')));
+ const names=type==='all'?['CT','MRI','PET']:[type];
+ const lines=names.map(name=>({name,points:(Array.isArray(item?.series?.[name])?item.series[name]:[])
+  .filter(p=>p&&Number.isInteger(p.year)&&p.year>=2015&&p.year<=2100&&Number.isFinite(p.value)&&p.value>=0)
+  .sort((a,b)=>a.year-b.year)}));
+ const all=lines.flatMap(s=>s.points);
+ if(all.length){
+  const minYear=Math.min(...all.map(p=>p.year)),maxYear=Math.max(...all.map(p=>p.year));
+  const maxValue=Math.max(...all.map(p=>p.value)),upper=Math.max(1,Math.ceil(maxValue*1.13/5)*5);
+  const width=670,height=265,left=62,right=650,top=22,bottom=203;
+  const xp=y=>left+(y-minYear)/Math.max(1,maxYear-minYear)*(right-left),yp=v=>bottom-v/upper*(bottom-top);
+  const g=(tag,attrs={},value)=>{
+   const e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+   for(const [key,val] of Object.entries(attrs))e.setAttribute(key,String(val));
+   if(value!==undefined)e.textContent=value;
+   return e;
+  };
+  const svg=g('svg',{viewBox:'0 0 '+width+' '+height,role:'img','aria-label':label+' for '+country+' between '+minYear+' and '+maxYear+'. See the table for exact observed values.'});
+  svg.append(g('title',{},label),g('desc',{},'Annual OECD data; missing years are not connected.'));
+  for(let n=0;n<=4;n++){
+   const y=upper*n/4,py=yp(y);
+   svg.append(g('line',{x1:left,x2:right,y1:py,y2:py,stroke:'#385367','stroke-dasharray':n?'3 5':''}));
+   svg.append(g('text',{x:left-8,y:py+4,'text-anchor':'end','font-size':'13',fill:'#bfd6e6'},Number(y.toFixed(1)).toString()));
+  }
+  for(let n=0;n<=4;n++){
+   const year=minYear+Math.round((maxYear-minYear)*n/4);
+   if(n&&year===minYear)continue;
+   svg.append(g('text',{x:xp(year),y:bottom+25,'text-anchor':n===0?'start':n===4?'end':'middle','font-size':'13',fill:'#c1d9e8'},String(year)));
+  }
+  const legend=node('div','imaging-history-legend');
+  for(const line of lines){
+   const part=node('span');const stroke=node('i');stroke.style.borderColor=IMAGING_COLORS[line.name];
+   part.append(stroke,document.createTextNode(line.name+' ('+line.points.length+' years)'));legend.append(part);
+   for(let n=0;n<line.points.length;n++){
+    const p=line.points[n],prior=line.points[n-1],x=xp(p.year),y=yp(p.value);
+    // Year gaps are deliberately not connected.
+    if(prior&&p.year===prior.year+1){
+     svg.append(g('line',{x1:xp(prior.year),y1:yp(prior.value),x2:x,y2:y,stroke:IMAGING_COLORS[line.name],'stroke-width':3,'stroke-linecap':'round'}));
+    }
+    const mark=g('circle',{cx:x,cy:y,r:4,fill:IMAGING_COLORS[line.name]});
+    mark.append(g('title',{},line.name+' '+p.year+': '+p.value+' '+unit.toLowerCase()));
+    svg.append(mark);
+   }
+  }
+  const wrap=node('div','history-plot');wrap.append(svg);panel.append(legend,wrap);
+  const rows=node('details'),table=node('table');rows.append(node('summary','','See published annual values'));
+  const header=node('thead'),head=node('tr');
+  for(const name of ['Year',...names]){
+   const th=node('th','',name);th.scope='col';head.append(th);
+  }
+  header.append(head);table.append(header);
+  const years=[...new Set(all.map(p=>p.year))].sort((a,b)=>b-a);
+  const body=node('tbody');
+  for(const year of years){
+   const tr=node('tr');tr.append(node('td','',String(year)));
+   for(const l of lines){
+    const obs=l.points.find(p=>p.year===year);
+    tr.append(node('td','',obs?Number(obs.value).toLocaleString('en-GB',{maximumFractionDigits:2}):'—'));
+   }
+   body.append(tr);
+  }
+  table.append(body);rows.append(table);panel.append(rows);
+ }else{
+  panel.append(node('p','history-status',item?.reason||'No comparable OECD data are available for this selection. No values have been substituted.'));
+ }
+ const foot=node('p','history-status');
+ foot.append(node('span','','OECD Health Statistics · '+(data.imaging?.checked?'checked '+data.imaging.checked:'source not checked')));
+ const source=data.imaging?.sources?.[mode];
+ if(typeof source==='string'&&source.startsWith('https://')){
+  const a=node('a','',' · View source');a.href=source;a.target='_blank';a.rel='noopener noreferrer';foot.append(a);
+ }
+ panel.append(foot);
+}
+function showImagingHistory(){
+ const code=byId('imaging-country').value,focus=byId('imaging-type').value;
+ const item=data.imaging?.countries?.[code];
+ const name=byId('imaging-country').selectedOptions[0].textContent;
+ const checked=data.imaging?.checked||'not checked';
+ byId('imaging-observation-status').textContent='Country: '+name+' · source checked: '+checked+'. Charts may have different setting coverage; each chart states its own scope.';
+ imagingHistoryFigure('exams',item?.exams,focus,name);
+ imagingHistoryFigure('equipment',item?.equipment,focus,name);
+}
+byId('imaging-country').addEventListener('change',showImagingHistory);
+byId('imaging-type').addEventListener('change',showImagingHistory);
+showImagingHistory();
+
 byId('nominal-input').addEventListener('input',scenario);byId('inflation-input').addEventListener('input',scenario);scenario();
 </script></body></html>
