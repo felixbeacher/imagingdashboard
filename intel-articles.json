@@ -1,12 +1,44 @@
 {
   "edition": "2026-10-25",
-  "mode": "pilot",
+  "mode": "automated",
   "articles": [
+    {
+      "id": "news-2d4aff8a12ac02d4",
+      "category": "ma",
+      "date": "2026-10-21",
+      "region": "Location not independently verified",
+      "title": "Capitol Imaging Services expands in South Florida, acquiring 4 centers",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/mergers-and-acquisitions/capitol-imaging-services-expands-south-florida-acquiring-4-centers",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-10-25",
+      "created": "2026-10-25"
+    },
+    {
+      "id": "news-cdcb25cd8fd0dcf7",
+      "category": "ma",
+      "date": "2026-10-21",
+      "region": "Location not independently verified",
+      "title": "Radiology Partners pivots to ‘junk bonds’ for key acquisition amid weak lending market",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-economics/radiology-partners-pivots-junk-bonds-key-acquisition-amid-weak-lending-market",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-10-25",
+      "created": "2026-10-25"
+    },
     {
       "id": "subtle-europe",
       "category": "partnerships",
       "date": "2026-10-20",
-      "region": "UK \u00b7 Italy",
+      "region": "UK · Italy",
       "title": "Subtle Medical adds local distribution in the UK and Italy",
       "source": "Subtle Medical",
       "url": "https://subtlemedical.com/subtle-medical-adds-distribution-partners-in-the-uk-and-italy-to-support-european-growth/",
@@ -16,6 +48,38 @@
       "watch": "Look for named customer deployments and independently measured workflow results. A distribution agreement does not establish a hospital rollout or prove shorter waiting lists."
     },
     {
+      "id": "news-0d1110ab3ce328ab",
+      "category": "regulatory",
+      "date": "2026-10-19",
+      "region": "Location not independently verified",
+      "title": "FDA clears AI tool for assessing breast cancer recurrence risk via MRI",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/artificial-intelligence/fda-clears-ai-tool-assessing-breast-cancer-recurrence-risk-mri",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-10-25",
+      "created": "2026-10-25"
+    },
+    {
+      "id": "news-df2f6d949e39deea",
+      "category": "funding",
+      "date": "2026-10-16",
+      "region": "Location not independently verified",
+      "title": "Radiology software firm Sirona Medical raises $40M in Series D financing",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-economics/radiology-software-firm-sirona-medical-raises-40m-series-d-financing",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Look for a concrete delivery roadmap and evidence of customer adoption. Buyers can ask how the funding will support implementation and long-term product maintenance.",
+      "watch": "Funding does not establish profitability, cash runway or commercial success. Check the disclosed financing terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-10-25",
+      "created": "2026-10-25"
+    },
+    {
       "id": "ge-sofie",
       "category": "ma",
       "date": "2026-10-05",
@@ -23,7 +87,7 @@
       "title": "GE HealthCare moves towards PET tracer supply with SOFIE deal",
       "source": "GE HealthCare",
       "url": "https://www.gehealthcare.com/en/about/newsroom/press-releases/ge-healthcare-to-acquire-sofie-biosciences-establishing-a-final-mile-footprint-for-pet-radiopharmaceutical-supply-in-the-us",
-      "status": "Agreement announced \u00b7 completion pending",
+      "status": "Agreement announced · completion pending",
       "summary": "GE HealthCare announced an agreement to acquire SOFIE Biosciences for $945 million in cash. The announcement describes a US PET radiopharmaceutical manufacturing network and an expected closing in the first half of 2027, subject to conditions including regulatory approvals.",
       "meaning": "For PET providers, tracer availability deserves attention alongside scanner capacity. Examine local delivery coverage, backup arrangements and supplier concentration. For imaging suppliers, the proposed combination suggests a closer commercial link between equipment and radiopharmaceutical infrastructure; its operational effects remain to be demonstrated.",
       "watch": "Track closing conditions and subsequent service arrangements. This is an announced transaction, not a completed acquisition."
@@ -45,7 +109,7 @@
       "id": "subtle-funding",
       "category": "funding",
       "date": "2026-06-02",
-      "region": "United States \u00b7 Global expansion",
+      "region": "United States · Global expansion",
       "title": "Subtle Medical announces $33 million to support commercial expansion",
       "source": "Subtle Medical",
       "url": "https://subtlemedical.com/subtle-medical-secures-33-million-in-growth-capital-led-by-morgan-stanley-expansion-capital-and-appoints-industry-veteran-ohad-arazi-as-ceo/",
@@ -54,5 +118,47 @@
       "meaning": "For buyers, funding can prompt useful questions about product support and the delivery roadmap, but it does not guarantee financial durability. For competitors and investors, watch execution: commercial adoption, renewal evidence and the pace of product delivery matter more than the funding headline alone.",
       "watch": "The announcement does not disclose enough information to assess valuation, profitability or cash runway. Avoid treating the funding amount as a measure of commercial success."
     }
-  ]
+  ],
+  "backend": {
+    "last_attempt": "2026-10-25",
+    "sources": [
+      {
+        "name": "Radiology Business",
+        "status": "ok"
+      },
+      {
+        "name": "AuntMinnie",
+        "status": "ok"
+      },
+      {
+        "name": "FDA News",
+        "status": "ok"
+      },
+      {
+        "name": "Google News · regulatory",
+        "status": "unavailable",
+        "reason": "HTTPError"
+      },
+      {
+        "name": "Google News · ma",
+        "status": "unavailable",
+        "reason": "HTTPError"
+      },
+      {
+        "name": "Google News · funding",
+        "status": "unavailable",
+        "reason": "HTTPError"
+      },
+      {
+        "name": "Google News · partnerships",
+        "status": "unavailable",
+        "reason": "HTTPError"
+      }
+    ],
+    "new_articles": 4,
+    "ai_articles": 0,
+    "ai_errors": 0,
+    "ai_enabled": false,
+    "successful_sources": 3
+  }
 }

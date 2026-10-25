@@ -1,0 +1,52 @@
+name: Intel Feed Refresh
+on:
+  schedule:
+    # 07:35 UTC daily; schedules can be delayed by GitHub.
+    - cron: '35 7 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/intel-feed.yml'
+      - 'intel_collect.py'
+      - 'test_intel_backend.py'
+permissions:
+  contents: read
+concurrency:
+  group: imaging-dashboard-pages
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Test collector and renderer
+        run: python -m unittest test_intel_backend -v
+      - name: Collect news and create briefings
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INTEL_ENABLE_AI: ${{ vars.INTEL_ENABLE_AI || 'false' }}
+          INTEL_FREE_TIER_CONFIRMED: ${{ vars.INTEL_FREE_TIER_CONFIRMED || 'false' }}
+          INTEL_GEMINI_MODEL: ${{ vars.INTEL_GEMINI_MODEL || 'gemini-3.8-flash' }}
+        run: |
+          python intel_collect.py --limit 4
+          python intel_build.py
+      - name: Archive the updated feed
+        run: |
+          if ! git diff --quiet -- intel-articles.json intel-*.html; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add intel-articles.json intel-*.html
+            git commit -m 'Refresh Intel Feed briefings [skip ci]'
+            git push origin HEAD:main
+          fi
+      # The successful workflow_run event starts Weekly Dashboard Update,
+      # which builds and deploys the complete site from the latest main branch.

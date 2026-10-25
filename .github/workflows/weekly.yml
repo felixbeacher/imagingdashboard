@@ -9,6 +9,10 @@ on:
     # Every Monday at 06:17 UTC (07:17 UK time during British Summer Time).
     - cron: '17 6 * * 1'
   workflow_dispatch:
+  workflow_run:
+    workflows: [Intel Feed Refresh]
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -33,7 +37,7 @@ permissions:
 jobs:
   update-news:
     # Publish from the default branch, including manually triggered runs.
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
