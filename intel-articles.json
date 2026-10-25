@@ -1,0 +1,58 @@
+{
+  "edition": "2026-10-25",
+  "mode": "pilot",
+  "articles": [
+    {
+      "id": "subtle-europe",
+      "category": "partnerships",
+      "date": "2026-10-20",
+      "region": "UK \u00b7 Italy",
+      "title": "Subtle Medical adds local distribution in the UK and Italy",
+      "source": "Subtle Medical",
+      "url": "https://subtlemedical.com/subtle-medical-adds-distribution-partners-in-the-uk-and-italy-to-support-european-growth/",
+      "status": "Distribution agreements announced",
+      "summary": "Subtle Medical announced distribution agreements with AMG Medtech in the UK and Medical Horizons in Italy for its MRI and PET image-enhancement software. The company says the partners add local sales, implementation and support capacity.",
+      "meaning": "For imaging providers, local implementation support is worth examining alongside the software itself. Ask who will train staff, resolve integration problems and support a mixed scanner fleet. Suppliers should watch whether distributor relationships translate into named deployments and repeat business.",
+      "watch": "Look for named customer deployments and independently measured workflow results. A distribution agreement does not establish a hospital rollout or prove shorter waiting lists."
+    },
+    {
+      "id": "ge-sofie",
+      "category": "ma",
+      "date": "2026-10-05",
+      "region": "United States",
+      "title": "GE HealthCare moves towards PET tracer supply with SOFIE deal",
+      "source": "GE HealthCare",
+      "url": "https://www.gehealthcare.com/en/about/newsroom/press-releases/ge-healthcare-to-acquire-sofie-biosciences-establishing-a-final-mile-footprint-for-pet-radiopharmaceutical-supply-in-the-us",
+      "status": "Agreement announced \u00b7 completion pending",
+      "summary": "GE HealthCare announced an agreement to acquire SOFIE Biosciences for $945 million in cash. The announcement describes a US PET radiopharmaceutical manufacturing network and an expected closing in the first half of 2027, subject to conditions including regulatory approvals.",
+      "meaning": "For PET providers, tracer availability deserves attention alongside scanner capacity. Examine local delivery coverage, backup arrangements and supplier concentration. For imaging suppliers, the proposed combination suggests a closer commercial link between equipment and radiopharmaceutical infrastructure; its operational effects remain to be demonstrated.",
+      "watch": "Track closing conditions and subsequent service arrangements. This is an announced transaction, not a completed acquisition."
+    },
+    {
+      "id": "subtle-ct",
+      "category": "regulatory",
+      "date": "2026-06-10",
+      "region": "United States",
+      "title": "Subtle Medical reports FDA clearance for CT image enhancement",
+      "source": "Subtle Medical",
+      "url": "https://subtlemedical.com/subtle-medical-receives-fda-clearance-for-subtlehdct-expanding-ai-powered-image-enhancement-into-ct-imaging/",
+      "status": "Company-reported FDA clearance",
+      "summary": "Subtle Medical reported FDA clearance for SubtleHD(CT), extending its image-enhancement portfolio into CT. The company describes software intended to reduce image noise and improve low-contrast detectability across CT systems.",
+      "meaning": "For procurement teams, the next question is whether the cleared use matches your scanners, protocols and clinical tasks. Request the regulatory documentation and assess image quality locally before changing acquisition settings. For suppliers, cross-modality expansion is a competitive signal rather than evidence of adoption.",
+      "watch": "The FDA decision record has not been independently matched in this pilot. Clearance should not be read as proof of better patient outcomes or permission to use the product in every jurisdiction."
+    },
+    {
+      "id": "subtle-funding",
+      "category": "funding",
+      "date": "2026-06-02",
+      "region": "United States \u00b7 Global expansion",
+      "title": "Subtle Medical announces $33 million to support commercial expansion",
+      "source": "Subtle Medical",
+      "url": "https://subtlemedical.com/subtle-medical-secures-33-million-in-growth-capital-led-by-morgan-stanley-expansion-capital-and-appoints-industry-veteran-ohad-arazi-as-ceo/",
+      "status": "Growth financing announced",
+      "summary": "Subtle Medical announced $33 million in growth capital, anchored by a Series C financing led by funds managed by Morgan Stanley Expansion Capital. It also named Ohad Arazi as CEO and said the funding would support product development and global commercial expansion.",
+      "meaning": "For buyers, funding can prompt useful questions about product support and the delivery roadmap, but it does not guarantee financial durability. For competitors and investors, watch execution: commercial adoption, renewal evidence and the pace of product delivery matter more than the funding headline alone.",
+      "watch": "The announcement does not disclose enough information to assess valuation, profitability or cash runway. Avoid treating the funding amount as a measure of commercial success."
+    }
+  ]
+}
