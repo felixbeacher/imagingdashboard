@@ -16,6 +16,7 @@ Unconnected adoption/commercial indicators still require sourced curated data.
 from __future__ import annotations
 
 import argparse
+import eudamed
 import html
 import copy
 import csv
@@ -1279,6 +1280,7 @@ def build_dashboard(data_path=None, offline=False, ai_commentary=False, fda_sour
         if payload['public_context'][key]['value'] is None:
             payload['public_context'][key]['label'] = ('US overnight financing rate proxy'
                 if key == 'policy_rate' else 'US medical-care CPI proxy')
+    payload['eudamed'] = eudamed.collect(offline=offline)
     payload['ai_coverage'] = ai_coverage_report(payload)
     logging.info('AI coverage: FDA=%s, registered research=%s/6 views, headlines=%s. '
                  'Other indicators require separately sourced observations.',
@@ -1599,6 +1601,7 @@ def render_template(template, payload, fallback_theme=False):
     status = '<section id="ai-source-status-section" class="card" style="margin-top:24px"><h2>Sources, observation dates and limitations</h2><p class="metric-desc">Retrieval dates are not observation dates. FDA listings are not global adoption; ClinicalTrials.gov counts are research activity; the publication feed is selective.</p><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
     output = output.replace('</main>', status + '\n</main>')
 
+    output = output.replace('<!-- EUDAMED_REGISTRATION_FEED -->', eudamed.render(payload.get('eudamed', {})))
     runtime = RUNTIME.replace('__DATA__', safe_json(payload))
     output = output.replace('</body>', runtime + '\n</body>')
     if fallback_theme:
@@ -1800,7 +1803,7 @@ def template_view(payload):
         sources.pop(chart_source, None)
     return dict(generated_at=payload['generated_at'], regions=regions, sources=sources,
                 sourceHealth=source_health(payload), registryChart=chart, clinicalEvidence=payload.get('clinical_evidence', {}),
-                deploymentEvidence=payload.get('deployment_evidence', {}))
+                deploymentEvidence=payload.get('deployment_evidence', {}), eudamed=payload.get('eudamed', {}))
 
 
 def render_dashboard(template, payload):

@@ -206,6 +206,7 @@ def empty_oecd():
 # Country annual series are independently published OECD observations. We never
 # average differently dated observations or relabel a sampled country as a region.
 REGIONAL_GROUPS = {
+    'global': {'name': 'Worldwide', 'countries': ['CHE', 'GBR', 'DEU', 'FRA', 'USA', 'CAN', 'AUS', 'JPN']},
     'europe': {'name': 'Europe', 'countries': ['CHE', 'GBR', 'DEU', 'FRA']},
     'northAmerica': {'name': 'North America', 'countries': ['USA', 'CAN']},
     'asiaPacific': {'name': 'Asia-Pacific', 'countries': ['AUS', 'JPN']},

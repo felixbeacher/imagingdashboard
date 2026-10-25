@@ -276,7 +276,7 @@ function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith(
 function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
 function stat(title,value,period){const box=el('article','ct-stat');box.append(el('h3','',title),el('div','ct-value',value),el('small','',period));return box}
 const regionSelect=$('ct-region'),REGIONS=ctData.regional_groups||{};
-const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1'];
+const CT_COUNTRY_COLORS=['#81d9f6','#b6e29d','#ddb6f5','#f4c277','#9eaff1','#f29eae','#80cfbd','#d9d580'];
 function regionalHistory(regionKey,kind,label,unit){
  const group=REGIONS[regionKey],countries=ctData.oecd?.countries||{};
  const rows=(group?.countries||[]).filter(code=>countries[code]).map((code,i)=>{
@@ -450,7 +450,7 @@ function setRegionalOverview(regionKey){
  const latestS=latestPoint(scanners),latestE=latestPoint(exams);
  const includedYears=[...scanners,...exams].filter(x=>x.point).map(x=>x.point.year);
  const youngest=Math.max(0,...includedYears),oldest=includedYears.length?Math.min(...includedYears):null;
- $('ct-region-scope').textContent=name+' · '+total+' OECD country samples. The region selector changes CT service statistics only; market, vendor shares and selected research are global.';
+ $('ct-region-scope').textContent=name+' · '+total+' selected OECD country samples, not a world or regional total. The region selector changes CT service statistics only; market, vendor shares and selected research are global.';
  $('ct-regional-heading').textContent=name+' · CT country comparisons';
  $('ct-comparison-note').textContent='Country readings refer to different observation years and, sometimes, different healthcare-provider coverage. Countries follow the listed sample order, not a ranking.';
  $('ct-comparison-warning').textContent=oldest===null?
@@ -510,9 +510,8 @@ function renderSources(){
 for(const [key,region] of Object.entries(REGIONS)){
  const option=el('option','',region.name);option.value=key;regionSelect.append(option);
 }
-const params=new URLSearchParams(location.search),regionParam=params.get('region'),oldCountry=params.get('country');
-const inferred=Object.keys(REGIONS).find(key=>REGIONS[key].countries.includes(oldCountry));
-const initial=REGIONS[regionParam]?regionParam:inferred||Object.keys(REGIONS)[0];
+const params=new URLSearchParams(location.search),regionParam=params.get('region');
+const initial=REGIONS[regionParam]?regionParam:'global';
 regionSelect.addEventListener('change',()=>chooseRegion(regionSelect.value));
 if(initial)chooseRegion(initial);else $('ct-stat-grid').textContent='No regional CT data configured.';
 const CT_SHARE_COLOURS=['#79c9ef','#9ad7c6','#edc68a','#d0afed','#f4a9ab','#8195a9'];

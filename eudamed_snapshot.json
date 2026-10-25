@@ -1,0 +1,128 @@
+{
+  "status": "live",
+  "attempted_at": "2026-10-25T19:58:31.187538+00:00",
+  "items": [
+    {
+      "trade_name": "qXR",
+      "manufacturer": "Qure.ai Technologies Private Limited",
+      "udi_di": "00860005118168",
+      "basic_udi": "08600051181qER-NCCTTL",
+      "reference": "v4.0",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIb",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=qXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    },
+    {
+      "trade_name": "Lunit INSIGHT CXR",
+      "manufacturer": "Lunit Inc.",
+      "udi_di": "08800076000094",
+      "basic_udi": "88000760CXRXN",
+      "reference": "113012",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIa",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    },
+    {
+      "trade_name": "Lunit INSIGHT CXR",
+      "manufacturer": "Lunit Inc.",
+      "udi_di": "08800076000193",
+      "basic_udi": "88000760CXRXN",
+      "reference": "113212",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIa",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    },
+    {
+      "trade_name": "Lunit INSIGHT CXR",
+      "manufacturer": "Lunit Inc.",
+      "udi_di": "08800076000209",
+      "basic_udi": "88000760CXRXN",
+      "reference": "113212",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIa",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    },
+    {
+      "trade_name": "Lunit INSIGHT CXR",
+      "manufacturer": "Lunit Inc.",
+      "udi_di": "08800076000100",
+      "basic_udi": "88000760CXRXN",
+      "reference": "113012",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIa",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    },
+    {
+      "trade_name": "Lunit INSIGHT CXR",
+      "manufacturer": "Lunit Inc.",
+      "udi_di": "08800076000155",
+      "basic_udi": "88000760CXRXN",
+      "reference": "113012",
+      "legislation": "MDR (REGULATION (EU) 2017/745 on medical devices)",
+      "risk_class": "Class IIa",
+      "market_status": "On the EU market",
+      "record_status": "Active",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "retrieved_at": "2026-10-25T19:58:31.187538+00:00"
+    }
+  ],
+  "searches": [
+    {
+      "term": "qXR",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=qXR&format=json&api-version=v1.0",
+      "status": "retrieved",
+      "records": 1,
+      "checked_at": "2026-10-25T19:58:31.187538+00:00",
+      "reason": ""
+    },
+    {
+      "term": "qER",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=qER&format=json&api-version=v1.0",
+      "status": "retrieved",
+      "records": 0,
+      "checked_at": "2026-10-25T19:58:31.187538+00:00",
+      "reason": ""
+    },
+    {
+      "term": "Lunit INSIGHT CXR",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=Lunit+INSIGHT+CXR&format=json&api-version=v1.0",
+      "status": "retrieved",
+      "records": 5,
+      "checked_at": "2026-10-25T19:58:31.187538+00:00",
+      "reason": ""
+    },
+    {
+      "term": "SubtleMR",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=SubtleMR&format=json&api-version=v1.0",
+      "status": "retrieved",
+      "records": 0,
+      "checked_at": "2026-10-25T19:58:31.187538+00:00",
+      "reason": ""
+    },
+    {
+      "term": "BriefCase",
+      "source_url": "https://api.datalake.sante.service.ec.europa.eu/eudamed/udi?TRADE_NAME=BriefCase&format=json&api-version=v1.0",
+      "status": "retrieved",
+      "records": 0,
+      "checked_at": "2026-10-25T19:58:31.187538+00:00",
+      "reason": ""
+    }
+  ],
+  "errors": [],
+  "reason": "Selected exact-name registrations, not a complete EU imaging-AI register or an approval count."
+}
