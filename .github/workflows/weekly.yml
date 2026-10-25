@@ -19,6 +19,7 @@ on:
       - '*.csv'
       - '*.svg'
       - 'styles.css'
+      - 'intel-feed.css'
       - 'images/**'
 
 # Serialize publication so scheduled and manual runs cannot race each other.
@@ -100,7 +101,7 @@ jobs:
           if output.exists():
               shutil.rmtree(output)
           (output / 'images').mkdir(parents=True)
-          for filename in ('index.html', 'styles.css', 'images/earth-hero.png'):
+          for filename in ('index.html', 'styles.css', 'images/earth-hero.png', 'intel-feed.css', 'intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
               shutil.copy2(root / filename, output / filename)
           # Preserve the other source pages without running their unfinished updaters.
           for filename in ('pet.html', 'xray.html'):
