@@ -1,8 +1,8 @@
 name: Intel Feed Refresh
 on:
   schedule:
-    # 07:35 UTC daily; schedules can be delayed by GitHub.
-    - cron: '35 7 * * *'
+    # Mondays at 07:35 UTC (07:35 UK winter / 08:35 UK summer).
+    - cron: '35 7 * * 1'
   workflow_dispatch:
   push:
     branches: [main]
@@ -33,8 +33,9 @@ jobs:
       - name: Collect news and create briefings
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          INTEL_ENABLE_AI: ${{ vars.INTEL_ENABLE_AI || 'false' }}
-          INTEL_FREE_TIER_CONFIRMED: ${{ vars.INTEL_FREE_TIER_CONFIRMED || 'false' }}
+          # Owner confirmed the existing Gemini project is free tier on 25 Oct 2026.
+          INTEL_ENABLE_AI: ${{ vars.INTEL_ENABLE_AI || 'true' }}
+          INTEL_FREE_TIER_CONFIRMED: ${{ vars.INTEL_FREE_TIER_CONFIRMED || 'true' }}
           INTEL_GEMINI_MODEL: ${{ vars.INTEL_GEMINI_MODEL || 'gemini-3.8-flash' }}
         run: |
           python intel_collect.py --limit 4
