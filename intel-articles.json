@@ -136,29 +136,57 @@
       },
       {
         "name": "Google News · regulatory",
-        "status": "unavailable",
-        "reason": "HTTPError"
+        "status": "ok"
       },
       {
         "name": "Google News · ma",
-        "status": "unavailable",
-        "reason": "HTTPError"
+        "status": "ok"
       },
       {
         "name": "Google News · funding",
-        "status": "unavailable",
-        "reason": "HTTPError"
+        "status": "ok"
       },
       {
         "name": "Google News · partnerships",
-        "status": "unavailable",
-        "reason": "HTTPError"
+        "status": "ok"
       }
     ],
-    "new_articles": 4,
+    "new_articles": 0,
     "ai_articles": 0,
     "ai_errors": 0,
     "ai_enabled": false,
-    "successful_sources": 3
-  }
+    "successful_sources": 7
+  },
+  "seen": [
+    {
+      "title": "Capitol Imaging Services expands in South Florida, acquiring 4 centers",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/mergers-and-acquisitions/capitol-imaging-services-expands-south-florida-acquiring-4-centers",
+      "date": "2026-10-21"
+    },
+    {
+      "title": "Radiology Partners pivots to ‘junk bonds’ for key acquisition amid weak lending market",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-economics/radiology-partners-pivots-junk-bonds-key-acquisition-amid-weak-lending-market",
+      "date": "2026-10-21"
+    },
+    {
+      "title": "Subtle Medical adds local distribution in the UK and Italy",
+      "url": "https://subtlemedical.com/subtle-medical-adds-distribution-partners-in-the-uk-and-italy-to-support-european-growth/",
+      "date": "2026-10-20"
+    },
+    {
+      "title": "FDA clears AI tool for assessing breast cancer recurrence risk via MRI",
+      "url": "https://radiologybusiness.com/topics/artificial-intelligence/fda-clears-ai-tool-assessing-breast-cancer-recurrence-risk-mri",
+      "date": "2026-10-19"
+    },
+    {
+      "title": "Radiology software firm Sirona Medical raises $40M in Series D financing",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-economics/radiology-software-firm-sirona-medical-raises-40m-series-d-financing",
+      "date": "2026-10-16"
+    },
+    {
+      "title": "GE HealthCare moves towards PET tracer supply with SOFIE deal",
+      "url": "https://www.gehealthcare.com/en/about/newsroom/press-releases/ge-healthcare-to-acquire-sofie-biosciences-establishing-a-final-mile-footprint-for-pet-radiopharmaceutical-supply-in-the-us",
+      "date": "2026-10-05"
+    }
+  ]
 }
