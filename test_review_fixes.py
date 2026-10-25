@@ -24,9 +24,9 @@ class ReviewFixTests(unittest.TestCase):
   payload=a.template_view(a.build_dashboard(offline=True))
   rendered=a.render_template(template,payload)
   for text in ('id="ai-overview-section"','id="ai-research-section"',
-               'id="ai-evidence-section"','id="ai-adoption-section"',
+               'id="ai-evidence-section"',
                'id="ai-industry-section"','id="ai-news-section"',
-               'ai-evidence-stages','id="ai-source-status-section"',
+               'id="ai-source-status-section"',
                "fdaSection.hidden=false"):
    self.assertIn(text,rendered)
   self.assertNotIn('AI Approvals vs. MedTech Venture Capital Investment',rendered)
@@ -39,7 +39,8 @@ class ReviewFixTests(unittest.TestCase):
   self.assertLess(rendered.index('id="ai-overview-section"'),rendered.index('id="fda-trend-section"'))
   self.assertLess(rendered.index('id="fda-trend-section"'),rendered.index('id="ai-research-section"'))
   self.assertLess(rendered.index('id="ai-research-section"'),rendered.index('id="ai-evidence-section"'))
-  self.assertLess(rendered.index('id="ai-evidence-section"'),rendered.index('id="ai-adoption-section"'))
+  self.assertNotIn('id="ai-adoption-section"',rendered)
+  self.assertNotIn('href="#ai-adoption-section"',rendered)
  def test_homepage_viewport_and_responsive_scaling(self):
   root=Path(__file__).parent
   page=(root/'index.html').read_text(encoding='utf-8')
