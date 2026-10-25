@@ -117,6 +117,8 @@
 @media(max-width:780px){.ct-page .ct-chart svg{min-width:630px}.ct-region-row{grid-template-columns:minmax(95px,125px) minmax(80px,1fr) minmax(52px,64px)}}
 @media(max-width:480px){.ct-page .ct-chart svg{min-width:600px}.ct-page .ct-grid{grid-template-columns:minmax(0,1fr)}
  .ct-stat .ct-value{font-size:1.4rem}.ct-year-flag{padding:1px 4px}}
+
+.ct-insight ul{margin:0;padding-left:1.2rem}.ct-insight li{margin:0 0 .65em}.ct-insight li:last-child{margin-bottom:0}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2229%22%20fill%3D%22%23101b2c%22%20stroke%3D%22%238bd4f5%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M32%2012%20L49.320508%2042%20L14.679492%2042%20Z%22%20fill%3D%22none%22%20stroke%3D%22%238bd4f5%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
 </head>
@@ -395,10 +397,13 @@ function reportRegionalAnalysis(regionKey){
  }
  const list=el('ul');for(const note of notes)list.append(el('li','',note));
  $('ct-reading').replaceChildren(el('p','',group.name+' · selected published country observations, not a regional average.'),list);
- $('ct-next').textContent=(signals.length?signals.join(' '):
-   'No suitable same-year, full-provider series establish examination growth substantially faster than scanner density in this sample. ')+
-   ' '+(differences.join(' ')||'')+
-   ' '+projected+' separately backtested country-series extensions are modelled, not regional forecasts. Check scanner age, staffing, case mix, referral appropriateness, local waiting times and actual throughput before planning procurement.';
+ const actionNotes=signals.length?[...signals]:[
+  'No suitable same-year, full-provider series establish examination growth substantially faster than scanner density in this sample.'];
+ actionNotes.push(...differences,
+  projected+' separately backtested country-series extensions are modelled, not regional forecasts.',
+  'Check scanner age, staffing, case mix, referral appropriateness, local waiting times and actual throughput before planning procurement.');
+ const actionList=el('ul');for(const note of actionNotes)actionList.append(el('li','',note));
+ $('ct-next').replaceChildren(actionList);
  $('ct-data-lag').textContent='OECD CT statistics are released after annual national reporting and validation, so the latest year differs across countries. For '+
   group.name+': '+dates.join('; ')+'. Missing years are not zero. Scenario extensions are not OECD observations.';
 }
