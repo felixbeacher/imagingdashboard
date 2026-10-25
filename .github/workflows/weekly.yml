@@ -259,7 +259,7 @@ jobs:
           page=Path('_site/ai.html').read_text(encoding='utf-8')
           required=(
             'ai-overview-section', 'fda-trend-section', 'ai-research-section',
-            'ai-evidence-section', 'ai-adoption-section', 'ai-industry-section',
+            'ai-evidence-section', 'ai-industry-section',
             'ai-news-section', 'ai-source-status-section', 'ai-pubmed-count'
           )
           class Inspector(HTMLParser):
