@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultancy | The Medical Imaging Dashboard</title>
+<meta name="description" content="Bespoke medical imaging research from Felix Beacher, PhD: competitor intelligence, market opportunities and focused commercial briefings for vendors and investors.">
+<link rel="canonical" href="https://felixbeacher.github.io/imagingdashboard/consultancy.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Medical imaging research for your next decision">
+<meta property="og:description" content="Competitor intelligence, market opportunity research and bespoke briefings. Discuss a focused research project with Felix Beacher, PhD.">
+<meta property="og:url" content="https://felixbeacher.github.io/imagingdashboard/consultancy.html">
+<meta property="og:image" content="https://felixbeacher.github.io/imagingdashboard/images/imaging-dashboard-social.jpg">
+<link rel="stylesheet" href="styles.css">
+<style>
+.advisory{--mint:#9de6ce;--quiet:#b3bdcc;--line:#2b3b4c;font-size:16px;line-height:1.65}
+.advisory .skip{position:absolute;left:12px;top:-80px;background:#f3f4f6;color:#0d1117;padding:12px;z-index:100}
+.advisory .skip:focus{top:12px}
+.advisory a{color:#8dd8ff;text-underline-offset:4px}
+.advisory .tab-btn{color:var(--text-muted)}.advisory .tab-btn.active{color:var(--bg-color)}
+.advisory :focus-visible{outline:3px solid var(--mint);outline-offset:5px}
+.advisory main{max-width:1440px;padding:32px clamp(20px,4vw,56px) 64px}
+.advisory h2,.advisory h3,.advisory h4{line-height:1.25;letter-spacing:-.025em}
+.advisory h2{font-size:clamp(1.8rem,3vw,2.65rem)}.advisory h3{font-size:1.3rem}
+.advisory p{color:var(--quiet)}.advisory .eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mint)}
+.advisory .hero{position:relative;border:1px solid var(--line);border-radius:22px;padding:clamp(26px,4vw,58px);background:radial-gradient(ellipse at 100% 0,rgba(56,189,248,.13),transparent 58%),linear-gradient(130deg,#142132,#10171f);overflow:hidden}
+.advisory .hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:48px;align-items:center}
+.advisory .hero h2{font-size:clamp(2.4rem,4.8vw,4.25rem);line-height:1.12;margin:20px 0 24px;max-width:760px;font-weight:650}
+.advisory .hero h2 span{color:var(--mint)}.advisory .intro{max-width:660px;font-size:1.12rem}
+.advisory .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.advisory .button{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;min-height:48px;border:1px solid #476074;border-radius:9px;font:inherit;font-weight:650;cursor:pointer;text-decoration:none;background:transparent;color:#e8f4ff;transition:background .18s}
+.advisory .button.primary{background:var(--mint);border-color:var(--mint);color:#10241f}.advisory .button:hover{background:#243c4a}.advisory .button.primary:hover{background:#c1f5e4}
+.advisory .hero-note{font-size:.83rem;margin-top:15px}
+.advisory .scope-card{padding:28px;border:1px solid #395366;border-radius:14px;background:#0c1621}
+.advisory .scope-card h3{font-size:1.55rem;margin:12px 0 20px}.advisory .scope-row{border-top:1px solid var(--line);padding:13px 0;display:flex;justify-content:space-between;gap:16px;font-size:.9rem}.advisory .scope-row span{color:var(--quiet)}.advisory .scope-row strong{text-align:right;font-weight:500}
+.advisory .scope-card .footnote{font-size:.82rem;margin-top:10px}
+.advisory .audiences{display:flex;gap:16px 32px;flex-wrap:wrap;padding:22px 4px;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--quiet)}.advisory .audiences strong{color:#edf5ff;font-weight:500}
+.advisory section.block{padding-top:64px;scroll-margin-top:24px}.advisory .section-head{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:26px}.advisory .section-head h2{margin-top:10px}.advisory .section-head>p{max-width:360px;font-size:.95rem}
+.advisory .services{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.advisory .service{display:flex;flex-direction:column;background:#121c28;border:1px solid var(--line);border-radius:14px;padding:28px;min-width:0}
+.advisory .number{color:var(--mint);font-size:.8rem;letter-spacing:.1em}.advisory .service h3{margin:20px 0 16px;font-size:1.5rem}.advisory .service p{font-size:.95rem}.advisory .service ul{padding-left:20px;margin:22px 0;color:#d5deeb;font-size:.9rem}.advisory li+li{margin-top:8px}.advisory .service a{margin-top:auto;font-size:.9rem;font-weight:600}
+.advisory .sample{display:grid;grid-template-columns:.85fr 1.3fr;gap:40px;padding:32px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(120deg,#152a30,#121c28)}
+.advisory .sample h3{font-size:1.9rem;margin:14px 0 20px}.advisory .sample p{font-size:.95rem}.advisory .sample ul{list-style:none;display:grid;gap:0;padding:0}.advisory .sample li{padding:16px 0;border-bottom:1px solid #34505a;margin:0;display:grid;grid-template-columns:32px 1fr;gap:10px}.advisory .sample li:last-child{border-bottom:0}.advisory .sample li>span{color:var(--mint);font-size:.8rem}.advisory .sample h4{font-size:1rem;margin-bottom:6px}.advisory .sample li p{font-size:.88rem}
+.advisory .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.advisory .step{padding-top:18px;border-top:2px solid #385461}.advisory .step h3{margin:12px 0}.advisory .step p{font-size:.95rem}
+.advisory .standards{margin-top:32px;border:1px solid var(--line);border-radius:12px;padding:22px 26px}.advisory .standards p{font-size:.9rem;margin-top:8px}
+.advisory .enquiry{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;border-top:1px solid var(--line);margin-top:64px;padding-top:48px;scroll-margin-top:24px}.advisory .enquiry h2{margin:12px 0 22px}.advisory .enquiry .byline{margin-top:24px;color:#edf5ff}.advisory .enquiry .small{font-size:.85rem;margin-top:10px;overflow-wrap:anywhere}
+.advisory form{padding:28px;border:1px solid var(--line);border-radius:14px;background:#121c28}.advisory .fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}.advisory label{display:block;font-size:.88rem;color:#e1eaf6;margin-bottom:7px}.advisory input,.advisory select,.advisory textarea{display:block;width:100%;min-height:46px;background:#0c141e;color:#edf5ff;border:1px solid #486075;border-radius:7px;padding:11px;font:inherit;font-size:.95rem}.advisory textarea{resize:vertical;min-height:140px}.advisory .wide{grid-column:1/-1}.advisory .optional{font-size:.78rem;color:var(--quiet)}.advisory .form-note{font-size:.82rem;margin-top:16px}.advisory .form-status{font-size:.85rem;margin-top:12px;min-height:1.5em;color:var(--mint)}
+.advisory .faq{padding-top:54px}.advisory .faq h2{font-size:1.8rem;margin-bottom:20px}.advisory details{border-top:1px solid var(--line);padding:17px 0}.advisory summary{cursor:pointer;font-weight:600}.advisory details p{margin-top:12px;max-width:900px;font-size:.95rem}
+.advisory footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:var(--quiet);font-size:.8rem}
+@media(max-width:1000px){.advisory .hero-grid{grid-template-columns:1fr;gap:30px}.advisory .scope-card{max-width:680px}.advisory .services{grid-template-columns:1fr}.advisory .service{padding:24px}.advisory .service h3{margin-top:12px}.advisory .sample,.advisory .enquiry{grid-template-columns:1fr;gap:26px}}
+@media(max-width:620px){.advisory header{padding:20px 16px 14px}.advisory .nav-tabs{gap:3px}.advisory .tab-btn{padding:8px 12px}.advisory main{padding:20px 16px 40px}.advisory .hero{padding:26px 22px}.advisory .hero h2{font-size:2.5rem}.advisory .intro{font-size:1rem}.advisory .scope-card{padding:20px}.advisory .section-head{display:block}.advisory .section-head>p{margin-top:16px}.advisory section.block{padding-top:44px}.advisory .sample{padding:24px}.advisory .steps{grid-template-columns:1fr}.advisory .fields{grid-template-columns:1fr}.advisory .enquiry{margin-top:44px;padding-top:36px}.advisory form{padding:20px}.advisory .actions .button{width:100%}}
+@media(prefers-reduced-motion:reduce){.advisory *{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body class="advisory">
+<a class="skip" href="#main">Skip to consultancy</a>
+<header><div class="header-content"><div class="title-area"><h1>The Medical Imaging Dashboard</h1><p>Created and managed by Felix Beacher, PhD</p></div>
+<nav class="nav-tabs" aria-label="Dashboard pages">
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a><a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a><a class="tab-btn active" href="consultancy.html" aria-current="page">Consultancy</a>
+</nav></div></header>
+<main id="main">
+<section class="hero" aria-labelledby="hero-title"><div class="hero-grid"><div>
+<p class="eyebrow">Consultancy · Research &amp; advisory</p>
+<h2 id="hero-title">A clearer view.<br><span>A better-informed decision.</span></h2>
+<p class="intro">Bespoke medical imaging research for the question your business needs to answer. Understand competitors, investigate opportunities and turn scattered developments into a focused commercial brief.</p>
+<div class="actions"><a class="button primary" href="#enquiry">Discuss a research brief <span aria-hidden="true">&nbsp;↗</span></a><a class="button" href="#example">Explore an example</a></div>
+<p class="hero-note">Projects scoped and quoted individually. The public dashboard remains free.</p>
+</div><aside class="scope-card" aria-labelledby="scope-title"><p class="eyebrow">Start with a question</p><h3 id="scope-title">What is changing in our competitive landscape?</h3>
+<div class="scope-row"><span>Focus</span><strong>Your companies &amp; market</strong></div><div class="scope-row"><span>Evidence</span><strong>Traceable public sources</strong></div><div class="scope-row"><span>Output</span><strong>A concise brief &amp; comparison</strong></div><div class="scope-row"><span>Purpose</span><strong>Your next commercial decision</strong></div>
+<p class="footnote">Scope, timing and deliverables agreed before work begins.</p></aside></div></section>
+<div class="audiences" aria-label="Who this is for"><strong>Built around your question</strong><span>Imaging &amp; AI vendors</span><span>Medtech investors</span><span>Healthcare strategy teams</span></div>
+<section class="block" aria-labelledby="services-title"><div class="section-head"><div><p class="eyebrow">How I can help</p><h2 id="services-title">Focused research. Useful outputs.</h2></div><p>Choose a starting point. Each project is shaped around your decision, geography and available evidence.</p></div>
+<div class="services">
+<article class="service"><span class="number">01 / COMPETITIVE LANDSCAPE</span><h3>Competitor intelligence</h3><p>Understand the organisations shaping your market and the developments that deserve closer attention.</p><ul><li>An agreed company watchlist</li><li>Products, partnerships and regulatory developments</li><li>A sourced comparison with implications and gaps</li></ul><a href="#enquiry" data-service="Competitor intelligence">Discuss competitor research →</a></article>
+<article class="service"><span class="number">02 / COMMERCIAL OPPORTUNITY</span><h3>Market opportunity research</h3><p>Investigate a specific imaging segment or geography before committing time and resources.</p><ul><li>Demand, capacity and purchasing context</li><li>Relevant competitors and potential partners</li><li>Opportunity hypotheses and next checks</li></ul><a href="#enquiry" data-service="Market opportunity research">Discuss a market question →</a></article>
+<article class="service"><span class="number">03 / YOUR RESEARCH QUESTION</span><h3>Bespoke briefings</h3><p>Get a structured answer to a defined commercial or investment research question.</p><ul><li>A concise executive briefing</li><li>Supporting evidence and source register</li><li>Uncertainties, implications and questions to pursue</li></ul><a href="#enquiry" data-service="Bespoke briefing">Discuss a bespoke brief →</a></article>
+</div></section>
+<section class="block" id="example" aria-labelledby="example-title"><div class="section-head"><div><p class="eyebrow">An example engagement</p><h2 id="example-title">From a broad question to a useful brief.</h2></div><p>Illustrative scope, rather than a completed client project.</p></div>
+<div class="sample"><div><p class="eyebrow">Competitor intelligence / Imaging AI</p><h3>Five companies.<br>One market.<br>A clearer picture.</h3><p>A vendor considering UK expansion commissions a comparison of five relevant imaging-AI companies, followed by an agreed monthly update.</p><p style="margin-top:16px">The aim: identify meaningful differences, potential partners and developments that merit further investigation.</p></div>
+<ul><li><span>01</span><div><h4>Executive brief</h4><p>What changed, why it matters to the expansion question and what to investigate next.</p></div></li><li><span>02</span><div><h4>Company comparison</h4><p>Intended applications, jurisdiction-specific regulatory status, published evidence and announced deployments.</p></div></li><li><span>03</span><div><h4>Source register</h4><p>Links, dates and evidence gaps, with company claims distinguished from independent findings.</p></div></li><li><span>04</span><div><h4>Discussion and next steps</h4><p>A review of the findings and a prioritised set of questions for commercial follow-up.</p></div></li></ul></div></section>
+<section class="block" aria-labelledby="process-title"><div class="section-head"><div><p class="eyebrow">Working together</p><h2 id="process-title">A clear scope from the outset.</h2></div></div>
+<div class="steps"><article class="step"><span class="number">01</span><h3>Define the decision</h3><p>Share your question, audience and deadline. We establish whether the available evidence can support a useful answer.</p></article><article class="step"><span class="number">02</span><h3>Agree the project</h3><p>Confirm the research boundaries, deliverables, timing and fixed project fee before work begins.</p></article><article class="step"><span class="number">03</span><h3>Review the findings</h3><p>Receive the agreed outputs and discuss their implications. Recurring monitoring can be scoped separately if useful.</p></article></div>
+<div class="standards"><h3>Evidence you can inspect</h3><p>Research builds on the source-led approach used throughout this dashboard. Reported facts, estimates and interpretation are distinguished; missing evidence is made explicit. Regulatory authorisation is considered separately from clinical benefit, and market indicators are not treated as measured market share.</p><p><a href="intel-feed.html">Explore the Intel Feed →</a> &nbsp; <a href="ai.html">Explore the evidence approach →</a></p></div></section>
+<section class="enquiry" id="enquiry" aria-labelledby="enquiry-title"><div><p class="eyebrow">Begin a conversation</p><h2 id="enquiry-title">What do you need to understand?</h2><p>A short description is enough to start. Include the decision you are working towards, the market or companies of interest and your preferred timing.</p><p class="byline">Felix Beacher, PhD</p><p>Creator of The Medical Imaging Dashboard</p><p class="small">Email directly: <a href="mailto:FelixBeacher@gmail.com?subject=Medical%20imaging%20research%20enquiry">FelixBeacher@gmail.com</a></p><p class="small">An initial enquiry carries no commitment. Project fees are agreed separately.</p></div>
+<form id="brief-form"><div class="fields"><div><label for="brief-name">Your name <span class="optional">(optional)</span></label><input id="brief-name" name="name" autocomplete="name" maxlength="100"></div><div><label for="brief-company">Organisation <span class="optional">(optional)</span></label><input id="brief-company" name="company" autocomplete="organization" maxlength="150"></div><div><label for="brief-service">Research interest</label><select id="brief-service" name="service"><option>Competitor intelligence</option><option>Market opportunity research</option><option>Bespoke briefing</option><option>Help me define the scope</option></select></div><div><label for="brief-timing">Preferred timing</label><select id="brief-timing" name="timing"><option>Exploratory / flexible</option><option>Within a month</option><option>Within three months</option><option>Ongoing monitoring</option></select></div><div class="wide"><label for="brief-question">Your question or decision <span class="optional">(required)</span></label><textarea id="brief-question" name="question" required maxlength="1800" placeholder="For example: We are considering UK expansion and want to understand the evidence and partnerships behind five competing imaging-AI products."></textarea></div></div>
+<div class="actions"><button class="button primary" type="submit">Open email draft ↗</button><button class="button" type="button" id="copy-brief">Copy enquiry</button></div><p class="form-note">This prepares a draft in your email app; you review and send it yourself. Details stay in this page until you choose to email or copy them. Please avoid including confidential information.</p><p class="form-status" id="brief-status" role="status" aria-live="polite"></p><noscript><p class="form-note">The enquiry builder needs JavaScript. Please use the direct email link to contact Felix.</p></noscript></form></section>
+<section class="faq" aria-labelledby="faq-title"><h2 id="faq-title">Before you enquire</h2><details><summary>How are projects priced?</summary><p>Projects are quoted individually against an agreed scope. The fee and deliverables are confirmed before any paid work begins. A one-off brief is a starting point; recurring monitoring can be discussed separately.</p></details><details><summary>How is this different from the free dashboard?</summary><p>The dashboard provides a broad public overview. Commissioned research focuses on your selected companies, market and question, with agreed outputs and a discussion of the findings.</p></details><details><summary>Which technologies and markets can a project cover?</summary><p>The dashboard covers CT, MRI, PET, X-ray and imaging AI. Consultancy scope is agreed after checking the relevant sources and their geographical coverage. Public evidence is uneven, so feasibility and limitations are discussed at the outset.</p></details><details><summary>What are the limits of the research?</summary><p>Work is based on accessible, appropriately reusable sources and any separately agreed inputs. A project does not promise exhaustive coverage, proprietary sales data or access to confidential procurement plans. Clinical, regulatory, legal and investment decisions require the appropriate professional assessment.</p></details></section>
+</main><footer>© 2026 Felix Beacher · Medical imaging research &amp; advisory</footer>
+<script>
+'use strict';
+const briefForm=document.getElementById('brief-form');
+const briefStatus=document.getElementById('brief-status');
+function enquiryText(){
+ const data=new FormData(briefForm);
+ return ['Hello Felix,','',"I'd like to discuss a medical imaging research project.",'',
+ 'Name: '+(data.get('name').trim()||'Not provided'),
+ 'Organisation: '+(data.get('company').trim()||'Not provided'),
+ 'Research interest: '+data.get('service'),'Preferred timing: '+data.get('timing'),'',
+ 'Question / decision:',data.get('question').trim(),'','Please let me know whether this could be scoped into a project.'].join('\n');
+}
+briefForm.addEventListener('submit',function(event){
+ event.preventDefault();
+ const subject='Research enquiry: '+new FormData(briefForm).get('service');
+ window.location.href='mailto:FelixBeacher@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(enquiryText());
+ briefStatus.textContent='Email draft requested. If your email app did not open, copy the enquiry and email it using the address shown.';
+});
+document.getElementById('copy-brief').addEventListener('click',async function(){
+ if(!briefForm.reportValidity())return;
+ try{await navigator.clipboard.writeText(enquiryText());briefStatus.textContent='Enquiry copied. Paste it into an email to FelixBeacher@gmail.com.';}
+ catch(error){briefStatus.textContent='Copy is unavailable in this browser. Please use the email draft button or email Felix directly.';}
+});
+document.querySelectorAll('[data-service]').forEach(function(link){link.addEventListener('click',function(){document.getElementById('brief-service').value=link.dataset.service;});});
+</script>
+</body></html>

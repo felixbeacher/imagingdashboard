@@ -105,7 +105,7 @@ jobs:
           if output.exists():
               shutil.rmtree(output)
           (output / 'images').mkdir(parents=True)
-          for filename in ('index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'intel-feed.css', 'intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
+          for filename in ('index.html', 'consultancy.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'intel-feed.css', 'intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
               shutil.copy2(root / filename, output / filename)
           # Rebuild the curated Intel Feed without an AI API.
           subprocess.run([sys.executable, 'intel_build.py'], check=True)
