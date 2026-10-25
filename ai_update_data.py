@@ -1435,18 +1435,18 @@ function plot(id,title,labels,values,note,key){
  let table=card.querySelector('[data-chart-table]');if(table)table.remove();
  if(hasData&&id!=='fdaTrendChart'){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Research study count');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
 }
-function update(regionKey){
- const key=Object.prototype.hasOwnProperty.call(payload.regions,regionKey)?regionKey:'global';
- const r=payload.regions[key];document.getElementById('regionSelect').value=key;
+function update(){
+ const key='global';
+ const r=payload.regions[key];
  text('regional-summary-title',key==='global'?'Imaging AI · evidence and market context':r.name+' · imaging AI evidence and market context');
  text('regional-summary-text',r.summary);r.metrics.forEach((m,i)=>metric(i,m));
- // FDA listings cover US regulatory decisions, irrespective of region selector.
+ // FDA listings cover US regulatory decisions; research counts below are worldwide.
  // The separate registered-study count follows the selected country sample.
  [0,2,3].forEach(i=>{const box=document.getElementById('ai-metric-'+i);if(box)box.hidden=false;});
  const studyCard=document.getElementById('ai-metric-1');
  if(studyCard)studyCard.style.gridColumn='';
  text('ai-sector-metrics-title','Imaging AI at a glance');
- text('ai-overview-coverage','US FDA benchmark · selected '+r.name+' registered-study count · each card carries its source date. Research activity is not clinical validation or adoption.');
+ text('ai-overview-coverage','US FDA regulatory benchmark · worldwide registered-study count · each card carries its source date. Research activity is not clinical validation or adoption.');
  text('clinical-evidence-title','Clinical evidence · recent published studies (worldwide)');
  text('deployment-adoption-title','From regulatory authorisation to clinical impact');
  text('vendor-revenues-title','Selected imaging AI companies (worldwide)');
@@ -1478,7 +1478,7 @@ function update(regionKey){
  if(fdaSection){
   fdaSection.hidden=false;
   plot('fdaTrendChart','United States — Radiology AI Authorisations: Historical Trend',
-   r.years,r.approvals,r.approvalNote+' Blue bars show complete years; the amber year-to-date bar is partial. This US benchmark remains visible in all region views and is not a measure of regional adoption.',r.approvalSource);
+   r.years,r.approvals,r.approvalNote+' Blue bars show complete years; the amber year-to-date bar is partial. This is a US regulatory benchmark, not a measure of worldwide adoption.',r.approvalSource);
  }
 
  const deployment=document.getElementById('deployment-evidence-feed');
@@ -1488,7 +1488,7 @@ function update(regionKey){
  (feed.items||[]).forEach(study=>{const article=add(deployment,'article');article.style.marginTop='12px';const link=add(article,'a',study.title);link.href=study.url;link.target='_blank';link.rel='noopener noreferrer';
  const meta=add(article,'p',study.journal+' · '+study.published+' · '+study.design);meta.className='metric-desc';
  if(study.excerpt){const result=add(article,'p','Reported results excerpt: “'+study.excerpt+'”');result.className='metric-desc';}});
- const note=add(deployment,'p','PubMed / NLM · '+(feed.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(feed.retrieved||feed.attempted_at||'date unavailable')+'. Worldwide implementation research from the past two years; shared across regional views. Publication does not establish routine deployment or a regional adoption rate.');note.className='metric-desc';
+ const note=add(deployment,'p','PubMed / NLM · '+(feed.status==='live'?'Retrieved ':'Retrieval unavailable · attempted ')+(feed.retrieved||feed.attempted_at||'date unavailable')+'. Worldwide implementation research from the past two years. Publication does not establish routine deployment or a regional adoption rate.');note.className='metric-desc';
  }
  const evidence=document.getElementById('clinical-evidence-feed');
  if(evidence){evidence.replaceChildren();const clinical=payload.clinicalEvidence||{};
@@ -1538,10 +1538,8 @@ function update(regionKey){
  entries.forEach(([key,s])=>{const row=add(fullList,'li');source(row,key);});
 
 }
-const select=document.getElementById('regionSelect');
-select.addEventListener('change',()=>{const url=new URL(location.href);url.searchParams.set('region',select.value);try{history.pushState({},'',url);}catch(e){}update(select.value);});
-window.addEventListener('popstate',()=>update(new URLSearchParams(location.search).get('region')));
-update(new URLSearchParams(location.search).get('region'));
+// One worldwide overview; legacy region query parameters do not filter this page.
+update();
 })();
 </script>
 '''

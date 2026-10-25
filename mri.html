@@ -127,7 +127,7 @@
 <div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
 <nav class="nav-tabs" aria-label="Dashboard pages">
 <a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn active" aria-current="page" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn active" aria-current="page" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
 
 <a class="tab-btn" href="consultancy.html">Consultancy</a>
 </nav></div></header>
@@ -146,7 +146,7 @@
 </nav>
 <section class="mri-card" id="mri-overview" aria-labelledby="mri-overview-heading">
 <h2 id="mri-overview-heading">MRI at a glance</h2>
-<p class="mri-muted">A concise regional snapshot of MRI capacity, examinations and research, with country names and actual observation years. No regional mean is inferred.</p>
+<p class="mri-muted">The cards show the most recent country figures available in the selected region and may refer to different countries. Scanner availability is an equipment count; scans performed is a yearly activity figure. Neither card is a regional total or average.</p>
 <div class="mri-stat-grid" id="mri-stat-grid" aria-live="polite"></div>
 </section>
 <section class="mri-card" id="mri-regional-comparison" aria-labelledby="mri-regional-heading">
@@ -155,7 +155,7 @@
 <p class="mri-compare-caution" id="mri-comparison-warning" aria-live="polite">Reporting-year and provider-scope differences are shown below.</p>
 <div class="mri-grid">
 <article class="mri-indicator"><h3>MRI scanners per million people</h3><div id="mri-region-scanners" class="mri-region-bars" aria-live="polite"></div></article>
-<article class="mri-indicator"><h3>MRI examinations per 1,000 people</h3><div id="mri-region-exams" class="mri-region-bars" aria-live="polite"></div></article>
+<article class="mri-indicator"><h3>MRI scans per 1,000 people per year</h3><div id="mri-region-exams" class="mri-region-bars" aria-live="polite"></div></article>
 </div>
 <p class="mri-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Provider totals can have country-specific exclusions: OECD notes, for example, public-sector/hospital coverage limitations in the UK and reimbursement-related coverage in Australia. Consult the <a target="_blank" rel="noopener noreferrer" href="https://www.oecd.org/en/publications/health-at-a-glance-2025_8f9e3f98-en/full-report/diagnostic-technologies_9039027d.html">OECD diagnostic technologies methodology</a> before comparing countries. Missing readings are never treated as zero.</p>
 </section>
@@ -259,7 +259,7 @@
 <h2 id="mri-sources-heading">Sources, coverage and methodology</h2>
 <div class="mri-source-list" id="mri-source-list"></div>
 <details><summary>Detailed interpretation and update rules</summary><div class="mri-method"><ul>
-<li>OECD capacity is MRI scanners per million people. Examination activity is MRI examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
+<li>OECD capacity is MRI scanners per million people. Examination activity is MRI scans per 1,000 people per year. Source definitions and coverage can vary by country and provider.</li>
 <li>Each country in the selected region has its own colour. Published observations are shown as solid lines; sufficiently supported modelled extensions are dashed in the same colour, with sensitivity shading. Gaps remain gaps, and no regional mean or total is calculated.</li>
 <li>MRI projections require four consecutive annual source observations ending in 2024 or later. A model fitted to the first three predicts the fourth as a one-year historical holdout; forecasts are withheld if the relative error exceeds 10% for scanner density or 15% for examinations. If the holdout is adequate, an annualised trend is fitted on all four readings, capped at ±5% and ±8% respectively. The widening ±2-percentage-point annual-growth sensitivity is <strong>not</strong> a statistical confidence interval, and the result is not an OECD forecast. Actual published readings always take precedence over modelled ones.</li>
 <li>PubMed searches MRI-specific titles from the preceding 365 days and evaluates a recent candidate pool; case reports, editorials, reviews and non-X-ray tomography are excluded. Verified indexed publication types and specialist-journal relevance inform an editorial prioritisation that limits repeated topics. Displayed papers are a selected discovery sample, not a systematic review, validated quality ranking or measure of clinical benefit.</li>
@@ -378,8 +378,8 @@ function reportRegionalAnalysis(regionKey){
  for(const code of group.countries){
   const name=mriData.oecd?.countries?.[code]?.name;if(!name)continue;
   const s=obs(code,'equipment'),e=obs(code,'exams'),sp=latest(s.points),ep=latest(e.points);
-  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
-   '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
+  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million people ('+sp.year+')':'scanner reading unavailable')+
+   '; '+(ep?fmt(ep.value)+' scans per 1,000 people per year ('+ep.year+')':'exam reading unavailable')+'.');
   dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
   // Compare growth rates only over exactly the same two consecutive
   // observation years, with full provider coverage on both series.
@@ -463,13 +463,13 @@ function setRegionalOverview(regionKey){
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available MRI indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('mri-stat-grid'),
-  stat('Latest MRI scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
-       latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
-  stat('Latest MRI examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
-       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation')
+  stat('MRI scanners available',latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
+       latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
+  stat('MRI scans performed in one year',latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
+       latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
- regionalBars('mri-region-scanners',scanners,'scanners per million');
- regionalBars('mri-region-exams',exams,'examinations per 1,000');
+ regionalBars('mri-region-scanners',scanners,'scanners per million people');
+ regionalBars('mri-region-exams',exams,'scans per 1,000 people per year');
 }
 function chooseRegion(regionKey){
  const group=REGIONS[regionKey];if(!group)return;
@@ -477,11 +477,11 @@ function chooseRegion(regionKey){
  renderRegionalIndicator('mri-scanners',regionKey,'equipment','MRI scanner availability',
    'MRI scanners per million inhabitants reported for each country.',
    'Shows reported equipment availability, not staffed scan hours, clinical capacity or hospital demand.',
-   'scanners per million',mriData.oecd?.sources?.equipment);
- renderRegionalIndicator('mri-exams',regionKey,'exams','MRI examinations per population',
-   'Annual examinations per 1,000 inhabitants reported in each country’s provider scope.',
+   'scanners per million people',mriData.oecd?.sources?.equipment);
+ renderRegionalIndicator('mri-exams',regionKey,'exams','MRI scans performed each year',
+   'Number of MRI scans performed during one year for every 1,000 people, within the reported healthcare-provider coverage. Repeat scans of the same person count separately.',
    'Tracks service activity, not clinical necessity, outcomes or market sales.',
-   'examinations per 1,000',mriData.oecd?.sources?.exams);
+   'scans per 1,000 people per year',mriData.oecd?.sources?.exams);
  reportRegionalAnalysis(regionKey);
  const u=new URL(location.href);u.searchParams.set('region',regionKey);u.searchParams.delete('country');
  history.replaceState(null,'',u);
@@ -506,8 +506,8 @@ function renderPapers(){
 function renderSources(){
  const container=$('mri-source-list');container.replaceChildren();
  const entries=[
-  {heading:'OECD · scanner availability',url:mriData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:mriData.oecd?.checked||'Unverified'},
-  {heading:'OECD · MRI examinations',url:mriData.oecd?.sources?.exams,detail:'Annual MRI examinations per 1,000; some country data cover hospitals only.',status:mriData.oecd?.checked||'Unverified'},
+  {heading:'OECD · scanner availability',url:mriData.oecd?.sources?.equipment,detail:'Scanners available per million people in each reported year; not new scanners sold. Original observation years and provider scope are displayed in the graph.',status:mriData.oecd?.checked||'Unverified'},
+  {heading:'OECD · MRI examinations',url:mriData.oecd?.sources?.exams,detail:'MRI scans per 1,000 people during one year; some country data cover hospitals only.',status:mriData.oecd?.checked||'Unverified'},
   {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent MRI publications via NCBI E-utilities; explicit MRI search and source dates.',status:mriData.pubmed?.status+' · '+(mriData.pubmed?.checked||'date unavailable')},
   {heading:'MRI safety and appropriateness guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/mr-safety',detail:'Magnetic-field safety, implant and patient screening context, complementing MRI appropriateness guidance.',status:'ACR MR Safety / clinical reference'}
  ];

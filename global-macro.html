@@ -131,7 +131,7 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 <nav class="nav-tabs">
 <a class="tab-btn" href="index.html">Home</a><a class="tab-btn active" href="global-macro.html">Glob Econ</a>
 <a class="tab-btn" href="intel-feed.html">Intel Feed</a>
-<a class="tab-btn" href="ai.html">Im AI</a>
+<a class="tab-btn" href="ai.html">Imaging AI</a>
 
 <a class="tab-btn" href="ct.html">CT</a>
 <a class="tab-btn" href="mri.html">MRI</a>
@@ -512,8 +512,8 @@ const IMAGING_COLORS={CT:'#80d7f8',MRI:'#9ce1ba',PET:'#e8b67a'};
 function imagingHistoryFigure(mode,item,type,country){
  const panel=byId(mode==='exams'?'imaging-exams':'imaging-equipment');
  panel.replaceChildren();
- const label=mode==='exams'?'CT, MRI and PET examinations':'CT, MRI and PET scanner availability';
- const unit=mode==='exams'?'Examinations per 1,000 people':'Scanners per million people';
+ const label=mode==='exams'?'CT, MRI and PET scans performed each year':'CT, MRI and PET scanner availability';
+ const unit=mode==='exams'?'Scans per 1,000 people per year':'Scanners per million people';
  panel.append(node('h4','',label),node('p','history-scope',unit+' · '+(item?.scope||'Coverage unavailable')));
  const names=type==='all'?['CT','MRI','PET']:[type];
  const lines=names.map(name=>({name,points:(Array.isArray(item?.series?.[name])?item.series[name]:[])

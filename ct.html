@@ -127,7 +127,7 @@
 <div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
 <nav class="nav-tabs" aria-label="Dashboard pages">
 <a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Im AI</a><a class="tab-btn active" href="ct.html" aria-current="page">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn active" href="ct.html" aria-current="page">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
 
 <a class="tab-btn" href="consultancy.html">Consultancy</a>
 </nav></div></header>
@@ -146,7 +146,7 @@
 </nav>
 <section class="ct-card" id="ct-overview" aria-labelledby="ct-overview-heading">
 <h2 id="ct-overview-heading">CT at a glance</h2>
-<p class="ct-muted">A concise regional snapshot of CT capacity, examinations and research, with country names and actual observation years. No regional mean is inferred.</p>
+<p class="ct-muted">The cards show the most recent country figures available in the selected region and may refer to different countries. Scanner availability is an equipment count; scans performed is a yearly activity figure. Neither card is a regional total or average.</p>
 <div class="ct-stat-grid" id="ct-stat-grid" aria-live="polite"></div>
 </section>
 <section class="ct-card" id="ct-regional-comparison" aria-labelledby="ct-regional-heading">
@@ -155,7 +155,7 @@
 <p class="ct-compare-caution" id="ct-comparison-warning" aria-live="polite">Reporting-year and provider-scope differences are shown below.</p>
 <div class="ct-grid">
 <article class="ct-indicator"><h3>CT scanners per million people</h3><div id="ct-region-scanners" class="ct-region-bars" aria-live="polite"></div></article>
-<article class="ct-indicator"><h3>CT examinations per 1,000 people</h3><div id="ct-region-exams" class="ct-region-bars" aria-live="polite"></div></article>
+<article class="ct-indicator"><h3>CT scans per 1,000 people per year</h3><div id="ct-region-exams" class="ct-region-bars" aria-live="polite"></div></article>
 </div>
 <p class="ct-source">Individual country readings come from <a target="_blank" rel="noopener noreferrer" href="https://data-explorer.oecd.org/">OECD Health Statistics</a>. Provider totals can have country-specific exclusions: OECD notes, for example, public-sector/hospital coverage limitations in the UK and reimbursement-related coverage in Australia. Consult the <a target="_blank" rel="noopener noreferrer" href="https://www.oecd.org/en/publications/health-at-a-glance-2025_8f9e3f98-en/full-report/diagnostic-technologies_9039027d.html">OECD diagnostic technologies methodology</a> before comparing countries. Missing readings are never treated as zero.</p>
 </section>
@@ -253,7 +253,7 @@
 <h2 id="ct-sources-heading">Sources, coverage and methodology</h2>
 <div class="ct-source-list" id="ct-source-list"></div>
 <details><summary>Detailed interpretation and update rules</summary><div class="ct-method"><ul>
-<li>OECD capacity is CT scanners per million people. Examination activity is CT examinations per 1,000 people. Source definitions and coverage can vary by country and provider.</li>
+<li>OECD capacity is CT scanners per million people. Examination activity is CT scans per 1,000 people per year. Source definitions and coverage can vary by country and provider.</li>
 <li>Each country in the selected region has its own colour. Published observations are shown as solid lines; sufficiently supported modelled extensions are dashed in the same colour, with sensitivity shading. Gaps remain gaps, and no regional mean or total is calculated.</li>
 <li>CT projections require four consecutive annual source observations ending in 2024 or later. A model fitted to the first three predicts the fourth as a one-year historical holdout; forecasts are withheld if the relative error exceeds 10% for scanner density or 15% for examinations. If the holdout is adequate, an annualised trend is fitted on all four readings, capped at ±5% and ±8% respectively. The widening ±2-percentage-point annual-growth sensitivity is <strong>not</strong> a statistical confidence interval, and the result is not an OECD forecast. Actual published readings always take precedence over modelled ones.</li>
 <li>PubMed searches CT-specific titles from the preceding 365 days and evaluates a recent candidate pool; case reports, editorials, reviews and non-X-ray tomography are excluded. Verified indexed publication types and specialist-journal relevance inform an editorial prioritisation that limits repeated topics. Displayed papers are a selected discovery sample, not a systematic review, validated quality ranking or measure of clinical benefit.</li>
@@ -372,8 +372,8 @@ function reportRegionalAnalysis(regionKey){
  for(const code of group.countries){
   const name=ctData.oecd?.countries?.[code]?.name;if(!name)continue;
   const s=obs(code,'equipment'),e=obs(code,'exams'),sp=latest(s.points),ep=latest(e.points);
-  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million ('+sp.year+')':'scanner reading unavailable')+
-   '; '+(ep?fmt(ep.value)+' examinations per 1,000 ('+ep.year+')':'exam reading unavailable')+'.');
+  notes.push(name+': '+(sp?fmt(sp.value)+' scanners per million people ('+sp.year+')':'scanner reading unavailable')+
+   '; '+(ep?fmt(ep.value)+' scans per 1,000 people per year ('+ep.year+')':'exam reading unavailable')+'.');
   dates.push(name+' (scanners '+(sp?.year||'N/A')+', exams '+(ep?.year||'N/A')+')');
   // Compare growth rates only over exactly the same two consecutive
   // observation years, with full provider coverage on both series.
@@ -457,13 +457,13 @@ function setRegionalOverview(regionKey){
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available CT indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('ct-stat-grid'),
-  stat('Latest CT scanner reading',latestS?fmt(latestS.point.value)+' / million':'Unavailable',
-       latestS?latestS.name+' · OECD '+latestS.point.year+' · '+(latestS.scope||'Scope not available'):'No published country observation'),
-  stat('Latest CT examination reading',latestE?fmt(latestE.point.value)+' / 1,000':'Unavailable',
-       latestE?latestE.name+' · OECD '+latestE.point.year+' · '+(latestE.scope||'Scope not available'):'No published country observation')
+  stat('CT scanners available',latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
+       latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
+  stat('CT scans performed in one year',latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
+       latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
- regionalBars('ct-region-scanners',scanners,'scanners per million');
- regionalBars('ct-region-exams',exams,'examinations per 1,000');
+ regionalBars('ct-region-scanners',scanners,'scanners per million people');
+ regionalBars('ct-region-exams',exams,'scans per 1,000 people per year');
 }
 function chooseRegion(regionKey){
  const group=REGIONS[regionKey];if(!group)return;
@@ -471,11 +471,11 @@ function chooseRegion(regionKey){
  renderRegionalIndicator('ct-scanners',regionKey,'equipment','CT scanner availability',
    'CT scanners per million inhabitants reported for each country.',
    'Shows reported equipment availability, not staffed scan hours, clinical capacity or hospital demand.',
-   'scanners per million',ctData.oecd?.sources?.equipment);
- renderRegionalIndicator('ct-exams',regionKey,'exams','CT examinations per population',
-   'Annual examinations per 1,000 inhabitants reported in each country’s provider scope.',
+   'scanners per million people',ctData.oecd?.sources?.equipment);
+ renderRegionalIndicator('ct-exams',regionKey,'exams','CT scans performed each year',
+   'Number of CT scans performed during one year for every 1,000 people, within the reported healthcare-provider coverage. Repeat scans of the same person count separately.',
    'Tracks service activity, not clinical necessity, outcomes or market sales.',
-   'examinations per 1,000',ctData.oecd?.sources?.exams);
+   'scans per 1,000 people per year',ctData.oecd?.sources?.exams);
  reportRegionalAnalysis(regionKey);
  const u=new URL(location.href);u.searchParams.set('region',regionKey);u.searchParams.delete('country');
  history.replaceState(null,'',u);
@@ -500,8 +500,8 @@ function renderPapers(){
 function renderSources(){
  const container=$('ct-source-list');container.replaceChildren();
  const entries=[
-  {heading:'OECD · scanner availability',url:ctData.oecd?.sources?.equipment,detail:'Annual scanners per million. Original observation years and provider scope are displayed in the graph.',status:ctData.oecd?.checked||'Unverified'},
-  {heading:'OECD · CT examinations',url:ctData.oecd?.sources?.exams,detail:'Annual CT examinations per 1,000; some country data cover hospitals only.',status:ctData.oecd?.checked||'Unverified'},
+  {heading:'OECD · scanner availability',url:ctData.oecd?.sources?.equipment,detail:'Scanners available per million people in each reported year; not new scanners sold. Original observation years and provider scope are displayed in the graph.',status:ctData.oecd?.checked||'Unverified'},
+  {heading:'OECD · CT examinations',url:ctData.oecd?.sources?.exams,detail:'CT scans per 1,000 people during one year; some country data cover hospitals only.',status:ctData.oecd?.checked||'Unverified'},
   {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent CT publications via NCBI E-utilities; explicit CT search and source dates.',status:ctData.pubmed?.status+' · '+(ctData.pubmed?.checked||'date unavailable')},
   {heading:'Clinical and radiation guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria',detail:'Reference definitions and clinical appropriateness, not monthly market measurements.',status:'ACR / FDA / national references'}
  ];

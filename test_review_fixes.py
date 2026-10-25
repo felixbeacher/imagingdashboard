@@ -39,6 +39,9 @@ class ReviewFixTests(unittest.TestCase):
   self.assertLess(rendered.index('id="ai-overview-section"'),rendered.index('id="fda-trend-section"'))
   self.assertLess(rendered.index('id="fda-trend-section"'),rendered.index('id="ai-research-section"'))
   self.assertLess(rendered.index('id="ai-research-section"'),rendered.index('id="ai-evidence-section"'))
+  self.assertNotIn('id="regionSelect"',rendered)
+  self.assertNotIn("getElementById('regionSelect')",rendered)
+  self.assertIn("const key='global';",rendered)
   self.assertNotIn('id="ai-adoption-section"',rendered)
   self.assertNotIn('href="#ai-adoption-section"',rendered)
  def test_homepage_viewport_and_responsive_scaling(self):
