@@ -109,7 +109,7 @@ fs.mkdirSync('qa-results', {recursive:true});
      assert.deepEqual(accessibility,[], 'automated WCAG A/AA checks: '+JSON.stringify(accessibility));
      assert.deepEqual(errors,[], 'no page JavaScript errors');
      if (name==='index'||(['ai','ct','global-macro'].includes(name)&&viewport.width!==768))
-      await page.screenshot({path:`qa-results/${name}-${viewport.width}.png`});
+      await page.screenshot({path:`qa-results/${name}-${viewport.width}.png`,fullPage:name==='index'});
      results.push({page:name,width:viewport.width,status:'passed'});
     } catch(error) {
      const entry={page:name,width:viewport.width,status:'failed',error:error.message};
