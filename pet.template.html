@@ -126,8 +126,8 @@
 <header><div class="header-content">
 <div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
 <nav class="nav-tabs" aria-label="Dashboard pages">
-<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn active" aria-current="page" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Global economy</a>
+<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn active" aria-current="page" href="pet.html">PET</a><a class="tab-btn" href="xray.html">X-ray</a>
 
 <a class="tab-btn" href="consultancy.html">Consultancy</a>
 </nav></div></header>
@@ -191,7 +191,7 @@
 <div id="pet-papers" class="pet-paper-grid" aria-live="polite"></div>
 <p class="pet-source" id="pet-pubmed-source"></p>
 </section>
-<section class="pet-card" id="pet-clinical" aria-labelledby="pet-clinical-heading"><h2 id="pet-clinical-heading">Where PET fits in to clinical care</h2>
+<section class="pet-card" id="pet-clinical" aria-labelledby="pet-clinical-heading"><h2 id="pet-clinical-heading">Where PET fits into clinical care</h2>
 <p class="pet-muted">PET maps radiotracer distribution. PET/CT adds CT localisation and attenuation correction; PET/MRI combines PET with MR information. Tracer choice determines the biological question, and uptake is not itself a diagnosis.</p><div class="pet-topic-grid">
 <article class="pet-topic"><h3>FDG oncology</h3><p>Glucose-metabolism imaging supports staging and treatment-response assessment in selected cancers. Inflammation and physiological uptake can complicate interpretation.</p></article>
 <article class="pet-topic"><h3>Prostate cancer</h3><p>PSMA-targeted PET supports selected staging and recurrence pathways. Eligibility, interpretation and treatment decisions depend on guideline-defined clinical context.</p></article>
@@ -419,9 +419,9 @@ function setRegionalOverview(regionKey){
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available PET indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('pet-stat-grid'),
-  stat('PET scanners available',latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
+  stat('PET scanners available'+(latestS?' · '+latestS.name:''),latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
        latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
-  stat('PET scans performed in one year',latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
+  stat('PET scans performed in one year'+(latestE?' · '+latestE.name:''),latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
        latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
  regionalBars('pet-region-scanners',scanners,'scanners per million people');
@@ -456,7 +456,7 @@ function renderPapers(){
   art.append(el('p','pet-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
   area.append(art);
  }
- const note=$('pet-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
+ const note=$('pet-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status==='live'?'retrieved successfully':pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
  appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'positron emission tomography'),'Search PubMed');
 }
 function renderSources(){
@@ -464,7 +464,7 @@ function renderSources(){
  const entries=[
   {heading:'OECD · scanner availability',url:petData.oecd?.sources?.equipment,detail:'Scanners available per million people in each reported year; not new scanners sold. Original observation years and provider scope are displayed in the graph.',status:petData.oecd?.checked||'Unverified'},
   {heading:'OECD · PET examinations',url:petData.oecd?.sources?.exams,detail:'PET scans per 1,000 people during one year; some country data cover hospitals only.',status:petData.oecd?.checked||'Unverified'},
-  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent PET publications via NCBI E-utilities; explicit PET search and source dates.',status:petData.pubmed?.status+' · '+(petData.pubmed?.checked||'date unavailable')},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent PET publications via NCBI E-utilities; explicit PET search and source dates.',status:(petData.pubmed?.status==='live'?'Retrieved successfully':petData.pubmed?.status||'Unavailable')+' · '+(petData.pubmed?.checked||'date unavailable')},
   {heading:'EANM procedure guidelines',url:'https://eanm.org/publications/guidelines/overview/oncology/',detail:'Tracer-specific clinical indications, preparation, acquisition and interpretation standards.',status:'Clinical reference; follow local authorisations'}
  ];
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}

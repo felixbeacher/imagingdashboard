@@ -73,7 +73,7 @@ class MacroTests(unittest.TestCase):
             self.assertNotIn('ai-context-title',page)
         for name in ['global-macro.html','global-macro.template.html']:
             page=(ROOT/name).read_text()
-            self.assertIn('>Glob Econ</a>',page)
+            self.assertIn('>Global economy</a>',page)
             self.assertIn('src="risk.svg"',page)
             self.assertIn('Further information',page);self.assertIn('Why it matters for imaging',page)
     def test_imf_annual_charts_keep_country_coverage_and_forecast_status(self):

@@ -490,3 +490,11 @@ footer {
  .dashboard-home .hero-banner h2{font-size:clamp(2rem,8vw,3rem)}
 }
 @media(prefers-reduced-motion:reduce){.dashboard-home .hero-banner::before,.dashboard-home .hero-banner::after{animation:none}}
+
+/* Respect the visitor's motion preference throughout the shared shell. */
+@media(prefers-reduced-motion:reduce){
+ h1,.hero-banner h2,.hero-banner::before,.hero-banner::after{animation:none!important}
+ *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+ .card:hover{transform:none}
+}
+[hidden]{display:none!important}

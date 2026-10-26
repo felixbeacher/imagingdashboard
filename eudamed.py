@@ -122,7 +122,7 @@ def render(data):
            '<p class="ai-section-intro">European device-register records are shown separately from US FDA authorisations. EUDAMED registration is not an approval decision or evidence of clinical benefit. CE conformity assessment and, where applicable, notified-body certification must be checked separately.</p>',
            '<p class="metric-desc">This selected imaging-AI watchlist uses exact product-name searches, not a complete census. One product can have several device identifiers; record counts are not product or approval counts. No match does not establish that a product lacks CE marking.</p>']
     if items:
-        out.append('<p class="metric-desc">' + str(len(items)) + ' device-identifier records displayed · collection status: ' + esc(status) + '.</p><div class="ai-study-list">')
+        out.append('<p class="metric-desc">' + str(len(items)) + ' device-identifier records displayed · collection status: ' + esc('retrieved successfully' if status == 'live' else status) + ' · collection attempted ' + esc(data.get('attempted_at', 'date unavailable')[:10]) + '.</p><div class="ai-study-list">')
         for term in dict.fromkeys(item['trade_name'] for item in items):
             group = [item for item in items if item['trade_name'] == term]
             item = group[0]

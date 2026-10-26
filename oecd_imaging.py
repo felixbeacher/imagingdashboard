@@ -34,6 +34,23 @@ SOURCE_URLS = {
     'equipment': 'https://data-explorer.oecd.org/vis?df%5Bag%5D=OECD.ELS.HD&df%5Bid%5D=DSD_HEALTH_REAC_HOSP%40DF_MED_TECH',
 }
 
+def provider_scope(country, mode, provider):
+    """Retain national exclusions even when the SDMX provider code is total.
+
+    Coverage notes: OECD Health at a Glance 2025, diagnostic technologies.
+    These describe reporting coverage, not an estimate of unreported activity.
+    """
+    if provider is None:
+        return None
+    if country == 'GBR':
+        return ('Public-hospital equipment only (OECD UK coverage)' if mode == 'equipment'
+                else 'Hospitals only (OECD UK coverage; excludes examinations outside hospital)')
+    if country == 'AUS':
+        return ('Equipment eligible for public reimbursement only' if mode == 'equipment'
+                else 'Medicare-paid fee-for-service examinations only')
+    return ('All healthcare providers' if provider == '_T'
+            else 'Hospitals only (not all examinations)')
+
 def _empty():
     return {
         'source': 'OECD Health Statistics / OECD Data Explorer',
@@ -136,8 +153,7 @@ def fetch(offline=False):
                     if sum(1 for key in points if key[0] == country and key[1] == p) >= 2), None)
             else:
                 selected = '_T'
-            scope = ('All healthcare providers' if selected == '_T' else
-                     'Hospitals only (not all examinations)' if selected == 'HP1' else None)
+            scope = provider_scope(country, mode, selected)
             series = {}
             for modality in MODALITIES.values():
                 series[modality] = [
@@ -147,7 +163,7 @@ def fetch(offline=False):
                 ]
             available = any(series.values())
             data[mode] = {
-                'scope': scope if mode == 'exams' else 'All healthcare providers',
+                'scope': scope,
                 'status': 'available' if available else 'unavailable',
                 'series': series,
                 'reason': ('OECD endpoint unavailable (' + error + ')' if error else

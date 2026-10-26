@@ -54,9 +54,22 @@ class OECDImagingTests(unittest.TestCase):
         self.assertEqual([r['year'] for r in result['countries']['CHE']['exams']['series']['CT']],[2020,2022])
         self.assertEqual(result['countries']['CHE']['exams']['series']['MRI'],
                          [{'year':2020,'value':60.0}])
-        self.assertEqual(result['countries']['GBR']['exams']['scope'],'All healthcare providers')
+        self.assertIn('Hospitals only',result['countries']['GBR']['exams']['scope'])
+        self.assertIn('Public-hospital',result['countries']['GBR']['equipment']['scope'])
         self.assertEqual(result['countries']['CHE']['equipment']['scope'],'All healthcare providers')
         self.assertEqual(result['countries']['JPN']['exams']['status'],'unavailable')
+
+    def test_total_provider_code_does_not_erase_australian_exclusions(self):
+        rows = [row('AUS', '_T', 'CT_SCAN', 2023, 170),
+                row('AUS', '_T', 'CT_SCAN', 2024, 180)]
+        equipment = [row('AUS', '_T', 'CT_SCAN', 2024, 75, 'equipment')]
+        with patch.object(o, '_request_csv', side_effect=lambda url:
+                          rows if 'DF_DIAG_EXAM' in url else equipment):
+            data = o.fetch()['countries']['AUS']
+        self.assertIn('Medicare-paid', data['exams']['scope'])
+        self.assertIn('public reimbursement', data['equipment']['scope'])
+        self.assertEqual(data['exams']['series']['CT'][-1]['value'], 180)
+        self.assertEqual(data['equipment']['series']['CT'][-1]['value'], 75)
 
     def test_offline_no_invented_observations(self):
         with patch.object(o,'_request_csv',side_effect=AssertionError('Network not expected')):

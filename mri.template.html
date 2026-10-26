@@ -126,8 +126,8 @@
 <header><div class="header-content">
 <div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
 <nav class="nav-tabs" aria-label="Dashboard pages">
-<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn active" aria-current="page" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Global economy</a>
+<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn" href="ct.html">CT</a><a class="tab-btn active" aria-current="page" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">X-ray</a>
 
 <a class="tab-btn" href="consultancy.html">Consultancy</a>
 </nav></div></header>
@@ -207,7 +207,7 @@
 <p class="mri-source" id="mri-pubmed-source"></p>
 </section>
 <section class="mri-card" id="mri-clinical" aria-labelledby="mri-clinical-heading">
-<h2 id="mri-clinical-heading">Where MRI fits in to clinical care</h2>
+<h2 id="mri-clinical-heading">Where MRI fits into clinical care</h2>
 <p class="mri-muted">Clinical context rather than patient-specific recommendations. Indications depend on the diagnostic question, safety screening, access, protocol and appropriateness guidance.</p>
 <div class="mri-topic-grid">
 <article class="mri-topic"><h3>Brain and neurological disease</h3><p><strong>What it measures:</strong> CNS anatomy and selected tissue properties using T1, T2, diffusion and other sequences.</p><p><strong>Why it matters for imaging:</strong> stroke, demyelination, epilepsy and tumour workups depend on sequence selection and specialist reporting.</p></article>
@@ -463,9 +463,9 @@ function setRegionalOverview(regionKey){
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available MRI indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('mri-stat-grid'),
-  stat('MRI scanners available',latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
+  stat('MRI scanners available'+(latestS?' · '+latestS.name:''),latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
        latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
-  stat('MRI scans performed in one year',latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
+  stat('MRI scans performed in one year'+(latestE?' · '+latestE.name:''),latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
        latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
  regionalBars('mri-region-scanners',scanners,'scanners per million people');
@@ -500,7 +500,7 @@ function renderPapers(){
   art.append(el('p','mri-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
   area.append(art);
  }
- const note=$('mri-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
+ const note=$('mri-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status==='live'?'retrieved successfully':pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
  appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'magnetic resonance imaging'),'Search PubMed');
 }
 function renderSources(){
@@ -508,7 +508,7 @@ function renderSources(){
  const entries=[
   {heading:'OECD · scanner availability',url:mriData.oecd?.sources?.equipment,detail:'Scanners available per million people in each reported year; not new scanners sold. Original observation years and provider scope are displayed in the graph.',status:mriData.oecd?.checked||'Unverified'},
   {heading:'OECD · MRI examinations',url:mriData.oecd?.sources?.exams,detail:'MRI scans per 1,000 people during one year; some country data cover hospitals only.',status:mriData.oecd?.checked||'Unverified'},
-  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent MRI publications via NCBI E-utilities; explicit MRI search and source dates.',status:mriData.pubmed?.status+' · '+(mriData.pubmed?.checked||'date unavailable')},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent MRI publications via NCBI E-utilities; explicit MRI search and source dates.',status:(mriData.pubmed?.status==='live'?'Retrieved successfully':mriData.pubmed?.status||'Unavailable')+' · '+(mriData.pubmed?.checked||'date unavailable')},
   {heading:'MRI safety and appropriateness guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/mr-safety',detail:'Magnetic-field safety, implant and patient screening context, complementing MRI appropriateness guidance.',status:'ACR MR Safety / clinical reference'}
  ];
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}

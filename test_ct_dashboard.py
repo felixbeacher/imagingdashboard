@@ -49,7 +49,7 @@ class CTDashboardTests(unittest.TestCase):
         self.assertNotIn('countrySelect',t)
         self.assertNotIn('Computed tomography uses X-rays and computer reconstruction',t)
         self.assertNotIn('An automated refresh does not make annual observations monthly data',t)
-        self.assertIn('Where CT fits in to clinical care',t)
+        self.assertIn('Where CT fits into clinical care',t)
         self.assertIn('ct-region-primary',t)
         self.assertIn('four consecutive annual source observations',t)
         self.assertIn('OECD diagnostic technologies methodology',t)

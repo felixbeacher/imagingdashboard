@@ -126,8 +126,8 @@
 <header><div class="header-content">
 <div class="title-area"><h1>The Medical Imaging Dashboard</h1><p class="author-bio">Created and managed by Felix Beacher, PhD.</p></div>
 <nav class="nav-tabs" aria-label="Dashboard pages">
-<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Glob Econ</a>
-<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn active" href="ct.html" aria-current="page">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">Xray</a>
+<a class="tab-btn" href="index.html">Home</a><a class="tab-btn" href="global-macro.html">Global economy</a>
+<a class="tab-btn" href="intel-feed.html">Intel Feed</a><a class="tab-btn" href="ai.html">Imaging AI</a><a class="tab-btn active" href="ct.html" aria-current="page">CT</a><a class="tab-btn" href="mri.html">MRI</a><a class="tab-btn" href="pet.html">PET</a><a class="tab-btn" href="xray.html">X-ray</a>
 
 <a class="tab-btn" href="consultancy.html">Consultancy</a>
 </nav></div></header>
@@ -207,7 +207,7 @@
 <p class="ct-source" id="ct-pubmed-source"></p>
 </section>
 <section class="ct-card" id="ct-clinical" aria-labelledby="ct-clinical-heading">
-<h2 id="ct-clinical-heading">Where CT fits in to clinical care</h2>
+<h2 id="ct-clinical-heading">Where CT fits into clinical care</h2>
 <p class="ct-muted">A concise clinical orientation, not a recommendation for an individual patient. Indications and technique depend on appropriateness criteria, radiation considerations and local protocols.</p>
 <div class="ct-topic-grid">
 <article class="ct-topic"><h3>Emergency and trauma</h3><p><strong>What it measures:</strong> CT depicts acute injuries, haemorrhage and relevant anatomy rapidly.</p><p><strong>Why it matters for imaging:</strong> emergency access depends on scanner availability, staffing, protocols and reporting capacity.</p></article>
@@ -217,7 +217,7 @@
 <article class="ct-topic"><h3>Interventional and planning CT</h3><p><strong>What it measures:</strong> anatomy used in image guidance and pre-procedure planning.</p><p><strong>Why it matters for imaging:</strong> workflow, CT room access and multidisciplinary coordination affect service delivery.</p></article>
 <article class="ct-topic"><h3>Paediatric CT</h3><p><strong>What it measures:</strong> anatomy where CT is justified for a specific paediatric question.</p><p><strong>Why it matters for imaging:</strong> age-appropriate protocols, consideration of alternatives and optimisation are particularly important.</p></article>
 </div>
-<p class="ct-source">Clinical appropriateness reference: <a target="_blank" rel="noopener noreferrer" href="https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria">ACR Appropriateness Criteria</a>. Definitions are general reference material; the research cards above are live observations.</p>
+<p class="ct-source">Clinical appropriateness reference: <a target="_blank" rel="noopener noreferrer" href="https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria">ACR Appropriateness Criteria</a>. Definitions are general reference material; the research cards above are dated publication snapshots.</p>
 </section>
 <section class="ct-card" id="ct-technology" aria-labelledby="ct-technology-heading">
 <h2 id="ct-technology-heading">Technology and service considerations</h2>
@@ -457,9 +457,9 @@ function setRegionalOverview(regionKey){
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available CT indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('ct-stat-grid'),
-  stat('CT scanners available',latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
+  stat('CT scanners available'+(latestS?' · '+latestS.name:''),latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
        latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
-  stat('CT scans performed in one year',latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
+  stat('CT scans performed in one year'+(latestE?' · '+latestE.name:''),latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
        latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
  );
  regionalBars('ct-region-scanners',scanners,'scanners per million people');
@@ -494,7 +494,7 @@ function renderPapers(){
   art.append(el('p','ct-muted','Publication alone does not establish clinical benefit; check methods and results in the original paper.'));
   area.append(art);
  }
- const note=$('ct-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
+ const note=$('ct-pubmed-source');note.textContent='PubMed / NLM · '+(pub.status==='live'?'retrieved successfully':pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':fmt(pub.count,0))+' search matches, '+(pub.items||[]).length+' publications are displayed after source-backed study-type screening and topic diversification. Selection is editorial, not a clinical quality rating. ';
  appendLink(note,'https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'computed tomography'),'Search PubMed');
 }
 function renderSources(){
@@ -502,7 +502,7 @@ function renderSources(){
  const entries=[
   {heading:'OECD · scanner availability',url:ctData.oecd?.sources?.equipment,detail:'Scanners available per million people in each reported year; not new scanners sold. Original observation years and provider scope are displayed in the graph.',status:ctData.oecd?.checked||'Unverified'},
   {heading:'OECD · CT examinations',url:ctData.oecd?.sources?.exams,detail:'CT scans per 1,000 people during one year; some country data cover hospitals only.',status:ctData.oecd?.checked||'Unverified'},
-  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent CT publications via NCBI E-utilities; explicit CT search and source dates.',status:ctData.pubmed?.status+' · '+(ctData.pubmed?.checked||'date unavailable')},
+  {heading:'PubMed / NLM',url:'https://pubmed.ncbi.nlm.nih.gov/',detail:'Selected recent CT publications via NCBI E-utilities; explicit CT search and source dates.',status:(ctData.pubmed?.status==='live'?'Retrieved successfully':ctData.pubmed?.status||'Unavailable')+' · '+(ctData.pubmed?.checked||'date unavailable')},
   {heading:'Clinical and radiation guidance',url:'https://www.acr.org/clinical-resources/clinical-tools-and-reference/appropriateness-criteria',detail:'Reference definitions and clinical appropriateness, not monthly market measurements.',status:'ACR / FDA / national references'}
  ];
  for(const x of entries){const box=el('article');const h=el('h3');appendLink(h,x.url,x.heading);box.append(h,el('p','',x.detail),el('p','',x.status));container.append(box)}

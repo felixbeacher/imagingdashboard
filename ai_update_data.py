@@ -1429,13 +1429,28 @@ function plot(id,title,labels,values,note,key){
  caption.replaceChildren();add(caption,'span',note);source(caption,key);
  const hasData=values.some(v=>typeof v==='number'&&Number.isFinite(v));
  canvas.hidden=!hasData||typeof Chart==='undefined';
+ canvas.setAttribute('role','img');canvas.setAttribute('aria-label',title+'. Exact values are in the accompanying table.');
  if(hasData&&typeof Chart!=='undefined'){
- charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Research study count'},beginAtZero:id!=='macroChart'}}}});
- }else if(hasData){add(caption,'p',id==='fdaTrendChart'?'Chart unavailable; use the linked FDA source for exact annual counts.':'Chart library could not load. Data are shown below.');}
- // Keep an accessible numeric alternative for registered-study comparisons.
- // The FDA annual-value table duplicated the labelled historical chart and is deliberately omitted.
- let table=card.querySelector('[data-chart-table]');if(table)table.remove();
- if(hasData&&id!=='fdaTrendChart'){table=add(card,'table');table.dataset.chartTable='';table.style.width='100%';table.style.fontSize='12px';const tr=add(table,'tr');add(tr,'th',id==='approvalsChart'?'Registry coverage':'Period');add(tr,'th',id==='macroChart'?'Rate (%)':'Research study count');labels.forEach((label,i)=>{const row=add(table,'tr');add(row,'td',label);add(row,'td',values[i]===null?'Unavailable':String(values[i]));});}
+ charts[id]=new Chart(canvas.getContext('2d'),{type:(id==='approvalsChart'||id==='fdaTrendChart')?'bar':'line',data:{labels,datasets:[{label:title,data:values,borderColor:'#38bdf8',backgroundColor:id==='fdaTrendChart'?labels.map(label=>String(label).includes('YTD')?'#fbbf24':'#38bdf8'):id==='approvalsChart'?'#38bdf8':'rgba(56,189,248,.1)',borderWidth:id==='approvalsChart'?1:2,fill:true,tension:0,spanGaps:false}]},options:{responsive:true,animation:window.matchMedia('(prefers-reduced-motion: reduce)').matches?false:undefined,aspectRatio:window.matchMedia('(max-width: 600px)').matches?1:2,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e2e8f0',callback:function(value){const label=this.getLabelForValue(value);if(!window.matchMedia('(max-width: 600px)').matches)return label;return String(label).replace(' (sample)','').replace('North America','N. America').replace('Latin America','Lat. America');}},grid:{color:'rgba(226,232,240,.12)'},border:{color:'#94a3b8'}},y:{ticks:{color:'#e2e8f0'},grid:{color:'rgba(226,232,240,.18)'},border:{color:'#94a3b8'},title:{display:true,color:'#e2e8f0',text:id==='fdaTrendChart'?'Listed US authorisations':id==='macroChart'?'Percent per annum':'Research study count'},beginAtZero:id!=='macroChart'}}}});
+ }else if(hasData){add(caption,'p',id==='fdaTrendChart'?'Chart unavailable; exact annual counts are in the expandable table below.':'Chart library could not load. Data are shown below.');}
+ // Exact values remain available to keyboard/screen-reader users and if Chart.js fails.
+ const old=card.querySelector('[data-chart-values]');if(old)old.remove();
+ if(hasData){
+  const container=add(card,id==='fdaTrendChart'?'details':'div');container.dataset.chartValues='';
+  if(id==='fdaTrendChart')add(container,'summary','View annual and year-to-date values');
+  const scroll=add(container,'div');scroll.className='ai-table-scroll';scroll.tabIndex=0;
+  scroll.setAttribute('role','region');scroll.setAttribute('aria-label',title+' exact values');
+  const table=add(scroll,'table');table.dataset.chartTable='';
+  add(table,'caption',title+' — exact source values');
+  const head=add(table,'thead'),tr=add(head,'tr');
+  for(const label of [id==='approvalsChart'?'Registry coverage':'Period',id==='fdaTrendChart'?'Listed US authorisations':'Research study count']){
+   const th=add(tr,'th',label);th.scope='col';
+  }
+  const body=add(table,'tbody');labels.forEach((label,i)=>{
+   const row=add(body,'tr'),th=add(row,'th',label);th.scope='row';
+   add(row,'td',values[i]===null?'Unavailable':String(values[i]));
+  });
+ }
 }
 function update(){
  const key='global';
@@ -1518,7 +1533,7 @@ function update(){
  const status=document.getElementById('ai-source-status');status.replaceChildren();
  const entries=Object.entries(payload.sources);
  const health=add(status,'ul');
- (payload.sourceHealth||[]).forEach(s=>{const item=add(health,'li',s.name+': '+s.status+(s.attempted?' · checked '+s.attempted:'')+(s.reason?' — '+s.reason:''));});
+ (payload.sourceHealth||[]).forEach(s=>{const item=add(health,'li',s.name+': '+(s.status==='live'?'retrieved successfully':s.status)+(s.attempted?' · checked '+s.attempted:'')+(s.reason?' — '+s.reason:''));});
  const dates=[...new Set(entries.filter(([,s])=>s.status==='live'&&s.fetched_at).map(([,s])=>s.fetched_at.slice(0,10)))];
  const dateLine=add(status,'p',dates.length===1?'Last refreshed: '+dates[0]:dates.length?'Retrieval dates vary by source; see details.':'Retrieval dates are shown in source details.');
  dateLine.className='metric-desc';
@@ -1598,7 +1613,7 @@ def render_template(template, payload, fallback_theme=False):
         output = output.replace(f'<canvas id="{cid}"></canvas>', '<p class="metric-desc">Not available — no validated comparable dataset.</p>')
     output = output.replace('grid-template-columns: repeat(3, 1fr)', 'grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))')
     output = output.replace('While metrics and figures are sourced from public registers, APIs, and market estimates,', 'Available figures are linked to public sources; unsupported metrics are labelled unavailable. Geographic subsets and source limitations are disclosed. However,')
-    status = '<section id="ai-source-status-section" class="card" style="margin-top:24px"><h2>Sources, observation dates and limitations</h2><p class="metric-desc">Retrieval dates are not observation dates. FDA listings are not global adoption; ClinicalTrials.gov counts are research activity; the publication feed is selective.</p><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
+    status = '<section id="ai-source-status-section" class="card" style="margin-top:24px"><h2>Sources, observation dates and limitations</h2><p class="metric-desc">Figures are collected during scheduled publication builds, not when this page opens. Retrieval dates are not observation dates. FDA listings are not global adoption; ClinicalTrials.gov counts are research activity; the publication feed is selective.</p><div id="ai-source-status"></div></section><noscript>This dashboard requires JavaScript. Enable JavaScript to view populated metrics and sources.</noscript>'
     output = output.replace('</main>', status + '\n</main>')
 
     output = output.replace('<!-- EUDAMED_REGISTRATION_FEED -->', eudamed.render(payload.get('eudamed', {})))
