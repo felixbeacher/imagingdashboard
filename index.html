@@ -36,8 +36,8 @@
                 <p>Created and managed by Felix Beacher, PhD</p>
             </div>
             <!-- Tab Links -->
-            <nav class="nav-tabs">
-                <a href="index.html" class="tab-btn active">Home</a>
+            <nav class="nav-tabs" aria-label="Main navigation">
+                <a href="index.html" class="tab-btn active" aria-current="page">Home</a>
                 <a href="global-macro.html" class="tab-btn">Global economy</a>
 <a class="tab-btn" href="intel-feed.html">Intel Feed</a>
                 <a href="ai.html" class="tab-btn">Imaging AI</a>
@@ -60,25 +60,29 @@
                         <div class="hero-badge free">100% Free Access</div>
                     </div>
                     <h2>The Medical Imaging Dashboard</h2>
-                    <p><em>The intelligent way to do imaging market intelligence</em></p>
-                    <p>This Dashboard gives you a comprehensive overview of the medical imaging market: economic indicators, leading vendors, research and trends. Designed for decision-makers, investors, and imaging vendors.</p>
-                    
-                    <div class="hero-stats-row">
-                        <div class="hero-stat-card">
-                            <h4>Primary Focus</h4>
-                            <div class="val">Imaging Modalities</div>
-                        </div>
-                        <div class="hero-stat-card">
-                            <h4>Coverage</h4>
-                            <div class="val">Global & Regional</div>
-                        </div>
-                        <div class="hero-stat-card">
-                            <h4>Intelligence</h4>
-                            <div class="val">Leaders and Trends</div>
-                        </div>
-                    </div>
+                    <p class="hero-tagline"><em>The intelligent way to do imaging market intelligence</em></p>
+                    <p class="hero-intro">This Dashboard gives you a comprehensive overview of the medical imaging market: economic indicators, leading vendors, research and trends. Designed for decision-makers, investors, and imaging vendors.</p>
                 </div>
+                <img class="hero-art" src="images/luminous-head-900.webp"
+                     srcset="images/luminous-head-480.webp 480w, images/luminous-head-900.webp 900w"
+                     sizes="(max-width: 700px) 92vw, 45vw" width="900" height="946"
+                     fetchpriority="high" decoding="async"
+                     alt="Artistic illustration of a translucent human head showing the brain, skull and blood vessels in cyan and magenta.">
             </div>
+            <dl class="hero-stats-row" aria-label="Dashboard coverage">
+                <div class="hero-stat-card">
+                    <svg class="hero-stat-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="32" cy="32" r="23"/><circle cx="32" cy="32" r="14"/><path d="M32 2v19m0 22v19M2 32h19m22 0h19"/><circle cx="32" cy="32" r="3"/></svg>
+                    <div><dt>Primary Focus</dt><dd>Imaging Modalities</dd></div>
+                </div>
+                <div class="hero-stat-card">
+                    <svg class="hero-stat-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="32" cy="32" r="26"/><ellipse cx="32" cy="32" rx="12" ry="26"/><path d="M6 32h52M11 17h42M11 47h42"/></svg>
+                    <div><dt>Coverage</dt><dd>Global &amp; Regional</dd></div>
+                </div>
+                <div class="hero-stat-card">
+                    <svg class="hero-stat-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 36h9v23H8zM27 22h9v37h-9zM46 5h9v54h-9z"/></svg>
+                    <div><dt>Intelligence</dt><dd>Leaders and Trends</dd></div>
+                </div>
+            </dl>
         </div>
     </main>
 

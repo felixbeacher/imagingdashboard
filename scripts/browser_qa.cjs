@@ -47,6 +47,20 @@ fs.mkdirSync('qa-results', {recursive:true});
      assert.deepEqual(structure.broken,[], 'in-page links resolve');
      assert.deepEqual(structure.offscreen,[], 'navigation and inputs remain on screen');
      assert.equal(structure.documentOverflow,false, 'no page-wide horizontal overflow');
+     if (name==='index') {
+      const art=page.locator('.hero-art');
+      assert.equal(await art.evaluate(e=>e.complete&&e.naturalWidth>0),true,'landing artwork loads');
+      const layout=await page.evaluate(()=>{
+       const text=document.querySelector('.hero-content').getBoundingClientRect();
+       const art=document.querySelector('.hero-art').getBoundingClientRect();
+       return {overlap:text.right>art.left+1&&text.bottom>art.top+1,
+         artVisible:art.width>0&&art.height>0,
+         statsBelow:document.querySelector('.hero-stats-row').getBoundingClientRect().top>=document.querySelector('.hero-banner').getBoundingClientRect().bottom};
+      });
+      assert.equal(layout.overlap,false,'artwork stays clear of copy');
+      assert.equal(layout.artVisible,true,'artwork visible at every viewport');
+      assert.equal(layout.statsBelow,true,'coverage cards sit below hero');
+     }
      if (['ct','mri','pet'].includes(name)) {
       for (const region of ['europe','northAmerica','asiaPacific','global']) {
        await page.locator(`#${name}-region`).selectOption(region);
@@ -94,7 +108,7 @@ fs.mkdirSync('qa-results', {recursive:true});
      });
      assert.deepEqual(accessibility,[], 'automated WCAG A/AA checks: '+JSON.stringify(accessibility));
      assert.deepEqual(errors,[], 'no page JavaScript errors');
-     if (['ai','ct','global-macro'].includes(name)&&viewport.width!==768)
+     if (name==='index'||(['ai','ct','global-macro'].includes(name)&&viewport.width!==768))
       await page.screenshot({path:`qa-results/${name}-${viewport.width}.png`});
      results.push({page:name,width:viewport.width,status:'passed'});
     } catch(error) {

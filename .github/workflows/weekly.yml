@@ -106,6 +106,9 @@ jobs:
           if output.exists():
               shutil.rmtree(output)
           (output / 'images').mkdir(parents=True)
+          # Include the responsive landing-page artwork in every publication.
+          for asset in ('luminous-head-480.webp', 'luminous-head-900.webp'):
+              shutil.copy2(root / 'images' / asset, output / 'images' / asset)
           for filename in ('index.html', 'consultancy.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'intel-feed.css', 'intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
               shutil.copy2(root / filename, output / filename)
           # Rebuild the curated Intel Feed without an AI API.

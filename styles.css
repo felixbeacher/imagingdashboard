@@ -472,25 +472,6 @@ footer {
 /* Allow navigation to wrap with the Glob Econ tab. */
 .nav-tabs { flex-wrap: wrap; }
 
-/* Homepage-specific proportions: do not alter the more data-dense dashboard tabs. */
-.dashboard-home header .header-content,
-.dashboard-home main{width:min(100%,1680px);max-width:none;margin-inline:auto}
-.dashboard-home main{padding:clamp(16px,2.8vw,44px)}
-.dashboard-home .hero-banner{padding:clamp(36px,5vw,76px) clamp(20px,5vw,78px);text-align:left;min-height:min(65vh,720px);display:flex;align-items:center}
-.dashboard-home .hero-content{max-width:1230px;margin:0;width:100%}
-.dashboard-home .hero-badge-group{justify-content:flex-start}
-.dashboard-home .hero-banner h2{font-size:clamp(2.25rem,4.5vw,4.65rem);max-width:1050px;line-height:1.22;overflow-wrap:break-word}
-.dashboard-home .hero-banner p{font-size:clamp(1.05rem,1.45vw,1.4rem);line-height:1.6;max-width:950px;margin-bottom:1.65rem}
-.dashboard-home .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1100px;margin-top:2rem}
-.dashboard-home .hero-stat-card{padding:clamp(16px,2.2vw,26px)}
-.dashboard-home .hero-stat-card .val{font-size:clamp(1rem,1.4vw,1.35rem)}
-@media(max-width:780px){
- .dashboard-home .hero-stats-row{grid-template-columns:1fr}
- .dashboard-home .hero-banner{min-height:auto;text-align:left}
- .dashboard-home .hero-banner h2{font-size:clamp(2rem,8vw,3rem)}
-}
-@media(prefers-reduced-motion:reduce){.dashboard-home .hero-banner::before,.dashboard-home .hero-banner::after{animation:none}}
-
 /* Respect the visitor's motion preference throughout the shared shell. */
 @media(prefers-reduced-motion:reduce){
  h1,.hero-banner h2,.hero-banner::before,.hero-banner::after{animation:none!important}
@@ -498,3 +479,59 @@ footer {
  .card:hover{transform:none}
 }
 [hidden]{display:none!important}
+/* Approved luminous-head landing page. All styling is scoped to Home. */
+.dashboard-home header{padding:1.25rem clamp(16px,2.8vw,44px);background:var(--bg-color)}
+.dashboard-home header .header-content,
+.dashboard-home main{width:min(100%,1680px);max-width:none;margin-inline:auto}
+.dashboard-home main{padding:0 clamp(16px,2.8vw,44px) 2rem}
+.dashboard-home .title-area h1,
+.dashboard-home .hero-banner h2,
+.dashboard-home .hero-tagline em,
+.dashboard-home .hero-intro,
+.dashboard-home .hero-stat-card dd{font-family:Georgia,"Times New Roman",serif}
+.dashboard-home .title-area h1,
+.dashboard-home .hero-banner h2{background-image:linear-gradient(110deg,#8de5f2 0%,#b9d7ee 42%,#e8b9df 72%,#f186b8 100%);background-size:100% 100%;animation:none;font-weight:400}
+.dashboard-home .title-area h1{font-size:clamp(1.25rem,1.7vw,1.8rem)}
+.dashboard-home .title-area p{font-family:Georgia,"Times New Roman",serif;font-style:italic;color:#bec9d6}
+.dashboard-home .nav-tabs{background:none;border:0;padding:0;gap:.4rem}
+.dashboard-home .tab-btn{border:1px solid #344c60;color:#d0dce8;padding:.65rem .95rem;min-height:44px;font-size:.8rem;font-weight:500}
+.dashboard-home .tab-btn.active{color:#b0ecfc;background:#102635;border-color:#7bddf4;box-shadow:inset 0 0 15px #38bdf80d}
+.dashboard-home .tab-btn:focus-visible{outline:3px solid #b0ecfc;outline-offset:3px}
+.dashboard-home .hero-banner{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);align-items:center;min-height:0;padding:0;text-align:left;background:#0d151f;border-color:#30485b;border-radius:20px;box-shadow:none;isolation:isolate}
+.dashboard-home .hero-banner::before,.dashboard-home .hero-banner::after{display:none}
+.dashboard-home .hero-content{max-width:none;min-width:0;margin:0;padding:clamp(24px,3.3vw,54px);padding-right:0;width:100%}
+.dashboard-home .hero-badge-group{justify-content:flex-start;align-items:center;gap:1rem;margin-bottom:1.8rem}
+.dashboard-home .hero-badge{border:0;background:none;padding:0;color:#b2dce9;letter-spacing:.22em;font-weight:500;font-size:.68rem}
+.dashboard-home .hero-badge.free{padding:.55rem .9rem;border:1px solid #7c9bb3;background:none;color:#d3dfec;letter-spacing:.1em;border-radius:999px;font-size:.65rem}
+.dashboard-home .hero-banner h2{font-size:clamp(2.6rem,4.65vw,4.9rem);max-width:none;line-height:1.08;letter-spacing:-.035em;overflow-wrap:normal;margin-bottom:1rem;padding-bottom:.14em}
+.dashboard-home .hero-banner p{font-size:clamp(1.05rem,1.4vw,1.38rem);line-height:1.6;color:#d5deea;max-width:none;margin:0}
+.dashboard-home .hero-banner .hero-tagline{font-size:clamp(1.15rem,1.65vw,1.7rem);line-height:1.45;margin-bottom:1.7rem;color:#edf0f6}
+.dashboard-home .hero-art{display:block;width:100%;height:auto;align-self:stretch;object-fit:cover;object-position:50% 15%;min-width:0;max-height:760px;mask-image:linear-gradient(to right,transparent 0%,#000 13%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 13%)}
+.dashboard-home .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));max-width:none;margin-top:1rem;gap:1rem}
+.dashboard-home .hero-stat-card{display:flex;align-items:center;gap:clamp(16px,2vw,30px);padding:clamp(20px,2.4vw,38px);min-width:0;background:linear-gradient(120deg,#111d2a,#0d151f);border-color:#30485b;border-radius:18px}
+.dashboard-home .hero-stat-icon{width:clamp(36px,4vw,64px);height:auto;flex-shrink:0;color:#8cdef0}
+.dashboard-home .hero-stat-card>div{min-width:0;border-left:1px solid #3e6075;padding-left:clamp(16px,2vw,30px)}
+.dashboard-home .hero-stat-card dt{font-size:.65rem;text-transform:uppercase;letter-spacing:.16em;color:#b5c6db;margin-bottom:.65rem}
+.dashboard-home .hero-stat-card dd{font-size:clamp(1.1rem,1.65vw,1.7rem);line-height:1.25;color:#f3f4f6}
+@media(max-width:1100px){
+ .dashboard-home .hero-banner h2{font-size:clamp(2.3rem,4.8vw,3.4rem)}
+ .dashboard-home .hero-stat-card{gap:14px;padding:20px 16px}
+ .dashboard-home .hero-stat-card>div{padding-left:14px}
+ .dashboard-home .hero-stat-card dd{font-size:1.1rem}
+}
+@media(max-width:700px){
+ .dashboard-home header{padding-bottom:1.25rem}
+ .dashboard-home .nav-tabs{width:100%;gap:.4rem}
+ .dashboard-home .tab-btn{padding:.65rem .8rem}
+ .dashboard-home .hero-banner{grid-template-columns:minmax(0,1fr)}
+ .dashboard-home .hero-content{padding:28px 24px 0}
+ .dashboard-home .hero-badge-group{gap:.8rem;margin-bottom:1.5rem}
+ .dashboard-home .hero-banner h2{font-size:clamp(2rem,8.3vw,3.2rem);line-height:1.12}
+ .dashboard-home .hero-banner .hero-tagline{font-size:1.2rem;margin-bottom:1.25rem}
+ .dashboard-home .hero-banner .hero-intro{font-size:1.05rem}
+ .dashboard-home .hero-art{width:100%;height:auto;max-height:460px;aspect-ratio:1.12;object-fit:contain;margin-top:.5rem;mask-image:linear-gradient(to bottom,transparent,#000 10%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 10%)}
+ .dashboard-home .hero-stats-row{grid-template-columns:1fr}
+ .dashboard-home .hero-stat-card{padding:22px 24px}
+ .dashboard-home .hero-stat-icon{width:44px}
+ .dashboard-home .hero-stat-card dd{font-size:1.35rem}
+}
