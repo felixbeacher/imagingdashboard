@@ -480,22 +480,12 @@ footer {
 }
 [hidden]{display:none!important}
 /* Approved luminous-head landing page. All styling is scoped to Home. */
-.dashboard-home header{padding:1.25rem clamp(16px,2.8vw,44px);background:var(--bg-color)}
-.dashboard-home header .header-content,
 .dashboard-home main{width:min(100%,1680px);max-width:none;margin-inline:auto}
 .dashboard-home main{padding:0 clamp(16px,2.8vw,44px) 2rem}
-.dashboard-home .title-area h1,
 .dashboard-home .hero-banner h2,
 .dashboard-home .hero-tagline em,
 .dashboard-home .hero-intro{font-family:Georgia,"Times New Roman",serif}
-.dashboard-home .title-area h1,
 .dashboard-home .hero-banner h2{background-image:linear-gradient(110deg,#8de5f2 0%,#b9d7ee 42%,#e8b9df 72%,#f186b8 100%);background-size:100% 100%;animation:none;font-weight:400}
-.dashboard-home .title-area h1{font-size:clamp(1.25rem,1.7vw,1.8rem)}
-.dashboard-home .title-area p{font-family:Georgia,"Times New Roman",serif;font-style:italic;color:#bec9d6}
-.dashboard-home .nav-tabs{background:none;border:0;padding:0;gap:.4rem}
-.dashboard-home .tab-btn{border:1px solid #344c60;color:#d0dce8;padding:.65rem .95rem;min-height:44px;font-size:.8rem;font-weight:500}
-.dashboard-home .tab-btn.active{color:#b0ecfc;background:#102635;border-color:#7bddf4;box-shadow:inset 0 0 15px #38bdf80d}
-.dashboard-home .tab-btn:focus-visible{outline:3px solid #b0ecfc;outline-offset:3px}
 .dashboard-home .hero-banner{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:center;min-height:0;padding:0;text-align:left;background:#0d151f;border-color:#30485b;border-radius:20px;box-shadow:none;isolation:isolate}
 .dashboard-home .hero-banner::before,.dashboard-home .hero-banner::after{display:none}
 .dashboard-home .hero-content{max-width:none;min-width:0;margin:0;padding:clamp(24px,3.3vw,54px);padding-right:0;width:100%}
@@ -511,9 +501,6 @@ footer {
  .dashboard-home .hero-art{max-height:340px}
 }
 @media(max-width:700px){
- .dashboard-home header{padding-bottom:1.25rem}
- .dashboard-home .nav-tabs{width:100%;gap:.4rem}
- .dashboard-home .tab-btn{padding:.65rem .8rem}
  .dashboard-home .hero-banner{grid-template-columns:minmax(0,1fr)}
  .dashboard-home .hero-content{padding:28px 24px 0}
  .dashboard-home .hero-badge-group{gap:.8rem;margin-bottom:1.5rem}
