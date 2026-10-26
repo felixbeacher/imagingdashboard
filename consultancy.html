@@ -26,6 +26,23 @@
 .consultancy-page .intel-category-nav{margin:22px 0 0}
 .consultancy-page .intel-note{margin-top:18px}
 @media(max-width:900px){.consultancy-services{grid-template-columns:1fr}}
+
+.consultancy-contact{margin:0 0 30px}
+.consultancy-contact>p{max-width:760px}
+.consultancy-form{max-width:860px;margin-top:24px}
+.contact-fields{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.contact-field{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;min-width:0}
+.contact-field label{font-size:.9rem;font-weight:600;color:#dbe7f2}
+.contact-field input,.contact-field textarea{width:100%;min-width:0;border:1px solid #506780;border-radius:10px;background:#0d1724;color:#f3f4f6;padding:12px 14px;font:inherit;font-size:1rem;line-height:1.5}
+.contact-field textarea{resize:vertical;min-height:140px}
+.contact-field input:focus-visible,.contact-field textarea:focus-visible,.contact-submit button:focus-visible{outline:3px solid #8bd4f5;outline-offset:3px}
+.contact-honeypot{display:none}
+.consultancy-form .contact-privacy{font-size:.85rem;line-height:1.6;color:#b9ccdc}
+.contact-submit{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin-top:20px}
+.contact-submit button{border:1px solid #8bd4f5;border-radius:999px;background:#8bd4f5;color:#0d1724;padding:12px 24px;min-height:44px;font-size:.95rem;font-weight:700;cursor:pointer}
+.contact-submit button:hover{background:#b5e8ff}
+.contact-submit span{font-size:.85rem;color:#b9ccdc}
+@media(max-width:600px){.contact-fields{grid-template-columns:minmax(0,1fr);gap:0}.contact-submit{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body class="intel-page consultancy-page">
@@ -35,12 +52,27 @@
 </nav></div></header>
 <main class="intel-main" id="main">
 <section class="intel-intro" aria-labelledby="consultancy-title">
-<p class="intel-eyebrow">Medical imaging · Research &amp; advisory</p>
 <h2 id="consultancy-title">Consultancy</h2>
-<p class="intel-section-title">A clearer view. A better-informed decision.</p>
-<p class="intel-lead">Bespoke medical imaging research for the question your business needs to answer. Understand competitors, investigate opportunities and turn scattered developments into a focused commercial brief.</p>
-<div class="intel-category-nav" aria-label="On this page"><a href="#services-title">Explore the services ↓</a><a href="#about">About Felix</a></div>
-<p class="intel-note">Projects scoped and quoted individually. The public dashboard remains free.</p>
+<p class="intel-lead">Bespoke medical imaging research for the specific question your business needs to answer. Understand competitors, investigate opportunities and turn scattered developments into a focused commercial brief.</p>
+<p class="intel-note">Projects are scoped and quoted individually. The public dashboard remains free.</p>
+</section>
+<section class="intel-story consultancy-contact" aria-labelledby="contact-title">
+<h2 class="intel-section-title" id="contact-title">Discuss a research project</h2>
+<p>Tell me the question you would like answered and any timing requirements.</p>
+<form action="https://formsubmit.co/felixbeacher@gmail.com" method="POST" accept-charset="UTF-8" class="consultancy-form">
+<input type="hidden" name="_subject" value="Medical Imaging Dashboard — consultancy enquiry">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" name="_url" value="https://felixbeacher.github.io/imagingdashboard/consultancy.html">
+<input type="text" name="_honey" class="contact-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div class="contact-fields">
+<div class="contact-field"><label for="contact-name">Your name (required)</label><input id="contact-name" name="name" type="text" autocomplete="name" required maxlength="120"></div>
+<div class="contact-field"><label for="contact-email">Email address (required)</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+</div>
+<div class="contact-field"><label for="contact-organisation">Organisation (optional)</label><input id="contact-organisation" name="organisation" type="text" autocomplete="organization" maxlength="200"></div>
+<div class="contact-field"><label for="contact-message">Your research question (required)</label><textarea id="contact-message" name="message" rows="5" required minlength="10" maxlength="6000" aria-describedby="contact-privacy"></textarea></div>
+<p class="contact-privacy" id="contact-privacy">Your details and message are processed by <a href="https://formsubmit.co/privacy.pdf" target="_blank" rel="noopener noreferrer">FormSubmit</a> and emailed to Felix. Please do not include patient information or confidential documents.</p>
+<div class="contact-submit"><button type="submit">Send enquiry</button><span>You may be asked to complete a spam check.</span></div>
+</form>
 </section>
 <section aria-labelledby="services-title">
 <h2 class="intel-section-title" id="services-title">Focused research. Useful outputs.</h2>
@@ -50,8 +82,7 @@
 <article class="intel-story"><div class="intel-number">03 / YOUR RESEARCH QUESTION</div><h3>Bespoke briefings</h3><p>Get a structured answer to a defined commercial or investment research question.</p><ul><li>A concise executive briefing</li><li>Supporting evidence and source register</li><li>Uncertainties, implications and questions to pursue</li></ul></article>
 </div></section>
 <section class="intel-story consultancy-about" id="about" aria-labelledby="about-title">
-<p class="intel-eyebrow">About your analyst</p>
-<h2 class="intel-section-title" id="about-title">Felix Beacher</h2>
+<h2 class="intel-section-title" id="about-title">About your analyst</h2>
 <p>Felix Beacher has a PhD in neuroimaging and is an experienced analyst in medical imaging. He also hosts <a href="https://open.spotify.com/show/6qAqCyr6btcKbxLTgput2Y" target="_blank" rel="noopener noreferrer">The Medical AI Podcast</a>, available on Spotify.</p>
 <div class="intel-category-nav" aria-label="Professional profile"><a href="https://uk.linkedin.com/in/felixbeacher" target="_blank" rel="noopener noreferrer">View LinkedIn profile ↗</a></div>
 </section>
