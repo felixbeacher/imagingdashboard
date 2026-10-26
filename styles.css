@@ -497,7 +497,7 @@ footer {
 .dashboard-home .tab-btn{border:1px solid #344c60;color:#d0dce8;padding:.65rem .95rem;min-height:44px;font-size:.8rem;font-weight:500}
 .dashboard-home .tab-btn.active{color:#b0ecfc;background:#102635;border-color:#7bddf4;box-shadow:inset 0 0 15px #38bdf80d}
 .dashboard-home .tab-btn:focus-visible{outline:3px solid #b0ecfc;outline-offset:3px}
-.dashboard-home .hero-banner{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);align-items:center;min-height:0;padding:0;text-align:left;background:#0d151f;border-color:#30485b;border-radius:20px;box-shadow:none;isolation:isolate}
+.dashboard-home .hero-banner{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:center;min-height:0;padding:0;text-align:left;background:#0d151f;border-color:#30485b;border-radius:20px;box-shadow:none;isolation:isolate}
 .dashboard-home .hero-banner::before,.dashboard-home .hero-banner::after{display:none}
 .dashboard-home .hero-content{max-width:none;min-width:0;margin:0;padding:clamp(24px,3.3vw,54px);padding-right:0;width:100%}
 .dashboard-home .hero-badge-group{justify-content:flex-start;align-items:center;gap:1rem;margin-bottom:1.8rem}
@@ -506,18 +506,19 @@ footer {
 .dashboard-home .hero-banner h2{font-size:clamp(2.6rem,4.65vw,4.9rem);max-width:none;line-height:1.08;letter-spacing:-.035em;overflow-wrap:normal;margin-bottom:1rem;padding-bottom:.14em}
 .dashboard-home .hero-banner p{font-size:clamp(1.05rem,1.4vw,1.38rem);line-height:1.6;color:#d5deea;max-width:none;margin:0}
 .dashboard-home .hero-banner .hero-tagline{font-size:clamp(1.15rem,1.65vw,1.7rem);line-height:1.45;margin-bottom:1.7rem;color:#edf0f6}
-.dashboard-home .hero-art{display:block;width:100%;height:auto;align-self:stretch;object-fit:cover;object-position:50% 15%;min-width:0;max-height:760px;mask-image:linear-gradient(to right,transparent 0%,#000 13%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 13%)}
-.dashboard-home .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));max-width:none;margin-top:1rem;gap:1rem}
-.dashboard-home .hero-stat-card{display:flex;align-items:center;gap:clamp(16px,2vw,30px);padding:clamp(20px,2.4vw,38px);min-width:0;background:linear-gradient(120deg,#111d2a,#0d151f);border-color:#30485b;border-radius:18px}
-.dashboard-home .hero-stat-icon{width:clamp(36px,4vw,64px);height:auto;flex-shrink:0;color:#8cdef0}
-.dashboard-home .hero-stat-card>dl{min-width:0;border-left:1px solid #3e6075;padding-left:clamp(16px,2vw,30px)}
-.dashboard-home .hero-stat-card dt{font-size:.65rem;text-transform:uppercase;letter-spacing:.16em;color:#b5c6db;margin-bottom:.65rem}
-.dashboard-home .hero-stat-card dd{font-size:clamp(1.1rem,1.65vw,1.7rem);line-height:1.25;color:#f3f4f6}
+.dashboard-home .hero-art{display:block;width:90%;height:auto;align-self:center;justify-self:center;object-fit:contain;object-position:center;min-width:0;max-width:430px;max-height:460px;margin-block:20px;mask-image:linear-gradient(to right,transparent 0%,#000 13%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 13%)}
+.dashboard-home .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1100px;margin:1rem auto 0;gap:.85rem}
+.dashboard-home .hero-stat-card{display:flex;align-items:center;gap:18px;padding:18px 22px;min-width:0;background:linear-gradient(120deg,#111d2a,#0d151f);border-color:#30485b;border-radius:18px}
+.dashboard-home .hero-stat-icon{width:34px;height:auto;flex-shrink:0;color:#8cdef0}
+.dashboard-home .hero-stat-card>dl{min-width:0;border-left:1px solid #3e6075;padding-left:18px}
+.dashboard-home .hero-stat-card dt{font-size:.65rem;text-transform:uppercase;letter-spacing:.16em;color:#b5c6db;margin-bottom:.4rem}
+.dashboard-home .hero-stat-card dd{font-size:clamp(1rem,1.3vw,1.2rem);line-height:1.25;color:#f3f4f6}
 @media(max-width:1100px){
  .dashboard-home .hero-banner h2{font-size:clamp(2.3rem,4.8vw,3.4rem)}
- .dashboard-home .hero-stat-card{gap:14px;padding:20px 16px}
+ .dashboard-home .hero-stat-card{gap:12px;padding:16px}
  .dashboard-home .hero-stat-card>dl{padding-left:14px}
- .dashboard-home .hero-stat-card dd{font-size:1.1rem}
+ .dashboard-home .hero-stat-card dd{font-size:1.05rem}
+ .dashboard-home .hero-art{max-height:340px}
 }
 @media(max-width:700px){
  .dashboard-home header{padding-bottom:1.25rem}
@@ -529,9 +530,9 @@ footer {
  .dashboard-home .hero-banner h2{font-size:clamp(2rem,8.3vw,3.2rem);line-height:1.12}
  .dashboard-home .hero-banner .hero-tagline{font-size:1.2rem;margin-bottom:1.25rem}
  .dashboard-home .hero-banner .hero-intro{font-size:1.05rem}
- .dashboard-home .hero-art{width:100%;height:auto;max-height:460px;aspect-ratio:1.12;object-fit:contain;margin-top:.5rem;mask-image:linear-gradient(to bottom,transparent,#000 10%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 10%)}
+ .dashboard-home .hero-art{width:78%;height:auto;max-width:260px;max-height:240px;object-fit:contain;margin:12px auto 18px;mask-image:linear-gradient(to bottom,transparent,#000 10%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 10%)}
  .dashboard-home .hero-stats-row{grid-template-columns:1fr}
- .dashboard-home .hero-stat-card{padding:22px 24px}
- .dashboard-home .hero-stat-icon{width:44px}
- .dashboard-home .hero-stat-card dd{font-size:1.35rem}
+ .dashboard-home .hero-stat-card{padding:14px 18px}
+ .dashboard-home .hero-stat-icon{width:30px}
+ .dashboard-home .hero-stat-card dd{font-size:1.15rem}
 }
