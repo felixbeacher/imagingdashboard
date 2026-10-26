@@ -49,11 +49,13 @@ class OECDImagingTests(unittest.TestCase):
             return examination_rows if 'DF_DIAG_EXAM' in url else equipment_rows
         with patch.object(o,'_request_csv',side_effect=fetch_rows):
             result=o.fetch()
-        self.assertEqual(result['countries']['CHE']['exams']['scope'],
+        self.assertEqual(result['countries']['CHE']['exams']['scope_by_modality']['CT'],
                          'Hospitals only (not all examinations)')
         self.assertEqual([r['year'] for r in result['countries']['CHE']['exams']['series']['CT']],[2020,2022])
         self.assertEqual(result['countries']['CHE']['exams']['series']['MRI'],
-                         [{'year':2020,'value':60.0}])
+                         [{'year':2021,'value':200.0,'flags':[]}])
+        self.assertEqual(result['countries']['CHE']['exams']['scope_by_modality']['MRI'],
+                         'All healthcare providers')
         self.assertIn('Hospitals only',result['countries']['GBR']['exams']['scope'])
         self.assertIn('Public-hospital',result['countries']['GBR']['equipment']['scope'])
         self.assertEqual(result['countries']['CHE']['equipment']['scope'],'All healthcare providers')

@@ -184,17 +184,17 @@
 </section>
 <section class="mri-card" id="mri-activity" aria-labelledby="mri-activity-heading">
 <h2 id="mri-activity-heading">Scanner availability and examination activity</h2>
-<p class="mri-muted">View the OECD histories for countries within your selected region, displayed together. Each series is a published country observation, not a constructed regional average.</p>
+<p class="mri-muted">View the OECD histories for countries within your selected region, displayed together. Each series is a published country reading, not a constructed regional average. Source estimates and definition changes are labelled; lines stop at a source-reported break.</p>
 <div class="mri-grid">
 <article class="mri-indicator" id="mri-scanners"></article>
 <article class="mri-indicator" id="mri-exams"></article>
 </div>
 <div class="mri-lag-note" id="mri-data-lag" aria-live="polite"></div>
-<div class="mri-projection-legend"><span><i class="mri-key-actual"></i> Solid lines: observed OECD figures</span><span><i class="mri-key-forecast"></i> Dashed lines: modelled scenarios</span><span><i class="mri-key-band"></i> Shading: sensitivity, not confidence limits</span></div>
+<div class="mri-projection-legend"><span><i class="mri-key-actual"></i> Solid lines: reported OECD figures</span><span><i class="mri-key-forecast"></i> Dashed lines: modelled scenarios</span><span><i class="mri-key-band"></i> Shading: sensitivity, not confidence limits</span></div>
 <p class="mri-muted">OECD definitions and provider coverage can vary by country. Missing years are gaps, not zeros. The two series use different population denominators and should not be divided to estimate throughput without compatible scope and definitions.</p>
 <div id="mri-interpretation" class="mri-activity-implications" aria-labelledby="mri-interpretation-heading">
 <h3 id="mri-interpretation-heading">From MRI trends to imaging decisions</h3>
-<p class="mri-muted">The historical commentary below is generated from actual OECD observations. Forward scenarios are shown separately and are not official OECD data.</p>
+<p class="mri-muted">The historical commentary below is generated from published OECD readings, including any source-labelled estimates. Forward scenarios are shown separately and are not official OECD data.</p>
 <div class="mri-grid"><article class="mri-indicator"><h3>What the observed series show</h3><div id="mri-reading" class="mri-insight" aria-live="polite"></div></article>
 <article class="mri-indicator"><h3>What to investigate before acting</h3><div id="mri-next" class="mri-insight"></div></article></div>
 </div>
@@ -277,8 +277,8 @@ function el(tag,cls,value){const x=document.createElement(tag);if(cls)x.classNam
 function put(parent,...els){parent.replaceChildren(...els)}
 function latest(points){return points.length?points[points.length-1]:null}
 function fmt(value,d=1){return Number(value).toLocaleString('en-GB',{maximumFractionDigits:d})}
-function obs(country,kind){const k=mriData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope||'Provider scope unavailable',status:k?.status||'unavailable',points:(Array.isArray(k?.series?.MRI)?k.series.MRI:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
-function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
+function pointFlags(p){return (p?.flags||[]).map(f=>mriData.oecd?.flag_labels?.[f]||('Source flag '+f)).join('; ')}
+function obs(country,kind){const k=mriData.oecd?.countries?.[country]?.[kind];return {scope:k?.scope_by_modality?.MRI||k?.scope||'Provider scope unavailable',quality:k?.quality_by_modality?.MRI||[],status:k?.status||'unavailable',points:(Array.isArray(k?.series?.MRI)?k.series.MRI:[]).filter(p=>Number.isInteger(p.year)&&Number.isFinite(p.value)).sort((a,b)=>a.year-b.year),projection:k?.projection||{status:'unavailable',points:[]},reason:k?.reason||''}}
 function appendLink(parent,url,title){if(typeof url!=='string'||!url.startsWith('https://'))return;const a=el('a','',title);a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}
 function stat(title,value,period){const box=el('article','mri-stat');box.append(el('h3','',title),el('div','mri-value',value),el('small','',period));return box}
 const regionSelect=$('mri-region'),REGIONS=mriData.regional_groups||{};
@@ -318,9 +318,9 @@ function regionalHistory(regionKey,kind,label,unit){
  for(const r of rows){
   for(const [i,p] of r.data.points.entries()){
    const prev=r.data.points[i-1];
-   if(prev&&p.year===prev.year+1)svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
+   if(prev&&p.year===prev.year+1&&!(p.flags||[]).includes('B'))svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
    const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
-   dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit));svg.append(dot);
+   dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit+(pointFlags(p)?' · '+pointFlags(p):'')));svg.append(dot);
   }
   if(r.forecast.length){
    const last=latest(r.data.points);
@@ -345,7 +345,9 @@ function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
  for(const [heading,content] of [['What it measures',what],['Why it matters for imaging',why]]){
   const p=el('p','mri-definition');p.append(el('strong','',heading),document.createTextNode(content));root.append(p);
  }
- const plot=regionalHistory(regionKey,kind,title,unit);root.append(plot.box);
+ const plot=regionalHistory(regionKey,kind,title,unit);
+ for(const r of plot.rows)for(const note of r.data.quality)root.append(el('p','mri-compare-caution',r.name+': '+note));
+ root.append(plot.box);
  const legend=el('div','mri-region-series-legend');
  for(const r of plot.rows){
   const item=el('span'),mark=el('i');mark.style.backgroundColor=r.color;
@@ -361,7 +363,7 @@ function renderRegionalIndicator(id,regionKey,kind,title,what,why,unit,url){
  const body=el('tbody');
  for(const r of plot.rows){
   for(const p of [...r.data.points].reverse()){
-   const row=el('tr');for(const item of [r.name,String(p.year),'OECD observed',fmt(p.value),'—'])row.append(el('td','',item));body.append(row);
+   const row=el('tr');for(const item of [r.name,String(p.year),'OECD reported'+(pointFlags(p)?' · '+pointFlags(p):''),fmt(p.value),'—'])row.append(el('td','',item));body.append(row);
   }
   for(const p of r.forecast){
    const row=el('tr');for(const item of [r.name,String(p.year),'Modelled',fmt(p.value),fmt(p.low)+'–'+fmt(p.high)])row.append(el('td','',item));body.append(row);
@@ -385,7 +387,7 @@ function reportRegionalAnalysis(regionKey){
   // observation years, with full provider coverage on both series.
   const ss=s.points,ee=e.points;
   if(ss.length>=2&&ee.length>=2&&s.scope==='All healthcare providers'&&
-     e.scope==='All healthcare providers'){
+     e.scope==='All healthcare providers'&&!ss.slice(-2).concat(ee.slice(-2)).some(p=>(p.flags||[]).some(f=>['B','D','U','V','F'].includes(f)))){
    const lastS=ss[ss.length-1],prevS=ss[ss.length-2];
    const lastE=ee[ee.length-1],prevE=ee[ee.length-2];
    if(prevS.year===prevE.year&&lastS.year===lastE.year&&
@@ -443,6 +445,7 @@ function regionalBars(containerId,records,unit){
    x.point?String(x.point.year):'No data');
   const meta=el('small','mri-region-meta');
   meta.append(year,document.createTextNode(' · '+(x.scope||'Provider scope unavailable')+
+    (pointFlags(x.point)?' · '+pointFlags(x.point):'')+
     (x.point&&x.point.year<2024?' · Historic observation; compare with caution':'')));
   row.append(meta);
   target.append(row);
@@ -464,9 +467,9 @@ function setRegionalOverview(regionKey){
   'Source observation years range from '+oldest+' to '+youngest+' across available MRI indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
  put($('mri-stat-grid'),
   stat('MRI scanners available'+(latestS?' · '+latestS.name:''),latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
-       latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available'):'No published country observation'),
+       latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available')+(pointFlags(latestS.point)?' · '+pointFlags(latestS.point):''):'No published country observation'),
   stat('MRI scans performed in one year'+(latestE?' · '+latestE.name:''),latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
-       latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available'):'No published country observation')
+       latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available')+(pointFlags(latestE.point)?' · '+pointFlags(latestE.point):''):'No published country observation')
  );
  regionalBars('mri-region-scanners',scanners,'scanners per million people');
  regionalBars('mri-region-exams',exams,'scans per 1,000 people per year');

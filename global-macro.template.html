@@ -357,6 +357,7 @@ region(new URLSearchParams(location.search).get('region')||'global');byId('macro
 const risk=data.risk;byId('risk-latest').textContent=fmt(risk.latest)+' / 100';byId('risk-period').textContent=month(risk.end);byId('risk-change').textContent=(risk.change>0?'+':'')+fmt(risk.change);byId('risk-peak').textContent=fmt(risk.peak)+' / 100';byId('risk-peak-period').textContent=month(risk.peak_month);
 const strongest=[...risk.components].sort((a,b)=>b.score-a.score);byId('risk-summary').textContent=`In ${month(risk.end)}, ${strongest[0].name.toLowerCase()} (${fmt(strongest[0].score)}) and ${strongest[1].name.toLowerCase()} (${fmt(strongest[1].score)}) have the highest component scores. The composite ${risk.change>=0?'rose':'fell'} ${fmt(Math.abs(risk.change))} points from the previous month and remains ${fmt(risk.peak-risk.latest)} points below the displayed peak.`;
 byId('risk-date').textContent=`Risk observations: ${month(risk.start)}–${month(risk.end)} · ${risk.count} complete months · supplied snapshot, not a live risk feed.`;
+if(risk.calibration_note)byId('risk-date').append(document.createTextNode(' '+risk.calibration_note));
 const table=node('table'),caption=node('caption','meta','Historical percentile scores; composite = equal-weight mean of five components.');table.append(caption);const thead=node('thead'),tr=node('tr');['Month','Composite',...risk.components.map(x=>x.name)].forEach(t=>{const th=node('th','',t);th.scope='col';tr.append(th);});thead.append(tr);table.append(thead);const body=node('tbody');[...risk.rows].reverse().forEach(r=>{const tr=node('tr');[month(r.month),fmt(r.total),...r.scores.map(fmt)].forEach(t=>tr.append(node('td','',t)));body.append(tr);});table.append(body);byId('risk-table').append(table);
 
 const drivers={
@@ -509,16 +510,21 @@ if(!(data.financing||[]).length)byId('financing-cards').append(node('p','meta','
 function scenario(){const n=byId('nominal-input'),i=byId('inflation-input');if(n.value===''||i.value===''||!n.checkValidity()||!i.checkValidity()){byId('real-output').textContent='Check inputs';byId('real-explanation').textContent='Enter values between −99% and 100%.';return;}const real=((1+Number(n.value)/100)/(1+Number(i.value)/100)-1)*100;byId('real-output').textContent=(real>0?'+':'')+fmt(real)+'%';byId('real-explanation').textContent='With these figures, spending power would '+(real>=0?'rise':'fall')+'. This is an example, not a forecast.';}
 
 const IMAGING_COLORS={CT:'#80d7f8',MRI:'#9ce1ba',PET:'#e8b67a'};
+function imagingFlags(point){return (point?.flags||[]).map(f=>data.imaging?.flag_labels?.[f]||('Source flag '+f)).join('; ')}
 function imagingHistoryFigure(mode,item,type,country){
  const panel=byId(mode==='exams'?'imaging-exams':'imaging-equipment');
  panel.replaceChildren();
  const label=mode==='exams'?'CT, MRI and PET scans performed each year':'CT, MRI and PET scanner availability';
  const unit=mode==='exams'?'Scans per 1,000 people per year':'Scanners per million people';
- panel.append(node('h4','',label),node('p','history-scope',unit+' · '+(item?.scope||'Coverage unavailable')));
+ panel.append(node('h4','',label),node('p','history-scope',unit+' · '+(item?.scope_by_modality?.[type]||item?.scope||'Coverage unavailable')));
  const names=type==='all'?['CT','MRI','PET']:[type];
  const lines=names.map(name=>({name,points:(Array.isArray(item?.series?.[name])?item.series[name]:[])
   .filter(p=>p&&Number.isInteger(p.year)&&p.year>=2015&&p.year<=2100&&Number.isFinite(p.value)&&p.value>=0)
   .sort((a,b)=>a.year-b.year)}));
+ for(const line of lines){
+  if(type==='all'&&item?.scope_by_modality?.[line.name])panel.append(node('p','history-scope',line.name+': '+item.scope_by_modality[line.name]));
+  for(const note of item?.quality_by_modality?.[line.name]||[])panel.append(node('p','history-status',line.name+': '+note));
+ }
  const all=lines.flatMap(s=>s.points);
  if(all.length){
   const minYear=Math.min(...all.map(p=>p.year)),maxYear=Math.max(...all.map(p=>p.year));
@@ -550,11 +556,11 @@ function imagingHistoryFigure(mode,item,type,country){
    for(let n=0;n<line.points.length;n++){
     const p=line.points[n],prior=line.points[n-1],x=xp(p.year),y=yp(p.value);
     // Year gaps are deliberately not connected.
-    if(prior&&p.year===prior.year+1){
+    if(prior&&p.year===prior.year+1&&!(p.flags||[]).includes('B')){
      svg.append(g('line',{x1:xp(prior.year),y1:yp(prior.value),x2:x,y2:y,stroke:IMAGING_COLORS[line.name],'stroke-width':3,'stroke-linecap':'round'}));
     }
     const mark=g('circle',{cx:x,cy:y,r:4,fill:IMAGING_COLORS[line.name]});
-    mark.append(g('title',{},line.name+' '+p.year+': '+p.value+' '+unit.toLowerCase()));
+    mark.append(g('title',{},line.name+' '+p.year+': '+p.value+' '+unit.toLowerCase()+(imagingFlags(p)?' · '+imagingFlags(p):'')));
     svg.append(mark);
    }
   }
@@ -571,7 +577,7 @@ function imagingHistoryFigure(mode,item,type,country){
    const tr=node('tr');tr.append(node('td','',String(year)));
    for(const l of lines){
     const obs=l.points.find(p=>p.year===year);
-    tr.append(node('td','',obs?Number(obs.value).toLocaleString('en-GB',{maximumFractionDigits:2}):'—'));
+    tr.append(node('td','',obs?Number(obs.value).toLocaleString('en-GB',{maximumFractionDigits:2})+(imagingFlags(obs)?' · '+imagingFlags(obs):''):'—'));
    }
    body.append(tr);
   }

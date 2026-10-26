@@ -231,6 +231,11 @@ def pet_trend_scenario(points, mode, through=2027):
     """
     if mode not in ('equipment', 'exams'):
         raise ValueError('Unsupported PET trend kind')
+    recent = sorted(points, key=lambda p: p['year'])[-4:]
+    if any(set(p.get('flags', [])) & {'B', 'U', 'V', 'F'} for p in recent):
+        return {'status': 'unavailable', 'reason': 'Recent source flags require review before modelling', 'points': []}
+    if oecd_imaging.review_series(recent, mode, 'PET'):
+        return {'status': 'unavailable', 'reason': 'Recent unusual source values require review before modelling', 'points': []}
     series = sorted((p['year'], float(p['value'])) for p in points)
     if len(series) < 4 or len({y for y, _ in series}) != len(series):
         return {'status': 'unavailable', 'reason': 'At least four distinct annual OECD observations are required', 'points': []}

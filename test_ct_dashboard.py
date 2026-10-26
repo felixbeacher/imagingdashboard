@@ -129,7 +129,7 @@ class CTDashboardTests(unittest.TestCase):
 
     def test_ct_scenarios_require_consecutive_years_and_good_holdout(self):
         sample=[{'year':2021,'value':20},{'year':2022,'value':20},
-                {'year':2023,'value':20},{'year':2024,'value':40}]
+                {'year':2023,'value':20},{'year':2024,'value':24}]
         error=ct.ct_trend_scenario(sample,'equipment')
         self.assertEqual(error['status'],'unavailable')
         self.assertGreater(error['backtest_error_pct'],10)

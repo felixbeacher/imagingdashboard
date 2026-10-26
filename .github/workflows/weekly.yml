@@ -22,6 +22,7 @@ on:
       - '*.json'
       - '*.csv'
       - '*.svg'
+      - 'scripts/**'
       - 'styles.css'
       - 'intel-feed.css'
       - 'images/**'
@@ -528,18 +529,29 @@ jobs:
             git push origin HEAD:main || echo '::warning::MRI snapshot not archived; deployed page unaffected'
           fi
 
-      - name: Archive refreshed MRI page in source repository
+      - name: Package public AI payload after source validation
+        run: python public_build.py _site
+
+      - name: Test browser layouts, accessibility and edge cases
         shell: bash
+        env:
+          QA_NODE_MODULES: ${{ runner.temp }}/imaging-qa/node_modules
         run: |
           set -euo pipefail
-          cp _site/mri.html mri.html
-          if ! git diff --quiet -- mri.html; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add mri.html
-            git commit -m 'Refresh published MRI observations [skip ci]'
-            git push origin HEAD:main || echo '::warning::MRI snapshot could not be archived; deployed page is current.'
-          fi
+          npm install --prefix "$RUNNER_TEMP/imaging-qa" --no-save playwright@1.56.1 axe-core@4.10.3 chart.js@4.4.8
+          "$RUNNER_TEMP/imaging-qa/node_modules/.bin/playwright" install --with-deps chromium
+          python -m http.server 8765 --bind 127.0.0.1 --directory _site > "$RUNNER_TEMP/imaging-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          node scripts/browser_qa.cjs http://127.0.0.1:8765
+
+      - name: Preserve browser QA results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-browser-qa
+          path: qa-results/
+          if-no-files-found: ignore
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

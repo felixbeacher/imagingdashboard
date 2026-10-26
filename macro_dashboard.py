@@ -32,8 +32,11 @@ def read_risk(root):
     if not rows:
         raise ValueError('Risk CSV is empty')
     previous = None
+    ranked = {name: [] for name in COMPONENTS}
     for row in rows:
         month = datetime.strptime(row['month'], '%Y-%m-%d')
+        if month.date() > datetime.now(timezone.utc).date():
+            raise ValueError('Risk snapshot contains a future observation')
         if month.day != 1 or (previous is not None and month.year * 12 + month.month != previous + 1):
             raise ValueError('Risk months must be continuous and strictly increasing')
         previous = month.year * 12 + month.month
@@ -43,8 +46,19 @@ def read_risk(root):
             raise ValueError('Invalid risk score')
         if abs(sum(scores) / 5 - total) > .00001:
             raise ValueError('Risk composite is inconsistent with the five components')
-        if abs(sum(scores) - float(row['Total | sum_0_500'])) > .00001:
+        reported_sum = float(row['Total | sum_0_500'])
+        if not math.isfinite(reported_sum) or abs(sum(scores) - reported_sum) > .00001:
             raise ValueError('Risk component sum is inconsistent')
+        for name, score in zip(COMPONENTS, scores):
+            raw = float(row[name + ' | raw'])
+            if not math.isfinite(raw):
+                raise ValueError('Invalid risk raw observation')
+            ranked[name].append((raw, score))
+    for values in ranked.values():
+        ordered = sorted(values)
+        for (raw_a, score_a), (raw_b, score_b) in zip(ordered, ordered[1:]):
+            if (raw_a == raw_b and abs(score_a-score_b) > .00001) or score_a > score_b + .00001:
+                raise ValueError('Risk percentile ordering is inconsistent with raw values')
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     svg = (Path(root) / 'risk.svg').read_text(encoding='utf-8')
     if f'risk-data-sha256:{digest}' not in svg:
@@ -57,7 +71,11 @@ def read_risk(root):
                 components=[dict(name=name, score=float(latest[name+' | score_0_100'])) for name in COMPONENTS],
                 rows=[dict(month=row['month'], total=float(row[TOTAL]),
                            scores=[float(row[name+' | score_0_100']) for name in COMPONENTS]) for row in rows],
-                csv_sha256=digest)
+                csv_sha256=digest,
+                integrity_status='passed', calibration_status='unverified',
+                calibration_note='Arithmetic, monthly continuity, raw-value ordering and chart fingerprint checked. '
+                                 'The original 312-month calibration histories are not supplied; '
+                                 'these checks do not independently validate the percentiles.')
 
 
 def build_payload(root, fetch_economics, offline=False, fetch_financing=None, fetch_imaging=None):
