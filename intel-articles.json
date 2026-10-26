@@ -1,7 +1,71 @@
 {
-  "edition": "2026-10-25",
+  "edition": "2026-10-26",
   "mode": "automated",
   "articles": [
+    {
+      "id": "news-35ac21386d076256",
+      "category": "regulatory",
+      "date": "2026-10-23",
+      "region": "Location not independently verified",
+      "title": "FDA Clears Machine Learning Module for Emerging Musculoskeletal Ultrasound Platform",
+      "source": "Diagnostic Imaging",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNTk1ETFd5Rk5DSjMzN0RjbHBrMUY1T29ndjVvOTM4QmVMTGJMVFpZRUNlSmplZDl0RldqZHF5QndDMG1STURVWUdHLXVNVkh6b1pDVDRweFFhLWFDbzlfOEhvSEdPNUxxUUJVSXhEdXhud0ZTd3E5cE9HX2R6ZjRwcEhfSWliWUtCcUJkMllfOWRXTlRwYXNXN202M1AyQmlHRUE5OUFSNk0xLUt5TDhV?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Diagnostic Imaging published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-10-26",
+      "created": "2026-10-26"
+    },
+    {
+      "id": "news-07d8e35c05992892",
+      "category": "regulatory",
+      "date": "2026-10-23",
+      "region": "Location not independently verified",
+      "title": "Coreline Soft Receives U.S. FDA 510(k) Clearance for AVIEW Aorta Metrics, Expanding Its Chest CT AI Portfolio in the U.S.",
+      "source": "The Malaysian Reserve",
+      "url": "https://news.google.com/rss/articles/CBMi8gFBVV95cUxQME4teER2Xy04aThPMlZ0ZVNkRThycUJCU1JBS1Z2N0FjN2xjX0wyQmhXTDRLa3FXZU9xRVRJUkNRN0dhQndsMzJtS1VLOTF1Q1hucUtjajRKNlplMmRiZXlxNFdLbnhyelRlbU9NQ0sxZUdjSEMxc1dPOW52SVFwa3UyeGJKVHZyc0JxY0dVV1VENFR3QVdZdS1OdXhZTTFrNlpqRjNiUHhtY1hVcVFPYVhyQkRvY19MRG1oSldSa3p2bWo2VHhTRjNzWl91aUJzTDNPbTk0b2N2aFJuYnBGUTRTNVJ0Q2JhMjZPXzJ2TFE4Zw?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "The Malaysian Reserve published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-10-26",
+      "created": "2026-10-26"
+    },
+    {
+      "id": "news-b60998008ae07508",
+      "category": "ma",
+      "date": "2026-10-23",
+      "region": "Location not independently verified",
+      "title": "ZIEGLER ADVISES IMPRESSION IMAGING ON ITS ACQUISITION BY CAPITOL IMAGING SERVICES",
+      "source": "Yahoo Finance",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQUmNHTXFFWFZOM2xhMjlMUE1NRjFyckVndWVsazBUNEpldHU0UjNJc196UEh3ZE5xS21FbTlCRldFNlJqNUtnOEwxSWtMQkNWa1lzVnhZTUlTM29teEJDYzZPMURWUEI5UnJuTElYemdrcUZBeUVwNUVscHM4NG5ucUpoQTVzd0Nib2hEdENPYmtHWVN3ZXM0UWxPcVQzcFR2X01mSXVJV0JlRmc?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Yahoo Finance published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-10-26",
+      "created": "2026-10-26"
+    },
+    {
+      "id": "news-9b7609b413cb9de1",
+      "category": "partnerships",
+      "date": "2026-10-23",
+      "region": "Location not independently verified",
+      "title": "Krsnaa Diagnostics, AZmed partner to evaluate AI solutions for radiology",
+      "source": "Medical Buyer",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOc2MybjRwSUlnaTdrMjVwTHJsX2xPNDRNdHFQT2tJN1Z2ODZsXzZja2x4ZExxYVJySEFJV0ZrN3ItZm1kRnljRlZLc2V4QndFUDk4c19MOVlhWndDRkUtbUxXekFTbG1rWm0xWmtfdUFEbTNUWTl2ZW5mXzdJZ1R5X2p4SlBxcUtfN2k5cHhzd0hZbEw3UnlGM0lkU0Z1bkxh?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Medical Buyer published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-10-26",
+      "created": "2026-10-26"
+    },
     {
       "id": "news-2d4aff8a12ac02d4",
       "category": "ma",
@@ -120,7 +184,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-10-25",
+    "last_attempt": "2026-10-26",
     "sources": [
       {
         "name": "Radiology Business",
@@ -151,7 +215,7 @@
         "status": "ok"
       }
     ],
-    "new_articles": 0,
+    "new_articles": 4,
     "ai_articles": 0,
     "ai_errors": 0,
     "ai_enabled": false,
@@ -187,6 +251,26 @@
       "title": "GE HealthCare moves towards PET tracer supply with SOFIE deal",
       "url": "https://www.gehealthcare.com/en/about/newsroom/press-releases/ge-healthcare-to-acquire-sofie-biosciences-establishing-a-final-mile-footprint-for-pet-radiopharmaceutical-supply-in-the-us",
       "date": "2026-10-05"
+    },
+    {
+      "title": "FDA Clears Machine Learning Module for Emerging Musculoskeletal Ultrasound Platform",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNTk1ETFd5Rk5DSjMzN0RjbHBrMUY1T29ndjVvOTM4QmVMTGJMVFpZRUNlSmplZDl0RldqZHF5QndDMG1STURVWUdHLXVNVkh6b1pDVDRweFFhLWFDbzlfOEhvSEdPNUxxUUJVSXhEdXhud0ZTd3E5cE9HX2R6ZjRwcEhfSWliWUtCcUJkMllfOWRXTlRwYXNXN202M1AyQmlHRUE5OUFSNk0xLUt5TDhV?oc=5",
+      "date": "2026-10-23"
+    },
+    {
+      "title": "Coreline Soft Receives U.S. FDA 510(k) Clearance for AVIEW Aorta Metrics, Expanding Its Chest CT AI Portfolio in the U.S.",
+      "url": "https://news.google.com/rss/articles/CBMi8gFBVV95cUxQME4teER2Xy04aThPMlZ0ZVNkRThycUJCU1JBS1Z2N0FjN2xjX0wyQmhXTDRLa3FXZU9xRVRJUkNRN0dhQndsMzJtS1VLOTF1Q1hucUtjajRKNlplMmRiZXlxNFdLbnhyelRlbU9NQ0sxZUdjSEMxc1dPOW52SVFwa3UyeGJKVHZyc0JxY0dVV1VENFR3QVdZdS1OdXhZTTFrNlpqRjNiUHhtY1hVcVFPYVhyQkRvY19MRG1oSldSa3p2bWo2VHhTRjNzWl91aUJzTDNPbTk0b2N2aFJuYnBGUTRTNVJ0Q2JhMjZPXzJ2TFE4Zw?oc=5",
+      "date": "2026-10-23"
+    },
+    {
+      "title": "ZIEGLER ADVISES IMPRESSION IMAGING ON ITS ACQUISITION BY CAPITOL IMAGING SERVICES",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQUmNHTXFFWFZOM2xhMjlMUE1NRjFyckVndWVsazBUNEpldHU0UjNJc196UEh3ZE5xS21FbTlCRldFNlJqNUtnOEwxSWtMQkNWa1lzVnhZTUlTM29teEJDYzZPMURWUEI5UnJuTElYemdrcUZBeUVwNUVscHM4NG5ucUpoQTVzd0Nib2hEdENPYmtHWVN3ZXM0UWxPcVQzcFR2X01mSXVJV0JlRmc?oc=5",
+      "date": "2026-10-23"
+    },
+    {
+      "title": "Krsnaa Diagnostics, AZmed partner to evaluate AI solutions for radiology",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOc2MybjRwSUlnaTdrMjVwTHJsX2xPNDRNdHFQT2tJN1Z2ODZsXzZja2x4ZExxYVJySEFJV0ZrN3ItZm1kRnljRlZLc2V4QndFUDk4c19MOVlhWndDRkUtbUxXekFTbG1rWm0xWmtfdUFEbTNUWTl2ZW5mXzdJZ1R5X2p4SlBxcUtfN2k5cHhzd0hZbEw3UnlGM0lkU0Z1bkxh?oc=5",
+      "date": "2026-10-23"
     }
   ]
 }
