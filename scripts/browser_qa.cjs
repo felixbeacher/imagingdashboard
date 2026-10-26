@@ -23,6 +23,7 @@ fs.mkdirSync('qa-results', {recursive:true});
    // Exercise the exact runtime chart version without depending on a CDN during QA.
    await context.route('https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js',
      route => route.fulfill({path:chartPath,contentType:'application/javascript'}));
+   context.setDefaultTimeout(10000);
    const page = await context.newPage();
    let errors = [];
    page.on('pageerror', error => errors.push(error.message));
@@ -54,11 +55,17 @@ fs.mkdirSync('qa-results', {recursive:true});
      }
      if (name==='ai') {
       assert.equal(await page.locator('#dashboard-data').count(),0,'build-only evidence is not shipped');
-      const summary=page.getByText('View annual and year-to-date values',{exact:true});
-      // Test native keyboard activation of the expandable FDA data table.
-      await summary.press('Enter');
-      assert.ok(await page.locator('#fda-trend-section table').isVisible(),'FDA exact values accessible');
-      assert.equal(await page.locator('.ai-table-scroll[tabindex="0"]').count(),2,'both tables keyboard scrollable');
+      const source=JSON.parse(await page.locator('#ai-data').textContent());
+      const fdaAvailable=source.regions.global.approvals.some(v=>typeof v==='number'&&Number.isFinite(v));
+      const researchAvailable=source.registryChart.values.some(v=>typeof v==='number'&&Number.isFinite(v));
+      if(fdaAvailable){
+       const summary=page.getByText('View annual and year-to-date values',{exact:true});
+       // Test native keyboard activation of the expandable FDA data table.
+       await summary.press('Enter');
+       assert.ok(await page.locator('#fda-trend-section table').isVisible(),'FDA exact values accessible');
+      }
+      assert.equal(await page.locator('.ai-table-scroll[tabindex="0"]').count(),
+        Number(fdaAvailable)+Number(researchAvailable),'all available value tables keyboard scrollable');
      }
      if (name==='xray') {
       await page.locator('#xr-region').selectOption('northAmerica');
@@ -106,6 +113,7 @@ fs.mkdirSync('qa-results', {recursive:true});
    const response=await route.fetch();let html=await response.text();
    html=html.replace(/(<script id="ai-data" type="application\/json">)([\s\S]*?)(<\/script>)/,(_,a,raw,b)=>{
     const payload=JSON.parse(raw);payload.registryChart.values[0]=0;payload.registryChart.values[1]=null;
+    payload.regions.global.years=['2025','2026 YTD'];payload.regions.global.approvals=[0,null];
     return a+JSON.stringify(payload).replace(/</g,'\\u003c')+b;
    });
    await route.fulfill({response,body:html});
@@ -119,6 +127,20 @@ fs.mkdirSync('qa-results', {recursive:true});
   assert.ok(await fp.locator('#fda-trend-section table').isVisible(),'FDA values survive CDN failure');
   results.push({page:'ai failure/zero/null',width:375,status:'passed'});
   await fallback.close();
+  const slow=await browser.newContext({viewport:{width:375,height:812},reducedMotion:'reduce'});
+  await slow.route('https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js',
+    route=>route.fulfill({path:chartPath,contentType:'application/javascript'}));
+  const sp=await slow.newPage(),cdp=await slow.newCDPSession(sp);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:150,
+    downloadThroughput:200*1024,uploadThroughput:100*1024,connectionType:'cellular3g'});
+  await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
+  const start=Date.now();await sp.goto(`${base}/ai.html`,{waitUntil:'networkidle'});
+  assert.ok((await sp.locator('#ai-overview-section').innerText()).trim(),'slow mobile overview populated');
+  const elapsed=Date.now()-start;assert.ok(elapsed<20000,'local throttled smoke-test budget');
+  results.push({page:'ai throttled mobile',width:375,status:'passed',loadMs:elapsed,
+    conditions:'150ms latency; 200 KiB/s download; CPU x4; local server, not field metrics'});
+  await slow.close();
  } catch(error) {
   failures.push({page:'edge cases',error:error.stack});console.error(error);
  } finally {

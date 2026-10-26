@@ -45,8 +45,12 @@ FLAG_LABELS = {'B': 'Break in series', 'D': 'Definition differs',
 
 
 def source_flags(row):
-    return sorted(set(code for field in ('OBS_STATUS', 'OBS_STATUS2', 'OBS_STATUS3', 'OBS_STATUS4')
-                      for code in (row.get(field) or '').strip().split() if code and code != 'A'))
+    flags = set()
+    known = set(FLAG_LABELS) | {'A', 'M', 'L', 'H', 'Q', 'N', 'O'}
+    for field in ('OBS_STATUS', 'OBS_STATUS2', 'OBS_STATUS3', 'OBS_STATUS4'):
+        for code in (row.get(field) or '').replace(',', ' ').split():
+            flags.update(code if set(code) <= known else [code])
+    return sorted(flags - {'A'})
 
 
 def review_series(points, mode, modality):
@@ -77,7 +81,8 @@ def provider_scope(country, mode, provider):
         scope = ('Equipment eligible for public reimbursement only' if mode == 'equipment'
                  else 'Medicare-paid fee-for-service examinations only')
         return scope + ('; hospitals only' if provider == 'HP1' else '')
-    return ('All healthcare providers' if provider == '_T'
+    return ('All healthcare providers' if provider == '_T' else
+            'Hospitals only (equipment outside hospitals excluded)' if mode == 'equipment'
             else 'Hospitals only (not all examinations)')
 
 def _empty():
@@ -140,7 +145,7 @@ def parse_rows(rows, mode):
         if year < 2015 or year > date.today().year:
             continue
         raw_value = row['OBS_VALUE']
-        if not raw_value or set(source_flags(row)) & {'M', 'L', 'H', 'Q', 'N', 'O'}:
+        if not raw_value or set(source_flags(row)) & {'M', 'L', 'H', 'Q', 'O'}:
             continue
         try:
             value = float(raw_value)

@@ -32,6 +32,6 @@ The build validates the canonical AI dataset before `public_build.py` removes th
 
 ## Browser regression checks
 
-The publication workflow runs `scripts/browser_qa.cjs` with development-only, version-pinned Playwright and axe-core. No testing libraries ship with the dashboard. It checks 14 pages at 375, 768 and 1440 pixel viewports, expandable content, WCAG A/AA rules, JavaScript errors, duplicate IDs, navigation clipping and region filters. Additional scenarios cover CDN failure, zero/null values and invalid calculator inputs. Screenshots and a JSON report are retained as the `dashboard-browser-qa` Actions artifact.
+The publication workflow runs `scripts/browser_qa.cjs` with development-only, version-pinned Playwright and axe-core. No testing libraries ship with the dashboard. The runner already has Chromium-compatible system libraries, so only the pinned browser binary is downloaded; no full OS dependency upgrade is run. It checks 14 pages at 375, 768 and 1440 pixel viewports, expandable content, WCAG A/AA rules, JavaScript errors, duplicate IDs, navigation clipping and region filters. Additional scenarios cover CDN failure, zero/null values, invalid calculator inputs and a throttled mobile smoke test (150 ms latency, 200 KiB/s download and 4× CPU slowdown). Screenshots and a JSON report are retained as the `dashboard-browser-qa` Actions artifact.
 
 Automated accessibility tests do not certify usability with every screen reader or real device, and local test-server timings are not real-world mobile network performance measurements.

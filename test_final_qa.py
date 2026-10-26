@@ -44,6 +44,8 @@ class FinalQATests(unittest.TestCase):
         self.assertEqual(points[0]['flags'],['D','E'])
         self.assertEqual(points[1]['flags'],[])
         self.assertEqual(data['flag_labels']['E'],'Source estimate')
+        self.assertEqual(o.source_flags({'OBS_STATUS':'BE'}),['B','E'])
+        self.assertEqual(o.source_flags({'OBS_STATUS':'ZZ'}),['ZZ'])
 
     def test_scale_checks_flag_without_discarding_source_values(self):
         points=[{'year':2023,'value':40},{'year':2024,'value':800}]

@@ -532,14 +532,21 @@ jobs:
       - name: Package public AI payload after source validation
         run: python public_build.py _site
 
-      - name: Test browser layouts, accessibility and edge cases
+      - name: Install browser QA dependencies
         shell: bash
         env:
           QA_NODE_MODULES: ${{ runner.temp }}/imaging-qa/node_modules
         run: |
           set -euo pipefail
           npm install --prefix "$RUNNER_TEMP/imaging-qa" --no-save playwright@1.56.1 axe-core@4.10.3 chart.js@4.4.8
-          "$RUNNER_TEMP/imaging-qa/node_modules/.bin/playwright" install --with-deps chromium
+          "$RUNNER_TEMP/imaging-qa/node_modules/.bin/playwright" install chromium
+
+      - name: Test browser layouts, accessibility and edge cases
+        shell: bash
+        env:
+          QA_NODE_MODULES: ${{ runner.temp }}/imaging-qa/node_modules
+        run: |
+          set -euo pipefail
           python -m http.server 8765 --bind 127.0.0.1 --directory _site > "$RUNNER_TEMP/imaging-http.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT

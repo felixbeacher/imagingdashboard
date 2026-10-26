@@ -120,6 +120,7 @@ html{scroll-behavior:smooth;scroll-padding-top:24px}.section-nav{display:flex;ga
 
 /* Let the world market-cap/GDP chart scale with its card, including on mobile. */
 .mini-charts.single .mini-figure svg{width:100%;height:auto;max-height:none;max-width:900px;margin:12px auto}
+#main a{color:#8bd4f5}#main a:visited{color:#c6b4f4}#main a:focus-visible,#main [tabindex="0"]:focus-visible{outline:2px solid #92e2ff;outline-offset:3px}
 </style><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2229%22%20fill%3D%22%23101b2c%22%20stroke%3D%22%238bd4f5%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M32%2012%20L49.320508%2042%20L14.679492%2042%20Z%22%20fill%3D%22none%22%20stroke%3D%22%238bd4f5%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
 </head><body><a class="skip" href="#main">Skip to economic dashboard</a><header>
 <div class="header-content">
@@ -511,6 +512,7 @@ function scenario(){const n=byId('nominal-input'),i=byId('inflation-input');if(n
 
 const IMAGING_COLORS={CT:'#80d7f8',MRI:'#9ce1ba',PET:'#e8b67a'};
 function imagingFlags(point){return (point?.flags||[]).map(f=>data.imaging?.flag_labels?.[f]||('Source flag '+f)).join('; ')}
+function scrollable(element,label){element.tabIndex=0;element.setAttribute('role','region');element.setAttribute('aria-label',label+'; scroll horizontally if needed');return element}
 function imagingHistoryFigure(mode,item,type,country){
  const panel=byId(mode==='exams'?'imaging-exams':'imaging-equipment');
  panel.replaceChildren();
@@ -564,7 +566,7 @@ function imagingHistoryFigure(mode,item,type,country){
     svg.append(mark);
    }
   }
-  const wrap=node('div','history-plot');wrap.append(svg);panel.append(legend,wrap);
+  const wrap=scrollable(node('div','history-plot'),label+' for '+country);wrap.append(svg);panel.append(legend,wrap);
   const rows=node('details'),table=node('table');rows.append(node('summary','','See published annual values'));
   const header=node('thead'),head=node('tr');
   for(const name of ['Year',...names]){
@@ -606,5 +608,6 @@ byId('imaging-country').addEventListener('change',showImagingHistory);
 byId('imaging-type').addEventListener('change',showImagingHistory);
 showImagingHistory();
 
+document.querySelectorAll('.macro-layout .table-wrap').forEach(el=>scrollable(el,(el.closest('section')?.querySelector('h2')?.textContent||'Source')+' exact values'));
 byId('nominal-input').addEventListener('input',scenario);byId('inflation-input').addEventListener('input',scenario);scenario();
 </script></body></html>
