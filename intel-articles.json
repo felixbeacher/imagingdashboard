@@ -1,7 +1,71 @@
 {
-  "edition": "2026-10-26",
+  "edition": "2026-11-02",
   "mode": "automated",
   "articles": [
+    {
+      "id": "news-2e7bbb7f11546497",
+      "category": "funding",
+      "date": "2026-10-29",
+      "region": "Location not independently verified",
+      "title": "5 institutions command 38% of NIH radiology research funding",
+      "source": "AuntMinnie",
+      "url": "https://www.auntminnie.com/clinical-news/article/16050495/5-institutions-command-38-of-nih-radiology-research-funding",
+      "status": "Source report · unverified announcement",
+      "summary": "AuntMinnie published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Look for a concrete delivery roadmap and evidence of customer adoption. Buyers can ask how the funding will support implementation and long-term product maintenance.",
+      "watch": "Funding does not establish profitability, cash runway or commercial success. Check the disclosed financing terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-02",
+      "created": "2026-11-02"
+    },
+    {
+      "id": "news-308502a764f8a99e",
+      "category": "funding",
+      "date": "2026-10-29",
+      "region": "Location not independently verified",
+      "title": "United Imaging Healthcare Reports 19.43% Revenue Growth in First Nine Months of 2026, with Cumulative R&D Investment Exceeding RMB 10 Billion Since 2022",
+      "source": "The Manila Times",
+      "url": "https://news.google.com/rss/articles/CBMixwJBVV95cUxPcHpuc0FLNEQyVk1TSENHczNqeTVTZFdwZTBKMUp4MEZGVHhEZUxBYmhKZWdlb3dzNWJNTUI1Wll4cTlZcjByc2NqU19GMlNUVUVjNDctY1RNOUZiQ0pDS09fVFZNRzBxM2VNNzlMVmd0ZElqaHpUQXBuT1g4dlgtSXRMLUhlM1U3UjFQQS1EMmllTEplM0RuVTRMUDN5WU1vNkotTUNqdTNialhxNzBzMW9uYUQxXzFNMkI4ZkdRU0pra2FlRktQZldUUlNuMF9BTXZFRHBBdndYNElrT2ZYckpGNW9GQ3RMdVFYcmdWenRuUkVxRklKalN4THQzcV9PR3pmQWxBVFNPRXhUTTd6SktwdlBQQUVkNWh3UWp6R3hxeUx2dmZxMzhZcnlGWmY0WGZ1SExGYkdiUmdrcFpDUFJVcXFmaEHSAccCQVVfeXFMT3B6bnNBSzREMlZNU0hDR3Mzank1U2RXcGUwSjFKeDBGRlR4RGVMQWJoSmVnZW93czViTU1CNVpZeHE5WXIwcnNjalNfRjJTVFVFYzQ3LWNUTTlGYkNKQ0tPX1RWTUcwcTNlTTc5TFZndGRJamh6VEFwbk9YOHZYLUl0TC1IZTNVN1IxUEEtRDJpZUxKZTNEblU0TFAzeVlNbzZKLU1DanUzYmpYcTcwczFvbmFEMV8xTTJCOGZHUVNKa2thZUZLUGZXVFJTbjBfQU12RURwQXZ3WDRJa09mWHJKRjVvRkN0THVRWHJnVnp0blJFcUZJSmpTeEx0M3FfT0d6ZkFsQVRTT0V4VE03ekpLcHZQUEFFZDVod1Fqekd4cXlMdnZmcTM4WXJ5RlpmNFhmdUhMRmJHYlJna3BaQ1BSVXFxZmhB?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "The Manila Times published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Look for a concrete delivery roadmap and evidence of customer adoption. Buyers can ask how the funding will support implementation and long-term product maintenance.",
+      "watch": "Funding does not establish profitability, cash runway or commercial success. Check the disclosed financing terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-02",
+      "created": "2026-11-02"
+    },
+    {
+      "id": "news-b6e851a74fdab70a",
+      "category": "ma",
+      "date": "2026-10-28",
+      "region": "Location not independently verified",
+      "title": "Leonard Green acquires Radon Medical Imaging from 5th Century Partners",
+      "source": "DOTmed",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE53aG81VU1Pdmx1c1FvYzNGalpael9CX3Rvc2FEb1R3QXA4cUxzYkhsczZKa3Z0b1FWNVg5TVNtT3dfemllQkV3VjdVeF9NUlVt?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "DOTmed published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-11-02",
+      "created": "2026-11-02"
+    },
+    {
+      "id": "news-e4f71c241ff23301",
+      "category": "partnerships",
+      "date": "2026-10-28",
+      "region": "Location not independently verified",
+      "title": "Hyland Launches Digital Pathology Platform Integrating Multiple Imaging Specialties",
+      "source": "Clinical Lab Products",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPS0lnR3NnYmw2WjNvLTNQSWNQTTZ5c1NTVHlPbnJFSlk3TmF0dDdnRVVySHlCR1RiVE5yRHp1b3V3MjVnQ1BHTVUxWDFaMmd6NXo2OUJtS09GZFdxMXd6UGozdXJiUWlFa3pxeWV1UDFhTHl1bXcwSFJ0dmNVakw4T1NTMmRFN2ZHLUpEZW9lRmFGM2c4NnAwU3FDXzJ6bWxQVUx1T21lclh1U2FWT3M2X1FGNF9ReUtBVUlPa255NEp3QkRzWDhjMm1yOXlDUFNN?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Clinical Lab Products published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-02",
+      "created": "2026-11-02"
+    },
     {
       "id": "news-35ac21386d076256",
       "category": "regulatory",
@@ -184,7 +248,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-10-26",
+    "last_attempt": "2026-11-02",
     "sources": [
       {
         "name": "Radiology Business",
@@ -271,6 +335,26 @@
       "title": "Krsnaa Diagnostics, AZmed partner to evaluate AI solutions for radiology",
       "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOc2MybjRwSUlnaTdrMjVwTHJsX2xPNDRNdHFQT2tJN1Z2ODZsXzZja2x4ZExxYVJySEFJV0ZrN3ItZm1kRnljRlZLc2V4QndFUDk4c19MOVlhWndDRkUtbUxXekFTbG1rWm0xWmtfdUFEbTNUWTl2ZW5mXzdJZ1R5X2p4SlBxcUtfN2k5cHhzd0hZbEw3UnlGM0lkU0Z1bkxh?oc=5",
       "date": "2026-10-23"
+    },
+    {
+      "title": "5 institutions command 38% of NIH radiology research funding",
+      "url": "https://www.auntminnie.com/clinical-news/article/16050495/5-institutions-command-38-of-nih-radiology-research-funding",
+      "date": "2026-10-29"
+    },
+    {
+      "title": "United Imaging Healthcare Reports 19.43% Revenue Growth in First Nine Months of 2026, with Cumulative R&D Investment Exceeding RMB 10 Billion Since 2022",
+      "url": "https://news.google.com/rss/articles/CBMixwJBVV95cUxPcHpuc0FLNEQyVk1TSENHczNqeTVTZFdwZTBKMUp4MEZGVHhEZUxBYmhKZWdlb3dzNWJNTUI1Wll4cTlZcjByc2NqU19GMlNUVUVjNDctY1RNOUZiQ0pDS09fVFZNRzBxM2VNNzlMVmd0ZElqaHpUQXBuT1g4dlgtSXRMLUhlM1U3UjFQQS1EMmllTEplM0RuVTRMUDN5WU1vNkotTUNqdTNialhxNzBzMW9uYUQxXzFNMkI4ZkdRU0pra2FlRktQZldUUlNuMF9BTXZFRHBBdndYNElrT2ZYckpGNW9GQ3RMdVFYcmdWenRuUkVxRklKalN4THQzcV9PR3pmQWxBVFNPRXhUTTd6SktwdlBQQUVkNWh3UWp6R3hxeUx2dmZxMzhZcnlGWmY0WGZ1SExGYkdiUmdrcFpDUFJVcXFmaEHSAccCQVVfeXFMT3B6bnNBSzREMlZNU0hDR3Mzank1U2RXcGUwSjFKeDBGRlR4RGVMQWJoSmVnZW93czViTU1CNVpZeHE5WXIwcnNjalNfRjJTVFVFYzQ3LWNUTTlGYkNKQ0tPX1RWTUcwcTNlTTc5TFZndGRJamh6VEFwbk9YOHZYLUl0TC1IZTNVN1IxUEEtRDJpZUxKZTNEblU0TFAzeVlNbzZKLU1DanUzYmpYcTcwczFvbmFEMV8xTTJCOGZHUVNKa2thZUZLUGZXVFJTbjBfQU12RURwQXZ3WDRJa09mWHJKRjVvRkN0THVRWHJnVnp0blJFcUZJSmpTeEx0M3FfT0d6ZkFsQVRTT0V4VE03ekpLcHZQUEFFZDVod1Fqekd4cXlMdnZmcTM4WXJ5RlpmNFhmdUhMRmJHYlJna3BaQ1BSVXFxZmhB?oc=5",
+      "date": "2026-10-29"
+    },
+    {
+      "title": "Leonard Green acquires Radon Medical Imaging from 5th Century Partners",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE53aG81VU1Pdmx1c1FvYzNGalpael9CX3Rvc2FEb1R3QXA4cUxzYkhsczZKa3Z0b1FWNVg5TVNtT3dfemllQkV3VjdVeF9NUlVt?oc=5",
+      "date": "2026-10-28"
+    },
+    {
+      "title": "Hyland Launches Digital Pathology Platform Integrating Multiple Imaging Specialties",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPS0lnR3NnYmw2WjNvLTNQSWNQTTZ5c1NTVHlPbnJFSlk3TmF0dDdnRVVySHlCR1RiVE5yRHp1b3V3MjVnQ1BHTVUxWDFaMmd6NXo2OUJtS09GZFdxMXd6UGozdXJiUWlFa3pxeWV1UDFhTHl1bXcwSFJ0dmNVakw4T1NTMmRFN2ZHLUpEZW9lRmFGM2c4NnAwU3FDXzJ6bWxQVUx1T21lclh1U2FWT3M2X1FGNF9ReUtBVUlPa255NEp3QkRzWDhjMm1yOXlDUFNN?oc=5",
+      "date": "2026-10-28"
     }
   ]
 }
