@@ -38,7 +38,7 @@ PATTERNS = {
 GUIDANCE = {
     'regulatory': ('Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.', 'Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.'),
     'ma': ('Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.', 'Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.'),
-    'funding': ('Look for a concrete delivery roadmap and evidence of customer adoption. Buyers can ask how the funding will support implementation and long-term product maintenance.', 'Funding does not establish profitability, cash runway or commercial success. Check the disclosed financing terms before drawing conclusions.'),
+    'funding': ('For commercial financing, ask how capital supports product delivery and long-term maintenance; for research grants or R&D spending, check study scope, timelines and clinical translation.', 'Announced funding, R&D investment or grant allocation does not by itself establish profitability, cash runway, completed research or routine clinical adoption. Check the disclosed terms before drawing conclusions.'),
     'partnerships': ('Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.', 'A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.'),
 }
 
@@ -121,9 +121,21 @@ def collect():
             unique.append(row)
     return unique,statuses
 
+def infer_region(title):
+    if re.search(r'\b(?:U\.?S\.?|United States|FDA|NIH|Florida|California|New York|Texas)\b', title, re.I):
+        return 'United States (named in headline)'
+    if re.search(r'\b(?:UK|United Kingdom|NHS|England|Scotland|Wales)\b', title, re.I):
+        return 'United Kingdom (named in headline)'
+    if re.search(r'\b(?:EU|European|CE[\s-]mark|EUDAMED|Germany|France|Italy)\b', title, re.I):
+        return 'Europe (named in headline)'
+    if re.search(r'\b(?:China|RMB|Japan|India|Korea|Australia|Singapore)\b', title, re.I):
+        return 'Asia-Pacific (named in headline)'
+    return 'Location not stated in headline'
+
 def source_digest(item,today):
     meaning,watch=GUIDANCE[item['category']]
-    return dict(id='news-'+hashlib.sha256(item['url'].encode()).hexdigest()[:16],category=item['category'],date=item['date'],region='Location not independently verified',title=item['title'],source=item['source'],url=item['url'],status='Source report · unverified announcement',summary=f'{item["source"]} published the report linked below. The headline is reproduced above; the full report has not been independently checked. Read the source for the details and current status.',meaning=meaning,watch=watch,method='source-digest',checked=today,created=today)
+    region=infer_region(item['title'])
+    return dict(id='news-'+hashlib.sha256(item['url'].encode()).hexdigest()[:16],category=item['category'],date=item['date'],region=region,title=item['title'],source=item['source'],url=item['url'],status='Source report · unverified announcement',summary=f'{item["source"]} published the report linked below (headline reproduced above; full report not independently verified).',meaning=meaning,watch=watch,method='source-digest',checked=today,created=today)
 
 def validate_draft(draft,item):
     fields=('summary','meaning','watch','evidence')

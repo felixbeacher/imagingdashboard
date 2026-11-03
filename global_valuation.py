@@ -217,6 +217,23 @@ def buffett_gauge(value, median, year):
         f'</svg>'
     )
 
+def ratio_bar(value, maximum, title):
+    if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+        return ''
+    scale = max(maximum, math.ceil(value / 5) * 5)
+    fill_w = min(204.0, max(4.0, (value / scale) * 204.0))
+    return (
+        f'<svg viewBox="0 0 240 46" role="img" aria-label="{esc(title)} current reading on a 0 to {scale:g}× reference scale">'
+        f'<title>{esc(title)} reference scale (0 to {scale:g}×)</title>'
+        f'<rect x="18" y="10" width="204" height="12" rx="6" fill="#233746"/>'
+        f'<rect x="18" y="10" width="{fill_w:.1f}" height="12" rx="6" fill="#77ceef"/>'
+        f'<text x="18" y="38" fill="#afc2d3" font-size="10">0×</text>'
+        f'<text x="120" y="38" text-anchor="middle" fill="#afc2d3" font-size="10">{scale/2:g}×</text>'
+        f'<text x="222" y="38" text-anchor="end" fill="#afc2d3" font-size="10">{scale:g}×</text>'
+        f'</svg>'
+    )
+
+
 def render(data):
     b=data.get('buffett',{});e=data.get('etf',{});history=b.get('history',[]);rank=b.get('percentile')
     if rank is not None:
@@ -239,13 +256,15 @@ def render(data):
         if trend:
             content+=trend+'<p class="meta">Verified source-date observations collected by this dashboard; missing weeks are not filled.</p>'
         else:
+            if e.get('status')=='available':
+                content+=ratio_bar(e[key]['value'], 40 if key=='pe' else 6, title)
             content+='<p class="meta">Historical trend not yet available. iShares provides a latest dated ratio, not a downloadable multi-year series. This dashboard is collecting real source-date observations at each refresh; a chart will appear once at least three distinct dates are verified.</p>'
         output.append(f'<figure class="mini-figure"><h4>{title}</h4>{content}<figcaption>{caption}</figcaption></figure>')
-    output.append('</div><p class="meta">Source: <a href="'+ETF_URL+'">iShares MSCI ACWI ETF fundamentals</a> · developed and emerging-market large/mid-cap equities; a fund proxy, not every listed company. '+('Retrieved '+esc(e['retrieved_at']) if e.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
+    output.append('</div><p class="meta">Source: <a href="'+ETF_URL+'">iShares MSCI ACWI ETF fundamentals</a> · developed and emerging-market large/mid-cap equities; a fund proxy, not every listed company. '+('Retrieved '+esc(str(e['retrieved_at'])[:10]) if e.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
     content='<p class="meta">Unavailable — '+esc(b.get('reason','No validated observation.'))+'</p>'
     if history:
         latest=history[-1];content=f'<p class="metric">{latest["value"]:.1f}% <span class="meta">· {latest["year"]}</span></p>'+mini_chart([(str(r['year']),r['value']) for r in history],'% of GDP')
-    output.append('<div class="ftse-group"><h3>2 · Share prices compared with the world economy</h3><div class="mini-charts single"><figure class="mini-figure"><h4>Buffett Indicator — world market cap / GDP</h4>'+content+'<figcaption>The total value of listed companies compared with world economic output. High readings may suggest expensive shares, but company coverage and profits also matter.</figcaption></figure></div><p class="meta">Source: <a href="'+WB_PAGE+'">World Bank / World Federation of Exchanges</a> · annual world aggregate. '+('Retrieved '+esc(b['retrieved_at']) if b.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
-    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The meter ranks the latest available annual world market-cap/GDP ratio against earlier available observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing years are not interpolated. P/E and P/B are supporting context and do not contribute to the meter. ETF history consists only of archived, dated source observations; older values are not inferred from market prices.</p><p class="meta">Collection attempted '+esc(data.get('attempted_at','unknown'))+' · ACWI: '+esc(e.get('status','unavailable'))+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+'</p>')
+    output.append('<div class="ftse-group"><h3>2 · Share prices compared with the world economy</h3><div class="mini-charts single"><figure class="mini-figure"><h4>Buffett Indicator — world market cap / GDP</h4>'+content+'<figcaption>The total value of listed companies compared with world economic output. High readings may suggest expensive shares, but company coverage and profits also matter.</figcaption></figure></div><p class="meta">Source: <a href="'+WB_PAGE+'">World Bank / World Federation of Exchanges</a> · annual world aggregate. '+('Retrieved '+esc(str(b['retrieved_at'])[:10]) if b.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
+    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The meter ranks the latest available annual world market-cap/GDP ratio against earlier available observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing years are not interpolated. P/E and P/B are supporting context and do not contribute to the meter. ETF history consists only of archived, dated source observations; older values are not inferred from market prices.</p><p class="meta">Collection attempted '+esc(str(data.get('attempted_at','unknown'))[:10])+' · ACWI: '+esc(e.get('status','unavailable'))+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+'</p>')
     if history:output.append('<div class="table-wrap"><table><caption>World market capitalisation / GDP</caption><thead><tr><th>Year</th><th>Ratio (%)</th></tr></thead><tbody>'+''.join(f'<tr><td>{r["year"]}</td><td>{r["value"]:.2f}</td></tr>' for r in reversed(history))+'</tbody></table></div>')
     return ''.join(output)+'</details>'

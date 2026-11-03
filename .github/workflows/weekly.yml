@@ -96,7 +96,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'pet_dashboard.py', 'pet.template.html', 'eudamed.py', 'eudamed_snapshot.json', 'public_build.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -115,8 +115,8 @@ jobs:
           subprocess.run([sys.executable, 'intel_build.py'], check=True)
           for filename in ('intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
               shutil.copy2(root / filename, output / filename)
-          # Preserve the other source pages without running their unfinished updaters.
-          for filename in ('pet.html', 'xray.html'):
+          # Preserve static source pages without a separate build generator.
+          for filename in ('xray.html',):
               if (root / filename).is_file():
                   shutil.copy2(root / filename, output / filename)
           (output / '.nojekyll').touch()
@@ -212,7 +212,25 @@ jobs:
                          mri_data['pubmed']['status'])
 
           # PET uses the same regional layout with PET-specific observations.
-          subprocess.run([sys.executable, 'pet_dashboard.py', '--output', str(output / 'pet.html')], check=True, timeout=180)
+          subprocess.run([sys.executable, 'pet_dashboard.py', '--template', 'pet.template.html', '--output', str(output / 'pet.html')], check=True, timeout=180)
+          pet_html = (output / 'pet.html').read_text(encoding='utf-8')
+          pet_payload = re.search(r'<script id="pet-data" type="application/json">([\s\S]*?)</script>', pet_html)
+          if not pet_payload:
+              raise SystemExit('PET data payload missing from live build')
+          pet_data = json.loads(pet_payload.group(1))
+          pet_coverage = {
+              mode: sum(len(c[mode]['series']['PET'])
+                        for c in pet_data['oecd']['countries'].values())
+              for mode in ('equipment', 'exams')
+          }
+          if not all(pet_coverage.values()):
+              print('::warning::PET OECD published observations unavailable in at least one feed')
+          print('::notice::PET scanner points = '+str(pet_coverage['equipment'])+
+                '; exam points = '+str(pet_coverage['exams'])+
+                '; selected PubMed studies = '+str(len(pet_data['pubmed']['items'])))
+          summary.append('PET: '+str(pet_coverage['equipment'])+' scanner and '+
+                         str(pet_coverage['exams'])+' examination observations; PubMed '+
+                         pet_data['pubmed']['status'])
 
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
@@ -436,7 +454,7 @@ jobs:
           node --check _site/mri-runtime.validate.js
           rm _site/mri-runtime.validate.js
 
-      - name: Validate MRI dashboard and browser JavaScript
+      - name: Validate PET dashboard and browser JavaScript
         shell: bash
         run: |
           set -euo pipefail
@@ -445,35 +463,40 @@ jobs:
           import re
           from html.parser import HTMLParser
           from pathlib import Path
-          html=Path('_site/mri.html').read_text(encoding='utf-8')
+          html=Path('_site/pet.html').read_text(encoding='utf-8')
           class Check(HTMLParser):
               def __init__(self):super().__init__();self.ids=[]
               def handle_starttag(self,tag,attrs):
                   self.ids.extend(v for k,v in attrs if k=='id')
           parser=Check();parser.feed(html)
           if len(parser.ids)!=len(set(parser.ids)):
-              raise SystemExit('Duplicate MRI HTML IDs')
-          for needed in ('mri-overview','mri-market','mri-research','mri-clinical','mri-industry',
-                         'mri-region','mri-share-bars','mri-data'):
-              if needed not in parser.ids:raise SystemExit('MRI section missing: '+needed)
+              raise SystemExit('Duplicate PET HTML IDs')
+          for needed in ('pet-overview','pet-regional-comparison','pet-market','pet-activity',
+                         'pet-interpretation','pet-research','pet-clinical','pet-technology',
+                         'pet-industry','pet-sources','pet-region','pet-data'):
+              if needed not in parser.ids:raise SystemExit('PET section missing: '+needed)
           for forbidden in ('AI Approvals vs. MedTech Venture Capital Investment',
-                            'DBS estimate','photon-counting CT'):
-              if forbidden in html:raise SystemExit('Obsolete MRI text: '+forbidden)
-          m=re.search(r'<script id="mri-data" type="application/json">([\s\S]*?)</script>',html)
-          if not m:raise SystemExit('MRI source JSON missing')
+                            'Vendor AI Revenue Breakdown'):
+              if forbidden in html:raise SystemExit('Obsolete PET text: '+forbidden)
+          m=re.search(r'<script id="pet-data" type="application/json">([\s\S]*?)</script>',html)
+          if not m:raise SystemExit('PET source JSON missing')
           d=json.loads(m.group(1))
-          if d['market']['shares']['reference_year']!=2022:
-              raise SystemExit('MRI market share year mismatch')
-          if not all('MRI' in c['equipment']['series'] and 'MRI' in c['exams']['series']
+          if not all('PET' in c['equipment']['series'] and 'PET' in c['exams']['series']
                      for c in d['oecd']['countries'].values()):
-              raise SystemExit('MRI modality data missing')
+              raise SystemExit('PET modality data missing')
+          for country in d['oecd']['countries'].values():
+              for kind in ('equipment','exams'):
+                  historical=country[kind]['series'].get('PET',[])
+                  projections=country[kind]['projection']['points']
+                  if historical and projections and min(p['year'] for p in projections)<=max(p['year'] for p in historical):
+                      raise SystemExit('PET estimates overlap observed source years')
           scripts=re.findall(r'<script>([\s\S]*?)</script>',html)
-          if len(scripts)!=1:raise SystemExit('MRI JavaScript missing')
-          Path('_site/mri.validate.js').write_text(scripts[0],encoding='utf-8')
-          print('MRI source, dates, navigation and DOM verified')
+          if len(scripts)!=1:raise SystemExit('PET JavaScript missing')
+          Path('_site/pet.validate.js').write_text(scripts[0],encoding='utf-8')
+          print('PET source, dates, navigation and DOM verified')
           PY
-          node --check _site/mri.validate.js
-          rm _site/mri.validate.js
+          node --check _site/pet.validate.js
+          rm _site/pet.validate.js
 
       - name: Archive validated iShares valuation readings
         # The public provider exposes current ratios, not a historical download.
@@ -530,6 +553,20 @@ jobs:
             git add mri.html
             git commit -m 'Refresh published MRI observations [skip ci]'
             git push origin HEAD:main || echo '::warning::MRI snapshot not archived; deployed page unaffected'
+          fi
+
+      - name: Archive refreshed PET and Global Economy pages in the source repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp _site/pet.html pet.html
+          cp _site/global-macro.html global-macro.html
+          if ! git diff --quiet -- pet.html global-macro.html; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add pet.html global-macro.html
+            git commit -m 'Refresh published PET and Global Economy observations [skip ci]'
+            git push origin HEAD:main || echo '::warning::PET/Global Economy snapshots not archived; deployed pages unaffected'
           fi
 
       - name: Package public AI payload after source validation

@@ -141,7 +141,8 @@ def render(data):
     out.append('<p class="metric-desc">Certificate numbers, certificate validity and approval dates are not provided by this device-data extract. The registered market status is a source field, not an independent verification of certification. Retrieval dates are not authorisation dates.</p>')
     out.append('<details style="margin-top:16px"><summary>Watchlist searches and collection status</summary><ul style="padding-left:20px">')
     for search in data.get('searches', []):
-        out.append('<li>' + esc(search['term']) + ': ' + ('retrieval unavailable' if search['records'] is None else str(search['records']) + ' matching records') + ' · checked ' + esc(search['checked_at'][:10]) + '</li>')
+        count_label = 'retrieval unavailable' if search['records'] is None else ('1 matching record' if search['records'] == 1 else f"{search['records']} matching records")
+        out.append('<li>' + esc(search['term']) + ': ' + count_label + ' · checked ' + esc(search['checked_at'][:10]) + '</li>')
     out.append('</ul><p class="metric-desc">' + esc(data.get('reason', 'No verified device sample available.')) + '</p></details>')
     out.append('<p class="metric-desc" style="margin-top:16px"><a href="' + PUBLIC + '" target="_blank" rel="noopener noreferrer">Search EUDAMED devices and certificates →</a> · <a href="' + GUIDE + '" target="_blank" rel="noopener noreferrer">Commission public API guide →</a></p></section>')
     return ''.join(out)

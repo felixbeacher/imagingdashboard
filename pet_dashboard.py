@@ -123,7 +123,9 @@ def parse_pubmed(xml, expected_ids, limit=10):
             continue
         if re.search(r'\bcase report\b|\bcase presentation\b|a rare case of|\bcase series\b',title,re.I):
             continue
-        design=next((t for t in types if t in (
+        uk_designs={'Randomized Controlled Trial':'Randomised Controlled Trial',
+                    'Multicenter Study':'Multicentre Study'}
+        design=next((uk_designs.get(t,t) for t in types if t in (
             'Randomized Controlled Trial','Clinical Trial','Validation Study',
             'Multicenter Study','Comparative Study','Observational Study')), None)
         sections=art.findall('.//Abstract/AbstractText')
@@ -276,7 +278,7 @@ def pet_trend_scenario(points, mode, through=2027):
             'capped': abs(raw) > cap, 'max_rate': cap,
             'sensitivity_pp': 2, 'points': future,
             'method': 'Four recent consecutive annual readings; hold-out final year backtest, '
-                      'then capped endpoint annualised growth with +/-2 percentage point '
+                      'then capped endpoint annualised growth with ±2 percentage point '
                       'annual-rate sensitivity.'}
 
 
@@ -303,6 +305,11 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
             country[mode]['projection'] = pet_trend_scenario(
                 series, mode, through=2027
             )
+            for other in ('CT', 'MRI'):
+                if isinstance(country[mode].get('series'), dict) and other in country[mode]['series']:
+                    country[mode]['series'][other] = []
+                if isinstance(country[mode].get('quality_by_modality'), dict) and other in country[mode]['quality_by_modality']:
+                    country[mode]['quality_by_modality'][other] = []
     for region in REGIONAL_GROUPS.values():
         if any(code not in data['countries'] for code in region['countries']):
             raise ValueError('Regional PET sample contains a country without OECD coverage')

@@ -585,7 +585,7 @@ TRIAL_TERMS = {
     'pet': '"positron emission tomography"',
     'xray': '("radiography" OR "fluoroscopy" OR "x-ray")',
 }
-TRIAL_DESCRIPTION = ('Automatic data count active interventional ClinicalTrials.gov registrations matching an '
+TRIAL_DESCRIPTION = ('Automatic data: counts active interventional ClinicalTrials.gov registrations matching an '
                      'explicit intervention-text query. This is a research-activity proxy, '
                      'not a count of validated technologies, completed studies or clinical benefit. '
                      'Regional views use named country samples; multinational studies can appear '
@@ -1129,7 +1129,8 @@ def clinical_evidence_feed(offline=False, extra_filter=None):
                     words = ' '.join(results.itertext()).split()
                     excerpt = ' '.join(words[:20]) + ('…' if len(words) > 20 else '')
                 types = [node.text for node in article.findall('.//PublicationType') if node.text]
-                design = next((kind for kind in types if kind in (
+                uk_designs = {'Randomized Controlled Trial': 'Randomised Controlled Trial'}
+                design = next((uk_designs.get(kind, kind) for kind in types if kind in (
                     'Randomized Controlled Trial', 'Clinical Trial', 'Observational Study')), 'Clinical research; design not classified by this feed')
                 pubdate = article.find('.//JournalIssue/PubDate')
                 electronic = article.find('.//ArticleDate[@DateType="Electronic"]')
@@ -1331,9 +1332,10 @@ class DashboardService:
 
 
 def make_handler(service):
+    import oecd_imaging
     from macro_dashboard import MacroService
     macro = MacroService(service.template_path.parent, regional_economic_background,
-                         service.offline, service.cache_seconds, financing_background)
+                         service.offline, service.cache_seconds, financing_background, oecd_imaging.fetch)
     class DashboardRequestHandler(BaseHTTPRequestHandler):
         def send_content(self, status, content, content_type):
             encoded = content.encode('utf-8') if isinstance(content, str) else content
@@ -1411,7 +1413,7 @@ function source(parent,key,observed){
  const s=payload.sources[key];if(!s)return;
  const line=add(parent,'div');line.className='metric-desc';
  const a=add(line,'a',s.name);a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';
- add(line,'span',` · ${s.status==='cached'?'CACHED — refresh failed/offline':s.status==='live'?'Retrieved':s.status==='supplied'?'Supplied observation dated':'Unavailable'}${s.fetched_at?' '+s.fetched_at.slice(0,10):''}${observed?' · Observation: '+observed:''}`);
+ add(line,'span',` · ${s.status==='cached'?'Cached snapshot (live source unavailable at build)':s.status==='live'?'Retrieved':s.status==='supplied'?'Supplied observation dated':'Unavailable'}${s.fetched_at?' '+s.fetched_at.slice(0,10):''}${observed?' · Observation: '+observed:''}`);
 }
 function metric(i,m){
  const box=document.getElementById('ai-metric-'+i);
@@ -1717,10 +1719,12 @@ def template_view(payload):
             value = f"{value:,.2f}".rstrip('0').rstrip('.') if isinstance(value, float) else str(value)
             if observation.get('unit'):
                 value += ' ' + observation['unit']
+        parts = [str(p).strip() for p in (observation.get('geography'),
+            observation.get('methodology'), observation.get('reason')) if p and str(p).strip()]
+        desc_text = ' '.join(p if p.endswith(('.', '!', '?')) else p + '.' for p in parts)
         return dict(label=observation['label'], value=value,
                     basis=observation.get('period') or 'Not available',
-                    description=' '.join(filter(None, [observation.get('geography'),
-                        observation.get('methodology'), observation.get('reason')])),
+                    description=desc_text,
                     source=key, observed=observation.get('as_of'))
 
     regions = {}
@@ -1889,8 +1893,9 @@ def main():
                 parser.error('Existing template backup differs; use a separate --build output to preserve both templates.')
             if not backup.exists():
                 atomic_write(backup, template)
+        import oecd_imaging
         from macro_dashboard import publish_macro
-        macro_payload = publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline, financing_background)
+        macro_payload = publish_macro(destination.parent, BASE_DIR, regional_economic_background, args.offline, financing_background, oecd_imaging.fetch)
         for region, economy in macro_payload['economics'].items():
             if economy['status'] != 'available':
                 logging.warning('IMF %s: %s', region, economy['status'])

@@ -22,7 +22,7 @@ class PETTests(unittest.TestCase):
         payload=pet.generate(offline=True)
         self.assertEqual(payload['pubmed']['items'],[])
         self.assertFalse(any(c['equipment']['series']['PET'] for c in payload['oecd']['countries'].values()))
-        text=pet.render(Path('pet.template.html').read_text(),payload)
+        text=pet.render(Path(__file__).with_name('pet.template.html').read_text(encoding='utf-8'),payload)
         self.assertNotIn('<!-- PET_DATA -->',text)
         self.assertIn('k.series.PET',text)
         self.assertIn('aria-current="page" href="pet.html"',text)
