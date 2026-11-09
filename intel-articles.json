@@ -1,7 +1,71 @@
 {
-  "edition": "2026-11-03",
+  "edition": "2026-11-09",
   "mode": "automated",
   "articles": [
+    {
+      "id": "news-a32de43243aa5455",
+      "category": "ma",
+      "date": "2026-11-09",
+      "region": "Location not stated in headline",
+      "title": "RadNet Acquires Radiology Staffer in $350 Million Deal",
+      "source": "Los Angeles Business Journal",
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNUkRZcV9LMEh1VWhJWDZ1aFZGc0d3MGFkTTNMODRPaXhOVnM0c0NxWG5hb0VOZFcyci1fYnhGZm1vd3NQTEJveHZkQ0NDQWFwYUhFOWlVTGlQamtLdmU1OTlTRFl1Z3B1cjJRY3VKUTktaW5Ub2VreElTa1N4dFhERjlEOUNxSGgzbUNDMzNtWG9naXR4MGxMajlPYw?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Los Angeles Business Journal published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-11-09",
+      "created": "2026-11-09"
+    },
+    {
+      "id": "news-25a3685d855c9b70",
+      "category": "funding",
+      "date": "2026-11-09",
+      "region": "Location not stated in headline",
+      "title": "How AI Cardiac Imaging Moves At GE HealthCare Have Changed Its Investment Story",
+      "source": "Simply Wall St",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPdWI2ekRDbnV6OWtESkQ3ZGt1ZTV5WUlBRDVlVVJKV3dDUjhNSWlkbGtVV04xeVp1QWloVnlsTTNCbUJKLXpWems5UnlXV3dhclU1ai1qY1dWZWUwNXAxemU2dlhjZkptZDQzTFJ0YlBGemVrcFNsYlpkRDNDQjRNYXRxTlpsZk5HMjJBZW9yTXRDWVlzcVdORVZtazFqR1hsV2xYMUdyTEt3eC1SSGM1SFQzWjhPRFhtUS1FNENhQ0RPRXFjRUFpWExQNnhNaTZ1WDkzcWlxNXlYZG1paFVzddIB5gFBVV95cUxPWFk2TWNIVjVtSlY4UkMwMkE5Yk9IMkpKLWhqc2NzbUVrQ2xoLUxDbTZzZnU1SExBVjJxNG5jU3UwbEFnNDgyYWljM1U5Tm42OWVHWG9XbGZWNFVtV1dTYllfVWlGUi03ekltSXNybXZlcUNJdHlTSGpFOU9SWnk0aEdrRy1xb3RsOWJxZS1FSWY4NGNUQzhaOC00RmYzbk1oT0ZMVWJtamNPSDlhcDNncVNPSUpkTmh5R3VReERCVVlZVDI1UFYtanR0RzdldzVROXotUVBSNkZhdkJGR0xXVkY3aTBxQQ?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Simply Wall St published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "For commercial financing, ask how capital supports product delivery and long-term maintenance; for research grants or R&D spending, check study scope, timelines and clinical translation.",
+      "watch": "Announced funding, R&D investment or grant allocation does not by itself establish profitability, cash runway, completed research or routine clinical adoption. Check the disclosed terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-09",
+      "created": "2026-11-09"
+    },
+    {
+      "id": "news-223d2699d1832e04",
+      "category": "funding",
+      "date": "2026-11-06",
+      "region": "Location not stated in headline",
+      "title": "Stanford top in radiology research funding with $182M since 2012",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-policy/stanford-top-radiology-research-funding-182m-2012",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "For commercial financing, ask how capital supports product delivery and long-term maintenance; for research grants or R&D spending, check study scope, timelines and clinical translation.",
+      "watch": "Announced funding, R&D investment or grant allocation does not by itself establish profitability, cash runway, completed research or routine clinical adoption. Check the disclosed terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-09",
+      "created": "2026-11-09"
+    },
+    {
+      "id": "news-8b0b1cd88e6a2642",
+      "category": "regulatory",
+      "date": "2026-11-06",
+      "region": "United States (named in headline)",
+      "title": "FDA clears AI-powered intravascular ultrasound imaging platform",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/medical-imaging/interventional-radiology/fda-clears-ai-powered-intravascular-ultrasound-imaging-platform",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-11-09",
+      "created": "2026-11-09"
+    },
     {
       "id": "news-b12aa95e8929fe46",
       "category": "partnerships",
@@ -312,7 +376,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-11-03",
+    "last_attempt": "2026-11-09",
     "sources": [
       {
         "name": "Radiology Business",
@@ -343,7 +407,7 @@
         "status": "ok"
       }
     ],
-    "new_articles": 0,
+    "new_articles": 4,
     "ai_articles": 0,
     "ai_errors": 0,
     "ai_enabled": false,
@@ -439,6 +503,26 @@
       "title": "Cent raises $15 million in Series A, acquires AI radiology platform Medsee",
       "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxOamZUTHdZdTRfcGJ6X29SbE9IZGxnX3pCbnFkRzJPWWVsMFBlUDVIOFZCc2k0M1dsOVd6Y05nUzNsVjhad2Rwc0pWejFfLUdNa3VaQmxqWW93ZG40cGQtUVdram0xa0tSM291SDRRajhzYXE0S2lNcUdQWEVPNkNRZExvN3dJSjhCNERlUlo5TzRtaW5RU0ZkMGJvVFNaVmw1eFB3R1pCS09VVVlMbEhnVjBVR1EteEV3T2Rxa25yZzJQcEVFcVBfQ0ZsWXlZbmhHVi11eUFCRTg2VUp6ZTJWVWc0ONIB5wFBVV95cUxONGo0LUN1blRwU3VvSnN1MHNhRDlMTFZ3ckpMU0FDNGZLWGR2azVFbjM2YWVnMjZHNEJXamlIaDRsNzlrVk1WQkZZa09xd2VyZ2hHVGlkSE5zTzhlUnM5V0NJcUY3bHhSb0RFREVsWlZzZ2xXZkMzaTBxcGprU0t5X01vQU90ZUlfeVFVd0FqNUhCWFpFVS1aNk1vWmkzU290UXJ1M0w1RERLSzItTUF0OU1td2NySmIyMU15dXlSWk13SHlPSGpGNVVVS3dILUFORGZ3V1JERlJLeHEwNnhUMHkzRGFJSUk?oc=5",
       "date": "2026-10-27"
+    },
+    {
+      "title": "RadNet Acquires Radiology Staffer in $350 Million Deal",
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNUkRZcV9LMEh1VWhJWDZ1aFZGc0d3MGFkTTNMODRPaXhOVnM0c0NxWG5hb0VOZFcyci1fYnhGZm1vd3NQTEJveHZkQ0NDQWFwYUhFOWlVTGlQamtLdmU1OTlTRFl1Z3B1cjJRY3VKUTktaW5Ub2VreElTa1N4dFhERjlEOUNxSGgzbUNDMzNtWG9naXR4MGxMajlPYw?oc=5",
+      "date": "2026-11-09"
+    },
+    {
+      "title": "How AI Cardiac Imaging Moves At GE HealthCare Have Changed Its Investment Story",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPdWI2ekRDbnV6OWtESkQ3ZGt1ZTV5WUlBRDVlVVJKV3dDUjhNSWlkbGtVV04xeVp1QWloVnlsTTNCbUJKLXpWems5UnlXV3dhclU1ai1qY1dWZWUwNXAxemU2dlhjZkptZDQzTFJ0YlBGemVrcFNsYlpkRDNDQjRNYXRxTlpsZk5HMjJBZW9yTXRDWVlzcVdORVZtazFqR1hsV2xYMUdyTEt3eC1SSGM1SFQzWjhPRFhtUS1FNENhQ0RPRXFjRUFpWExQNnhNaTZ1WDkzcWlxNXlYZG1paFVzddIB5gFBVV95cUxPWFk2TWNIVjVtSlY4UkMwMkE5Yk9IMkpKLWhqc2NzbUVrQ2xoLUxDbTZzZnU1SExBVjJxNG5jU3UwbEFnNDgyYWljM1U5Tm42OWVHWG9XbGZWNFVtV1dTYllfVWlGUi03ekltSXNybXZlcUNJdHlTSGpFOU9SWnk0aEdrRy1xb3RsOWJxZS1FSWY4NGNUQzhaOC00RmYzbk1oT0ZMVWJtamNPSDlhcDNncVNPSUpkTmh5R3VReERCVVlZVDI1UFYtanR0RzdldzVROXotUVBSNkZhdkJGR0xXVkY3aTBxQQ?oc=5",
+      "date": "2026-11-09"
+    },
+    {
+      "title": "Stanford top in radiology research funding with $182M since 2012",
+      "url": "https://radiologybusiness.com/topics/healthcare-management/healthcare-policy/stanford-top-radiology-research-funding-182m-2012",
+      "date": "2026-11-06"
+    },
+    {
+      "title": "FDA clears AI-powered intravascular ultrasound imaging platform",
+      "url": "https://radiologybusiness.com/topics/medical-imaging/interventional-radiology/fda-clears-ai-powered-intravascular-ultrasound-imaging-platform",
+      "date": "2026-11-06"
     }
   ]
 }
