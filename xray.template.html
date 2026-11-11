@@ -149,13 +149,53 @@ function node(tag,cls,text){const n=document.createElement(tag);if(cls)n.classNa
 function stat(title,value,note){const n=node('article','xr-stat');n.append(node('h3','',title),node('div','xr-value',value),node('small','',note));return n}
 function sourceLink(url){const a=node('a','','Regional source →');a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a}
 function render(key){const r=regions[key];regionSelect.value=key;
+const didSeries=Array.isArray(xrayData.nhs_did?.series)&&xrayData.nhs_did.series.length?xrayData.nhs_did.series:[{period:'2023/24',total:22600000,status:'Final'},{period:'2024/25',total:23503940,status:'Final'}];
+const latestDid=didSeries[didSeries.length-1],prevDid=didSeries.length>1?didSeries[didSeries.length-2]:null;
+const yoyPct=prevDid&&prevDid.total>0?(100*(latestDid.total-prevDid.total)/prevDid.total):null;
+const mkt=xrayData.market;
 $('xr-sample-note').hidden=!r.sample;
-$('xr-stats').replaceChildren(stat('X-ray tests performed in one year',r.sample?'23.5 million tests':'Unavailable',r.sample?'England · April 2024–March 2025 · standard X-ray examinations, not individual patients':r.name+' · no verified volume loaded'),stat('Annual change',r.sample?'+4.1%':'Unavailable',r.sample?'England · reported 2024/25 versus 2023/24':'No trend inferred from missing data'),stat('X-ray machines per million people','Unavailable','No comparable regional general-radiography series loaded'),stat('Global equipment market','US$8.4bn','2024 · commercial estimate · radiography and fluoroscopy'));
+if(r.sample){
+ $('xr-sample-note').textContent='These are annual counts of standard X-ray examinations in England ('+didSeries.map(s=>s.period+' '+s.status.toLowerCase()).join(', ')+'). They count tests, not individual patients or the number of images taken; one person may have several tests.'+(xrayData.nhs_did?.check_status?' ('+xrayData.nhs_did.check_status+'.)':'');
+}
+$('xr-stats').replaceChildren(
+ stat('X-ray tests performed in one year',r.sample?(latestDid.total/1e6).toFixed(1)+' million tests':'Unavailable',r.sample?'England · '+latestDid.period+' ('+latestDid.status+') · standard X-ray examinations, not individual patients':r.name+' · no verified volume loaded'),
+ stat('Annual change',r.sample&&yoyPct!==null?(yoyPct>=0?'+':'')+yoyPct.toFixed(1)+'%':'Unavailable',r.sample&&prevDid?'England · '+latestDid.period+' ('+latestDid.status+') versus '+prevDid.period:'No trend inferred from missing data'),
+ stat('X-ray machines per million people','Unavailable','No comparable regional general-radiography series loaded'),
+ stat('Global equipment market',mkt?'US$'+mkt.value_bn+'bn':'US$8.4bn',mkt?mkt.year+' historical · '+(mkt.estimate_value_bn?mkt.estimate_year+' est. US$'+mkt.estimate_value_bn+'bn':'commercial estimate'):'2024 · commercial estimate · radiography and fluoroscopy')
+);
 const activity=$('xr-region-activity');activity.replaceChildren(node('p','xr-reading',r.text),node('p','xr-muted',r.guidance),sourceLink(r.source));
 const history=$('xr-history');history.replaceChildren();
 if(r.sample){
-const chart=node('div','xr-chart');chart.tabIndex=0;chart.setAttribute('role','region');chart.setAttribute('aria-label','England X-ray activity; scroll horizontally if needed');chart.innerHTML='<svg viewBox="0 0 720 260" role="img" aria-labelledby="xr-chart-title xr-chart-desc"><title id="xr-chart-title">England plain-radiography activity</title><desc id="xr-chart-desc">22.6 million tests in 2023/24 and 23.5 million in 2024/25. Zero-based axis in millions. National sample only; no forecast.</desc><line x1="70" y1="205" x2="680" y2="205" stroke="#9bb9cc"/><line x1="70" y1="25" x2="70" y2="205" stroke="#9bb9cc"/><g fill="#c7dce8" font-size="15"><text x="18" y="210">0</text><text x="12" y="138">10</text><text x="12" y="66">20</text><text x="75" y="20">Tests per year · millions</text></g><g fill="#80d6eb"><rect x="165" y="42.28" width="140" height="162.72" rx="5"/><rect x="445" y="35.8" width="140" height="169.2" rx="5"/></g><g fill="#effaff" font-size="18" text-anchor="middle"><text x="235" y="35">22.6m</text><text x="515" y="28">23.5m</text><text x="235" y="235">2023/24</text><text x="515" y="235">2024/25</text></g></svg>';history.append(chart);
-const details=node('details');details.append(node('summary','','View source values'));const table=node('table');table.innerHTML='<caption>England · published rounded totals</caption><thead><tr><th scope="col">Financial year</th><th scope="col">Plain-radiography tests</th></tr></thead><tbody><tr><th scope="row">2023/24</th><td>22.6 million</td></tr><tr><th scope="row">2024/25</th><td>23.5 million</td></tr></tbody>';details.append(table);history.append(details,node('p','xr-source','NHS England annual statistical releases · financial years ending March · published observations only.'));
+const chart=node('div','xr-chart');chart.tabIndex=0;chart.setAttribute('role','region');chart.setAttribute('aria-label','England X-ray activity; scroll horizontally if needed');
+const svgNs='http://www.w3.org/2000/svg';
+const svgEl=(tag,attrs={},txt)=>{const el=document.createElementNS(svgNs,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(txt!==undefined)el.textContent=txt;return el;};
+const maxM=Math.max(25,Math.ceil(Math.max(...didSeries.map(s=>s.total/1e6))/5)*5);
+const svg=svgEl('svg',{viewBox:'0 0 720 265',role:'img','aria-label':'England plain-radiography activity: '+didSeries.map(s=>s.period+' '+(s.total/1e6).toFixed(1)+' million ('+s.status+')').join(', ')});
+svg.append(svgEl('title',{},'England plain-radiography activity'),svgEl('desc',{},'Annual plain-radiography test counts from NHS England DID. Zero-based axis in millions. National sample only; no forecast.'));
+svg.append(svgEl('line',{x1:70,y1:205,x2:680,y2:205,stroke:'#9bb9cc'}),svgEl('line',{x1:70,y1:25,x2:70,y2:205,stroke:'#9bb9cc'}));
+svg.append(svgEl('text',{x:75,y:20,fill:'#c7dce8','font-size':14},'Tests per year · millions'));
+for(let t=0;t<=maxM;t+=5){
+ const yy=205-(t/maxM)*165;
+ svg.append(svgEl('line',{x1:70,y1:yy,x2:680,y2:yy,stroke:'#31495d','stroke-dasharray':t?'3 5':''}));
+ svg.append(svgEl('text',{x:58,y:yy+5,'text-anchor':'end',fill:'#c7dce8','font-size':14},String(t)));
+}
+const slotW=560/didSeries.length,barW=Math.min(130,slotW*0.52);
+didSeries.forEach((s,idx)=>{
+ const millions=s.total/1e6,cx=95+slotW*(idx+0.5),h=(millions/maxM)*165,y=205-h;
+ const fill=s.status==='Provisional'?'#6db8dc':'#80d6eb';
+ svg.append(svgEl('rect',{x:(cx-barW/2).toFixed(1),y:y.toFixed(1),width:barW.toFixed(1),height:h.toFixed(1),rx:5,fill}));
+ svg.append(svgEl('text',{x:cx.toFixed(1),y:(y-8).toFixed(1),'text-anchor':'middle',fill:'#effaff','font-size':16,'font-weight':700},millions.toFixed(1)+'m'));
+ svg.append(svgEl('text',{x:cx.toFixed(1),y:230,'text-anchor':'middle',fill:'#effaff','font-size':15},s.period));
+ svg.append(svgEl('text',{x:cx.toFixed(1),y:248,'text-anchor':'middle',fill:'#9ebdd1','font-size':12},s.status));
+});
+chart.append(svg);history.append(chart);
+const details=node('details');details.append(node('summary','','View source values'));
+const table=node('table'),cap=node('caption','','England · NHS DID plain-radiography totals'),thead=node('thead'),hr=node('tr');
+for(const h of ['Financial year','Status','Plain-radiography tests']){const th=node('th','',h);th.scope='col';hr.append(th);}
+thead.append(hr);table.append(cap,thead);
+const tbody=node('tbody');
+for(const s of didSeries){const tr=node('tr'),th=node('th','',s.period);th.scope='row';tr.append(th,node('td','',s.status),node('td','',s.total.toLocaleString('en-GB')));tbody.append(tr);}
+table.append(tbody);details.append(table);history.append(details,node('p','xr-source','NHS England Diagnostic Imaging Dataset (Table 1) · financial years ending March · published observations only.'));
 const breakdown=$('xr-service-breakdown');breakdown.replaceChildren();
 const makeBars=(heading,sub,rows)=>{
  const wrap=node('div');wrap.style.marginTop='14px';
@@ -180,9 +220,10 @@ breakdown.append(
   ['Consultant radiologists',49.2,'#79c9ef'],['Reporting radiographers',34.5,'#9ad7c6'],['Other clinical staff',13.0,'#edc68a'],['Outsourced reporting',3.3,'#d0afed']])
 );
 }else{$('xr-service-breakdown').replaceChildren();history.append(node('p','xr-no-data','No verified general-radiography activity series is loaded for '+r.name+'. No line or projection is drawn.'),sourceLink(r.source));}
+const dirText=yoyPct===null?'':yoyPct>0.2?'increased by '+yoyPct.toFixed(1)+'%':yoyPct<-0.2?'edged down '+Math.abs(yoyPct).toFixed(1)+'%':'remained essentially flat ('+(yoyPct>=0?'+':'')+yoyPct.toFixed(1)+'%)';
 const interpretationNotes=r.sample?[
- 'England reported increasing plain-radiography activity between these two financial years. This is a national observation, not a worldwide total.',
- 'This suggests more reported tests, but does not by itself establish utilisation, equipment demand or changes in clinical need.']:[
+ 'England plain-radiography activity '+dirText+' in '+latestDid.period+' ('+latestDid.status.toLowerCase()+') versus '+prevDid.period+'. This is a national observation, not a worldwide total.',
+ 'Published volume changes alone do not establish clinical need, equipment demand, or scanner capacity.']:[
  'No numerical activity interpretation is generated for '+r.name+'.',
  'Country-specific reimbursement and provider coverage must be checked before comparing volumes.'];
 const interpretationList=node('ul');interpretationNotes.forEach(note=>interpretationList.append(node('li','',note)));
@@ -216,10 +257,6 @@ function renderLivePapers(){
  const note=$('xr-pubmed-source');
  note.textContent='PubMed / NLM · '+(pub.status==='live'?'retrieved successfully':pub.status||'unavailable')+' · checked '+(pub.checked||'not available')+'. From '+(pub.count==null?'an unavailable number of':pub.count.toLocaleString('en-GB'))+' search matches, '+(pub.items||[]).length+' publications are displayed after study-type screening and topic diversification. ';
  const sLink=node('a','','Search PubMed');sLink.href='https://pubmed.ncbi.nlm.nih.gov/?term='+encodeURIComponent(pub.query||'chest radiograph');sLink.target='_blank';sLink.rel='noopener noreferrer';note.append(sLink);
- if(xrayData.nhs_did?.check_status){
-  const sn=$('xr-sample-note');
-  if(sn&&!sn.dataset.didTagged){sn.dataset.didTagged='1';sn.append(document.createTextNode(' ('+xrayData.nhs_did.check_status+'.)'));}
- }
 }
 renderLiveMarket();renderLivePapers();
 </script></body></html>

@@ -6,8 +6,10 @@ Imaging Dataset (DID) landing page for newly finalised annual releases.
 Unavailable sources remain clearly labelled; no figures are fabricated.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from html import unescape
+import io
 import json
 import logging
 from pathlib import Path
@@ -15,6 +17,7 @@ import re
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
+import zipfile
 
 LOG = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
@@ -268,6 +271,89 @@ def check_market(offline=False, today=None, fetcher=None):
     return out
 
 
+BASELINE_NHS_SERIES = [
+    {'period': '2023/24', 'total': 22600000, 'status': 'Final', 'source': 'https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2024/11/DID-Annual-Statistical-Release-2023-24.pdf'},
+    {'period': '2024/25', 'total': 23503940, 'status': 'Final', 'source': 'https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2025/11/DID-Annual-Statistical-Release-2024-25-PDF-1.64MB.pdf'},
+]
+
+
+def _col_index(ref):
+    letters = ''.join(ch for ch in (ref or '') if ch.isalpha()).upper()
+    idx = 0
+    for ch in letters:
+        idx = idx * 26 + (ord(ch) - ord('A') + 1)
+    return idx - 1 if idx else None
+
+
+def parse_nhs_table1_xlsx(raw_bytes):
+    """Extract national England Plain Radiography total for a complete 12-month DID year."""
+    ns = {'s': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+    with zipfile.ZipFile(io.BytesIO(raw_bytes)) as archive:
+        strings = []
+        if 'xl/sharedStrings.xml' in archive.namelist():
+            for si in ET.fromstring(archive.read('xl/sharedStrings.xml')):
+                strings.append(''.join(si.itertext()))
+        sheet_names = sorted(
+            name for name in archive.namelist()
+            if name.startswith('xl/worksheets/sheet') and name.endswith('.xml')
+        )
+        for sheet_name in sheet_names:
+            root = ET.fromstring(archive.read(sheet_name))
+            rows = []
+            for row_el in root.findall('.//s:row', ns):
+                cells = {}
+                for cell in row_el.findall('s:c', ns):
+                    col = _col_index(cell.get('r'))
+                    val_el = cell.find('s:v', ns)
+                    val = val_el.text if val_el is not None else ''
+                    if cell.get('t') == 's' and val.isdigit():
+                        val = strings[int(val)]
+                    elif cell.get('t') == 'inlineStr':
+                        val = ''.join(cell.itertext())
+                    if col is not None:
+                        cells[col] = val.strip()
+                    else:
+                        cells[len(cells)] = val.strip()
+                if cells:
+                    max_col = max(cells)
+                    rows.append([cells.get(i, '') for i in range(max_col + 1)])
+            period, status, headers = None, None, None
+            for row in rows:
+                non_empty = [x for x in row if x]
+                if len(non_empty) >= 2 and non_empty[0] == 'Period:':
+                    period = non_empty[1]
+                elif len(non_empty) >= 2 and non_empty[0] == 'Status:':
+                    status = non_empty[1]
+                elif 'Provider name' in row and 'Modality' in row and ('Year' in row or 'Total' in row):
+                    headers = row
+                elif headers and 'ENGLAND' in row and 'Plain Radiography' in row:
+                    months = ('Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar')
+                    if not all(m in headers for m in months):
+                        return None
+                    month_vals = []
+                    for m in months:
+                        raw_m = row[headers.index(m)] if headers.index(m) < len(row) else ''
+                        if not raw_m or not re.fullmatch(r'\d+(?:\.0+)?', raw_m):
+                            return None  # Incomplete / in-progress financial year
+                        month_vals.append(int(float(raw_m)))
+                    tot_col = 'Year' if 'Year' in headers else 'Total'
+                    tot_idx = headers.index(tot_col)
+                    raw_tot = row[tot_idx] if tot_idx < len(row) else ''
+                    if not raw_tot or not re.fullmatch(r'\d+(?:\.0+)?', raw_tot):
+                        return None
+                    total = int(float(raw_tot))
+                    if abs(total - sum(month_vals)) > 50:
+                        raise ValueError('NHS DID England plain-radiography monthly sum mismatch')
+                    if not period or not re.fullmatch(r'20\d{2}/\d{2}', period):
+                        raise ValueError('Invalid NHS DID period')
+                    return {
+                        'period': period,
+                        'total': total,
+                        'status': status or 'Published',
+                    }
+    return None
+
+
 def check_nhs_did(offline=False, today=None, fetcher=None):
     today = today or date.today()
     checked = today.isoformat()
@@ -275,16 +361,55 @@ def check_nhs_did(offline=False, today=None, fetcher=None):
         'source': NHS_DID_URL,
         'latest_finalised': '2024-25',
         'checked_at': checked,
+        'series': [dict(item) for item in BASELINE_NHS_SERIES],
         'check_status': 'offline · using dated published DID figures',
     }
     if offline:
         return out
+    read = fetcher or _read
     try:
-        raw = (fetcher or _read)(NHS_DID_URL)
+        raw = read(NHS_DID_URL)
         txt = _clean_html(raw) if isinstance(raw, bytes) else raw
+        html_str = raw.decode('utf-8', 'replace') if isinstance(raw, bytes) else raw
         finalised = re.search(r'statistics for \d{4}-\d{2} to (20\d{2}-\d{2}) have now been finalised', txt, re.I)
         if finalised:
             out['latest_finalised'] = finalised.group(1)
+
+        # Discover annual DID subpages from 2023-24 onwards and parse complete Table 1 XLSX totals.
+        page_urls = {}
+        for m in re.finditer(
+            r'(https://www\.england\.nhs\.uk/statistics/statistical-work-areas/diagnostic-imaging-dataset/diagnostic-imaging-data-?set-(202[3-9]-\d{2})-data/?)',
+            html_str, re.I,
+        ):
+            page_urls[m.group(2)] = m.group(1)
+
+        def fetch_year(yr_slug):
+            try:
+                sub_raw = read(page_urls[yr_slug])
+                sub_html = sub_raw.decode('utf-8', 'replace') if isinstance(sub_raw, bytes) else sub_raw
+                t1_match = re.search(r'(https://[^\s"<>]+Table-1[^\s"<>]*\.xlsx)', sub_html, re.I)
+                if not t1_match:
+                    return None
+                xlsx_bytes = read(t1_match.group(1))
+                rec = parse_nhs_table1_xlsx(xlsx_bytes)
+                if rec:
+                    rec['source'] = t1_match.group(1)
+                    rec['checked_at'] = checked
+                    return rec
+            except Exception as exc:
+                LOG.info('NHS DID %s Table 1 skipped (%s)', yr_slug, type(exc).__name__)
+            return None
+
+        parsed_by_period = {}
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            for rec in pool.map(fetch_year, sorted(page_urls)[-4:]):
+                if rec:
+                    parsed_by_period[rec['period']] = rec
+
+        if len(parsed_by_period) >= 2:
+            out['series'] = [parsed_by_period[k] for k in sorted(parsed_by_period)]
+            out['check_status'] = f"NHS England DID Table 1 XLSX checked {checked}; latest finalised release: {out['latest_finalised']}"
+        elif finalised:
             out['check_status'] = f"NHS England DID checked {checked}; latest finalised annual release: {out['latest_finalised']}"
         else:
             out['check_status'] = f'NHS England DID reachable ({checked}); using verified 2024/25 finalised release'
