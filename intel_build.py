@@ -98,12 +98,11 @@ def build():
         text = re.sub(r'\s*<!-- INTEL EDITION START -->.*?<!-- INTEL EDITION END -->','',text,flags=re.S)
         if slug == 'feed':
             text = re.sub(r'<p class="intel-note">.*?</p>','',text,flags=re.S)
-            section = f'<section class="intel-edition" aria-labelledby="intel-edition-title"><div class="intel-edition-heading"><div><p class="intel-eyebrow">{esc(edition_label)}</p><h2 id="intel-edition-title">The developments. The implications.</h2></div><span class="intel-status">{len(rows)} selected briefings</span></div><p class="intel-note">{esc(note)}</p>{category_breakdown_html(rows)}<div class="intel-story-grid">'+''.join(card(r) for r in rows)+'</div></section>'
-            section += '<details class="intel-method"><summary>About this feed and its sources</summary><p>Collection runs weekly on Mondays. Coverage depends on available publisher feeds and news search; selection is not comprehensive. Duplicate headlines and reports outside the four categories are filtered. A feed retrieval date does not independently verify an announcement.</p><p>Automated headline digests reproduce a source headline and add general category guidance. AI source briefings, when enabled, paraphrase supplied excerpts and separate reported facts from interpretation. Company announcements are not independent evidence of clinical benefit. Links through Google News are labelled accordingly.</p><p>When source material is limited, a headline digest is published with general considerations rather than a detailed interpretation. Original announcement dates are retained; the edition date does not make older stories breaking news.</p></details>' + FILTER_SCRIPT
-        else:
-            text = re.sub(r'<section class="intel-empty".*?</section>','',text,flags=re.S)
-            selected=[r for r in rows if r['category']==slug]
-            section = f'<section class="intel-edition" aria-labelledby="intel-edition-title"><div class="intel-edition-heading"><h2 id="intel-edition-title">Selected briefings</h2><span class="intel-status">{esc(edition_label)}</span></div><p class="intel-note">{esc(note)}</p>'+''.join(card(r,True) for r in selected)+'</section>'
+            path.write_text(text)
+            continue
+        text = re.sub(r'<section class="intel-empty".*?</section>','',text,flags=re.S)
+        selected=[r for r in rows if r['category']==slug]
+        section = f'<section class="intel-edition" aria-labelledby="intel-edition-title"><div class="intel-edition-heading"><h2 id="intel-edition-title">Selected briefings</h2><span class="intel-status">{esc(edition_label)}</span></div><p class="intel-note">{esc(note)}</p>'+''.join(card(r,True) for r in selected)+'</section>'
         text = text.replace('</main>','<!-- INTEL EDITION START -->'+section+'<!-- INTEL EDITION END --></main>')
         path.write_text(text)
 if __name__ == '__main__':

@@ -76,5 +76,7 @@ class IntelBackendTests(unittest.TestCase):
             with patch.object(intel_build,'ROOT',root):
                 intel_build.build();first={p.name:p.read_text() for p in root.glob('*.html')};intel_build.build()
                 self.assertEqual(first,{p.name:p.read_text() for p in root.glob('*.html')})
-                for content in first.values():self.assertEqual(content.count('<!-- INTEL EDITION START -->'),1)
+                for name,content in first.items():
+                    expected=0 if name=='intel-feed.html' else 1
+                    self.assertEqual(content.count('<!-- INTEL EDITION START -->'),expected)
 if __name__=='__main__':unittest.main()

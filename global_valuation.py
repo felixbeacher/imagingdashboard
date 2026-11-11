@@ -1,19 +1,26 @@
-"""Source-fed global-equity context; never substitute illustrative observations."""
+"""Source-fed US equity valuation context; never substitute illustrative observations."""
 from datetime import datetime, timezone, date
 from html.parser import HTMLParser
 from urllib.request import Request, urlopen
+import csv
 import html
+import io
 import json
 import math
+import re
 import statistics
 import logging
+import zipfile
 from pathlib import Path
 
 ETF_URL='https://www.ishares.com/us/products/239600/ishares-msci-acwi-etf'
 WB_URL='https://api.worldbank.org/v2/country/WLD/indicator/CM.MKT.LCAP.GD.ZS?format=json&per_page=100'
 WB_PAGE='https://data.worldbank.org/indicator/CM.MKT.LCAP.GD.ZS?locations=1W'
+Z1_URL='https://www.federalreserve.gov/releases/z1/current/z1_csv_files.zip'
+Z1_PAGE='https://www.federalreserve.gov/releases/z1/'
 HISTORY_PATH=Path(__file__).with_name('valuation-history.json')
 HISTORY_SOURCE='iShares MSCI ACWI ETF fundamentals'
+QUARTER_RE=re.compile(r'^(\d{4}):Q([1-4])$')
 
 class Fundamentals(HTMLParser):
     def __init__(self):
@@ -149,27 +156,107 @@ def valuation_trend(points, ratio):
     return ''.join(out)+'</svg>'
 
 
+def _parse_quarter(label):
+    match = QUARTER_RE.fullmatch((label or '').strip())
+    if not match:
+        raise ValueError('Invalid Federal Reserve Z.1 quarter label')
+    return int(match.group(1)), int(match.group(2))
+
+
+def parse_z1_buffett(raw_bytes, today=None):
+    """Compute traditional US Buffett Indicator from Federal Reserve Z.1 data.
+
+    Uses nonfinancial corporate business corporate equities at market value
+    (LM103164105.Q, equivalent to FRED NCBEILQ027S) divided by trailing
+    four-quarter US nominal GDP (FU086902005.Q), expressed as a percentage.
+    Returns annual Q4 observations across a trailing 30-year window plus the
+    latest published quarter.
+    """
+    today = today or datetime.now(timezone.utc).date()
+    max_q_index = today.year * 4 + (today.month - 1) // 3 + 1
+    with zipfile.ZipFile(io.BytesIO(raw_bytes)) as archive:
+        equities_csv = archive.read('csv/F51_1_s.csv').decode('utf-8-sig')
+        gdp_csv = archive.read('csv/S1_1_i_q.csv').decode('utf-8-sig')
+
+    equities_by_q = {}
+    for row in csv.DictReader(io.StringIO(equities_csv)):
+        raw_val = (row.get('LM103164105.Q') or '').strip()
+        if not raw_val or raw_val == 'ND':
+            continue
+        yr, q = _parse_quarter(row.get('date'))
+        q_idx = yr * 4 + q
+        if q_idx > max_q_index:
+            raise ValueError('Future Z.1 equity observation')
+        val = float(raw_val)
+        if not math.isfinite(val) or val <= 0:
+            raise ValueError('Invalid Z.1 equity observation')
+        if q_idx in equities_by_q:
+            raise ValueError('Duplicate Z.1 equity quarter')
+        equities_by_q[q_idx] = (yr, q, val)
+
+    gdp_rows = []
+    seen_gdp = set()
+    for row in csv.DictReader(io.StringIO(gdp_csv)):
+        raw_val = (row.get('FU086902005.Q') or '').strip()
+        if not raw_val or raw_val == 'ND':
+            continue
+        yr, q = _parse_quarter(row.get('date'))
+        q_idx = yr * 4 + q
+        if q_idx > max_q_index:
+            raise ValueError('Future Z.1 GDP observation')
+        val = float(raw_val)
+        if not math.isfinite(val) or val <= 0:
+            raise ValueError('Invalid Z.1 GDP observation')
+        if q_idx in seen_gdp:
+            raise ValueError('Duplicate Z.1 GDP quarter')
+        seen_gdp.add(q_idx)
+        gdp_rows.append((q_idx, yr, q, val))
+
+    gdp_rows.sort(key=lambda item: item[0])
+    ratios = []
+    for i in range(3, len(gdp_rows)):
+        q_idx, yr, q, _ = gdp_rows[i]
+        if any(gdp_rows[i - k][0] != q_idx - k for k in range(1, 4)):
+            continue
+        if q_idx not in equities_by_q:
+            continue
+        trailing_gdp = sum(gdp_rows[i - k][3] for k in range(4))
+        eq_val = equities_by_q[q_idx][2]
+        ratios.append((yr, q, 100.0 * eq_val / trailing_gdp))
+
+    if not ratios:
+        raise ValueError('No overlapping Z.1 equity and GDP observations')
+
+    latest_yr, latest_q, latest_val = ratios[-1]
+    cutoff = latest_yr - 30 if latest_q < 4 else latest_yr - 29
+    history = [
+        dict(year=yr, period=f'{yr} Q{q}', value=val)
+        for yr, q, val in ratios
+        if q == 4 and yr >= cutoff and (yr < latest_yr or latest_q == 4)
+    ]
+    if latest_q < 4:
+        history.append(dict(year=latest_yr, period=f'{latest_yr} Q{latest_q}', value=latest_val))
+    return history
+
+
 def fetch(offline=False):
-    result=dict(attempted_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),etf=dict(status='unavailable',source=ETF_URL),buffett=dict(status='unavailable',source=WB_PAGE))
-    result['etf']['history']=read_history()
+    result=dict(attempted_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),buffett=dict(status='unavailable',source=Z1_PAGE))
     if offline:
-        for key in ('etf','buffett'):result[key]['reason']='Offline build; sources were not requested.'
+        result['buffett']['reason']='Offline build; sources were not requested.'
         return result
-    for key,url,parser in [('etf',ETF_URL,parse_etf),('buffett',WB_URL,parse_world)]:
-        try:
-            with urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0 (ImagingDashboard source collector)'}),timeout=25) as response:raw=response.read().decode()
-            values=parser(raw)
-            result[key].update(status='available',retrieved_at=datetime.now(timezone.utc).isoformat(timespec='seconds'))
-            if key=='etf':
-                result[key].update(values)
-                result[key]['history']=merge_history(result[key]['history'],values)
-            else:
-                result[key]['history']=values
-                prior=[r['value'] for r in values[:-1]];latest=values[-1]['value']
-                if len(prior)>=10:
-                    result[key].update(percentile=100*(sum(v<latest for v in prior)+.5*sum(v==latest for v in prior))/len(prior),median=statistics.median(prior),comparison_count=len(prior))
-        except Exception as exc:
-            result[key].update(reason='Source retrieval or validation failed ('+type(exc).__name__+').')
+    try:
+        with urlopen(Request(Z1_URL,headers={'User-Agent':'Mozilla/5.0 (ImagingDashboard source collector)'}),timeout=45) as response:
+            raw=response.read(25_000_001)
+            if len(raw)>25_000_000:
+                raise ValueError('Federal Reserve Z.1 archive exceeds size limit')
+        values=parse_z1_buffett(raw)
+        result['buffett'].update(status='available',retrieved_at=datetime.now(timezone.utc).isoformat(timespec='seconds'))
+        result['buffett']['history']=values
+        prior=[r['value'] for r in values[:-1]];latest=values[-1]['value']
+        if len(prior)>=10:
+            result['buffett'].update(percentile=100*(sum(v<latest for v in prior)+.5*sum(v==latest for v in prior))/len(prior),median=statistics.median(prior),comparison_count=len(prior))
+    except Exception as exc:
+        result['buffett'].update(reason='Source retrieval or validation failed ('+type(exc).__name__+').')
     return result
 
 def esc(value):return html.escape(str(value),quote=True)
@@ -187,8 +274,8 @@ def mini_chart(points,unit):
     return ''.join(out)+'</svg>'
 
 
-def buffett_gauge(value, median, year):
-    """The dial shows market capitalisation as % of GDP, not historical percentile."""
+def buffett_gauge(value, median, period):
+    """The dial shows US market capitalisation as % of GDP, not historical percentile."""
     if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0
            for v in (value, median)):
         raise ValueError('Invalid Buffett Indicator gauge input')
@@ -197,11 +284,12 @@ def buffett_gauge(value, median, year):
     angle = math.pi * (1 - min(1, median / maximum))
     median_x = 90 + 58 * math.cos(angle)
     median_y = 92 - 58 * math.sin(angle)
+    period_label = str(period)
     return (
         f'<svg viewBox="0 0 180 133" role="img" '
-        f'aria-label="World stock-market value in {int(year)}: {value:.1f}% of GDP; '
+        f'aria-label="US corporate-equity value in {esc(period_label)}: {value:.1f}% of GDP; '
         f'scale 0 to {maximum}% of GDP, historical median {median:.1f}%">'
-        f'<title>World stock-market value relative to GDP</title>'
+        f'<title>US corporate-equity market value relative to GDP</title>'
         f'<path d="M32 92 A58 58 0 0 1 148 92" fill="none" stroke="#304451" stroke-width="10"/>'
         f'<path d="M32 92 A58 58 0 0 1 148 92" fill="none" stroke="#73c9ef" '
         f'stroke-width="10" pathLength="100" stroke-dasharray="{progress:.2f} 100"/>'
@@ -213,58 +301,29 @@ def buffett_gauge(value, median, year):
         f'<text x="160" y="113" text-anchor="end" fill="#c6dbe9" font-size="11">{maximum:g}</text>'
         f'<text x="90" y="77" text-anchor="middle" fill="#f3f8ff" font-size="23" '
         f'font-weight="700">{value:.1f}%</text>'
-        f'<text x="90" y="95" text-anchor="middle" fill="#c6dbe9" font-size="10">of world GDP</text>'
-        f'</svg>'
-    )
-
-def ratio_bar(value, maximum, title):
-    if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
-        return ''
-    scale = max(maximum, math.ceil(value / 5) * 5)
-    fill_w = min(204.0, max(4.0, (value / scale) * 204.0))
-    return (
-        f'<svg viewBox="0 0 240 46" role="img" aria-label="{esc(title)} current reading on a 0 to {scale:g}× reference scale">'
-        f'<title>{esc(title)} reference scale (0 to {scale:g}×)</title>'
-        f'<rect x="18" y="10" width="204" height="12" rx="6" fill="#233746"/>'
-        f'<rect x="18" y="10" width="{fill_w:.1f}" height="12" rx="6" fill="#77ceef"/>'
-        f'<text x="18" y="38" fill="#afc2d3" font-size="10">0×</text>'
-        f'<text x="120" y="38" text-anchor="middle" fill="#afc2d3" font-size="10">{scale/2:g}×</text>'
-        f'<text x="222" y="38" text-anchor="end" fill="#afc2d3" font-size="10">{scale:g}×</text>'
+        f'<text x="90" y="95" text-anchor="middle" fill="#c6dbe9" font-size="10">of US GDP</text>'
         f'</svg>'
     )
 
 
 def render(data):
-    b=data.get('buffett',{});e=data.get('etf',{});history=b.get('history',[]);rank=b.get('percentile')
+    b=data.get('buffett',{});history=b.get('history',[]);rank=b.get('percentile')
     if rank is not None:
         label='Elevated relative to history' if rank>=80 else 'Low relative to history' if rank<=20 else 'Within the historical range'
         latest=history[-1]
-        summary=f"The world stock-market value-to-GDP ratio is {latest['value']:.1f}% in {latest['year']}, compared with a typical past level of {b['median']:.1f}% across {b['comparison_count']} earlier years of data. It is at the {rank:.0f}th percentile of the available history."
-        conclusion='This makes shares look expensive compared with the past, but does not prove they are overpriced.' if rank>=80 else 'This makes shares look cheaper compared with the past, but does not prove they are underpriced.' if rank<=20 else 'On its own, this measure does not show clearly whether shares look cheap or expensive.'
-        meter=buffett_gauge(latest['value'], b['median'], latest['year'])
+        latest_period=latest.get('period',str(latest['year']))
+        summary=f"The US Buffett Indicator (corporate equities to trailing 4-quarter US GDP) is {latest['value']:.1f}% in {latest_period}, compared with a typical past level of {b['median']:.1f}% across {b['comparison_count']} earlier years of data. It is at the {rank:.0f}th percentile of the available history."
+        conclusion='This makes US shares look expensive compared with the past, but does not prove they are overpriced.' if rank>=80 else 'This makes US shares look cheaper compared with the past, but does not prove they are underpriced.' if rank<=20 else 'On its own, this measure does not show clearly whether shares look cheap or expensive.'
+        meter=buffett_gauge(latest['value'], b['median'], latest_period)
     else:
-        label='Assessment unavailable';summary='A sufficiently complete world market-capitalisation/GDP history is not available for this refresh.';conclusion='No global undervalued or overvalued classification has been substituted.';meter='<p class="metric">—</p>'
-    gauge_note=(f'Blue arc: market value as % of world GDP. Gold dot: historical median {b["median"]:.1f}% of GDP. The scale normally runs from 0 to 200% of GDP, extending if necessary. The {rank:.0f}th historical percentile is a separate ranking, not a percentage of overvaluation.' if rank is not None else 'The dial measures market value as a share of GDP, not a ranking. No dial appears without reliable data.')
-    output=[f'<div class="ftse-summary"><div><h3>Do world share prices look high or low?</h3><p class="explain">{summary} {conclusion}</p><article class="ftse-view" style="margin-top:14px"><h4>A cautious view of financial markets (Austrian School)</h4><p class="explain">This viewpoint asks whether cheap borrowing has pushed share prices too high or encouraged projects that may struggle when interest rates rise. For imaging businesses, check debt, the cost of renewing loans and the buying power of budgets. This is a perspective, not a separate score.</p></article></div><aside class="ftse-meter"><h3>World Buffett Indicator · % of GDP</h3>{meter}<p class="meta">{label}</p><p class="muted-note">{gauge_note}</p></aside></div><h3>Global share-market indicators</h3><p class="meta">Checked when the dashboard refreshes. Each figure keeps its own observation date. Annual figures are not live market prices.</p><div class="ftse-group"><h3>1 · Share prices compared with profits and assets</h3><div class="mini-charts">']
-    for key,title,caption in [('pe','Global-equity P/E','Share prices compared with company profits in a broad global fund. Loss-making companies are excluded from this ratio.'),('pb','Global-equity price-to-book','Share prices compared with the value of company assets on their balance sheets. Research and software are not always fully reflected in these values.')]:
-        content='<p class="meta">Latest reading unavailable — '+esc(e.get('reason','No validated observation.'))+'</p>'
-        points=e.get('history',{}).get(key,[])
-        if e.get('status')=='available':
-            point=e[key]
-            content=f'<p class="metric">{point["value"]:.2f}×</p><p class="meta">As published {esc(point["period"])} · refreshed from iShares when the dashboard is rebuilt</p>'
-        trend=valuation_trend(points, title) if points else ''
-        if trend:
-            content+=trend+'<p class="meta">Verified source-date observations collected by this dashboard; missing weeks are not filled.</p>'
-        else:
-            if e.get('status')=='available':
-                content+=ratio_bar(e[key]['value'], 40 if key=='pe' else 6, title)
-            content+='<p class="meta">Historical trend not yet available. iShares provides a latest dated ratio, not a downloadable multi-year series. This dashboard is collecting real source-date observations at each refresh; a chart will appear once at least three distinct dates are verified.</p>'
-        output.append(f'<figure class="mini-figure"><h4>{title}</h4>{content}<figcaption>{caption}</figcaption></figure>')
-    output.append('</div><p class="meta">Source: <a href="'+ETF_URL+'">iShares MSCI ACWI ETF fundamentals</a> · developed and emerging-market large/mid-cap equities; a fund proxy, not every listed company. '+('Retrieved '+esc(str(e['retrieved_at'])[:10]) if e.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
+        label='Assessment unavailable';summary='A sufficiently complete US corporate-equity/GDP history is not available for this refresh.';conclusion='No undervalued or overvalued classification has been substituted.';meter='<p class="metric">—</p>'
+    gauge_note=(f'Blue arc: US corporate-equity value as % of trailing 4-quarter GDP. Gold dot: historical median {b["median"]:.1f}% of GDP. The scale normally runs from 0 to 200% of GDP, extending if necessary. The {rank:.0f}th historical percentile is a separate ranking, not a percentage of overvaluation.' if rank is not None else 'The dial measures market value as a share of GDP, not a ranking. No dial appears without reliable data.')
+    output=[f'<div class="ftse-summary"><div><h3>Do US share prices look high or low?</h3><p class="explain">{summary} {conclusion}</p><article class="ftse-view" style="margin-top:14px"><h4>A cautious view of financial markets (Austrian School)</h4><p class="explain">This viewpoint asks whether cheap borrowing has pushed share prices too high or encouraged projects that may struggle when interest rates rise. For imaging businesses, check debt, the cost of renewing loans and the buying power of budgets. This is a perspective, not a separate score.</p></article></div><aside class="ftse-meter"><h3>US Buffett Indicator · % of GDP</h3>{meter}<p class="meta">{label}</p><p class="muted-note">{gauge_note}</p></aside></div><h3>Share-market indicator</h3><p class="meta">Checked when the dashboard refreshes. Each figure keeps its own observation quarter. Quarterly Z.1 figures are not live intraday prices.</p>']
     content='<p class="meta">Unavailable — '+esc(b.get('reason','No validated observation.'))+'</p>'
     if history:
-        latest=history[-1];content=f'<p class="metric">{latest["value"]:.1f}% <span class="meta">· {latest["year"]}</span></p>'+mini_chart([(str(r['year']),r['value']) for r in history],'% of GDP')
-    output.append('<div class="ftse-group"><h3>2 · Share prices compared with the world economy</h3><div class="mini-charts single"><figure class="mini-figure"><h4>Buffett Indicator — world market cap / GDP</h4>'+content+'<figcaption>The total value of listed companies compared with world economic output. High readings may suggest expensive shares, but company coverage and profits also matter.</figcaption></figure></div><p class="meta">Source: <a href="'+WB_PAGE+'">World Bank / World Federation of Exchanges</a> · annual world aggregate. '+('Retrieved '+esc(str(b['retrieved_at'])[:10]) if b.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
-    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The meter ranks the latest available annual world market-cap/GDP ratio against earlier available observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing years are not interpolated. P/E and P/B are supporting context and do not contribute to the meter. ETF history consists only of archived, dated source observations; older values are not inferred from market prices.</p><p class="meta">Collection attempted '+esc(str(data.get('attempted_at','unknown'))[:10])+' · ACWI: '+esc(e.get('status','unavailable'))+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+'</p>')
-    if history:output.append('<div class="table-wrap"><table><caption>World market capitalisation / GDP</caption><thead><tr><th>Year</th><th>Ratio (%)</th></tr></thead><tbody>'+''.join(f'<tr><td>{r["year"]}</td><td>{r["value"]:.2f}</td></tr>' for r in reversed(history))+'</tbody></table></div>')
+        latest=history[-1];latest_period=latest.get('period',str(latest['year']))
+        content=f'<p class="metric">{latest["value"]:.1f}% <span class="meta">· {esc(latest_period)}</span></p>'+mini_chart([(r.get('period',str(r['year'])),r['value']) for r in history],'% of GDP')
+    output.append('<div class="ftse-group"><h3>Share prices compared with the US economy</h3><div class="mini-charts single"><figure class="mini-figure"><h4>Buffett Indicator — US market cap / GDP</h4>'+content+'<figcaption>US nonfinancial corporate equity market value compared with trailing four-quarter US nominal GDP. High readings may suggest expensive shares, though global revenue and profit margins also matter.</figcaption></figure></div><p class="meta">Source: <a href="'+Z1_PAGE+'">Federal Reserve Z.1 Financial Accounts</a> (LM103164105 / trailing 4Q FU086902005). '+('Retrieved '+esc(str(b['retrieved_at'])[:10]) if b.get('retrieved_at') else 'Retrieval unavailable.')+'</p></div>')
+    output.append('<details><summary>Valuation methodology and source status</summary><p class="meta">The traditional US Buffett Indicator divides nonfinancial corporate equities at market value (Federal Reserve Z.1 LM103164105.Q, corresponding to FRED NCBEILQ027S) by trailing four-quarter US nominal GDP (FU086902005.Q). The meter ranks the latest observation against earlier annual Q4 observations in a trailing thirty-calendar-year window, excluding the latest year. At least ten earlier observations are required. Percentile = (lower values + half of equal values) / comparison count × 100. The descriptive bands (low at or below twenty; elevated at or above eighty) are editorial conventions, not validated fair-value thresholds. Missing quarters are not interpolated.</p><p class="meta">Collection attempted '+esc(str(data.get('attempted_at','unknown'))[:10])+' · Buffett Indicator: '+esc(b.get('status','unavailable'))+'</p>')
+    if history:output.append('<div class="table-wrap"><table><caption>US corporate equity market value / trailing 4-quarter GDP</caption><thead><tr><th>Period</th><th>Ratio (%)</th></tr></thead><tbody>'+''.join(f'<tr><td>{esc(r.get("period",r["year"]))}</td><td>{r["value"]:.2f}</td></tr>' for r in reversed(history))+'</tbody></table></div>')
     return ''.join(output)+'</details>'

@@ -140,7 +140,7 @@ class MacroTests(unittest.TestCase):
             self.assertIn('OECD medical technology availability data',page)
             self.assertIn('<div class="valuation-expander"><h3>',page)
             self.assertNotIn('<details class="valuation-expander"',page)
-            self.assertIn('Global share valuations — P/E, price-to-book and Buffett Indicator',page)
+            self.assertIn('US share valuation — Buffett Indicator',page)
             self.assertIn('explainEconomicChange(',page)
             self.assertIn('scope',page)
             self.assertIn('data-status',page)

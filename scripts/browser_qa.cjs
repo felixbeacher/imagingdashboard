@@ -87,15 +87,8 @@ fs.mkdirSync('qa-results', {recursive:true});
       assert.equal(await page.locator('#xr-sample-note').isVisible(),true);
      }
      if (name==='global-macro') {
-      await page.locator('#nominal-input').fill('');
-      assert.equal(await page.locator('#real-output').innerText(),'Check inputs');
-      await page.locator('#nominal-input').fill('0');
-      await page.locator('#inflation-input').fill('0');
-      assert.equal(await page.locator('#real-output').innerText(),'0%');
-      await page.locator('#inflation-input').fill('-100');
-      assert.equal(await page.locator('#real-output').innerText(),'Check inputs');
-      await page.locator('#nominal-input').fill('5');
-      await page.locator('#inflation-input').fill('3');
+      assert.equal(await page.locator('#nominal-input').count(),0,'purchasing-power calculator removed');
+      assert.ok((await page.locator('#valuation-section').innerText()).includes('Buffett Indicator'),'Buffett Indicator visible');
      }
      // Include the content exposed by expandable methodology and data tables.
      await page.locator('details').evaluateAll(es=>es.forEach(e=>e.open=true));
