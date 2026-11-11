@@ -96,7 +96,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'pet_dashboard.py', 'pet.template.html', 'eudamed.py', 'eudamed_snapshot.json', 'public_build.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'pet_dashboard.py', 'pet_market.py', 'pet_market_reference.json', 'pet.template.html', 'xray_dashboard.py', 'xray.template.html', 'eudamed.py', 'eudamed_snapshot.json', 'public_build.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:
@@ -115,10 +115,6 @@ jobs:
           subprocess.run([sys.executable, 'intel_build.py'], check=True)
           for filename in ('intel-feed.html', 'intel-regulatory.html', 'intel-ma.html', 'intel-funding.html', 'intel-partnerships.html'):
               shutil.copy2(root / filename, output / filename)
-          # Preserve static source pages without a separate build generator.
-          for filename in ('xray.html',):
-              if (root / filename).is_file():
-                  shutil.copy2(root / filename, output / filename)
           (output / '.nojekyll').touch()
 
           summary = ['## Dashboard refresh', '', '| Dashboard | Core observations | Headlines | FDA benchmark |',
@@ -231,6 +227,16 @@ jobs:
           summary.append('PET: '+str(pet_coverage['equipment'])+' scanner and '+
                          str(pet_coverage['exams'])+' examination observations; PubMed '+
                          pet_data['pubmed']['status'])
+
+          # X-ray refreshes live PubMed radiography research, market estimate verification,
+          # and NHS England DID release status while retaining verified NHS totals.
+          subprocess.run([sys.executable, 'xray_dashboard.py', '--template', 'xray.template.html', '--output', str(output / 'xray.html')], check=True, timeout=180)
+          xray_html = (output / 'xray.html').read_text(encoding='utf-8')
+          xray_payload = re.search(r'<script id="xray-data" type="application/json">([\s\S]*?)</script>', xray_html)
+          if not xray_payload:
+              raise SystemExit('X-ray data payload missing from live build')
+          xray_data = json.loads(xray_payload.group(1))
+          summary.append('X-ray: PubMed ' + xray_data['pubmed']['status'] + ' (' + str(len(xray_data['pubmed']['items'])) + ' studies); DID ' + xray_data['nhs_did']['latest_finalised'])
 
           # Rebuild Glob Econ from public source observations, not a stored HTML snapshot.
           # Independent source failures remain clearly unavailable on the page.
@@ -555,18 +561,19 @@ jobs:
             git push origin HEAD:main || echo '::warning::MRI snapshot not archived; deployed page unaffected'
           fi
 
-      - name: Archive refreshed PET and Global Economy pages in the source repository
+      - name: Archive refreshed PET, X-ray and Global Economy pages in the source repository
         shell: bash
         run: |
           set -euo pipefail
           cp _site/pet.html pet.html
+          cp _site/xray.html xray.html
           cp _site/global-macro.html global-macro.html
-          if ! git diff --quiet -- pet.html global-macro.html; then
+          if ! git diff --quiet -- pet.html xray.html global-macro.html; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add pet.html global-macro.html
-            git commit -m 'Refresh published PET and Global Economy observations [skip ci]'
-            git push origin HEAD:main || echo '::warning::PET/Global Economy snapshots not archived; deployed pages unaffected'
+            git add pet.html xray.html global-macro.html
+            git commit -m 'Refresh published PET, X-ray and Global Economy observations [skip ci]'
+            git push origin HEAD:main || echo '::warning::PET/X-ray/Global Economy snapshots not archived; deployed pages unaffected'
           fi
 
       - name: Package public AI payload after source validation

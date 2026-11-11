@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "scope": "Global positron emission tomography (PET) market, including systems, cyclotrons, software and services",
+  "source": "https://www.mordorintelligence.com/industry-reports/positron-emission-tomography-pet-market",
+  "publisher": "Mordor Intelligence",
+  "publication_date": "2026-11",
+  "baseline": {
+    "year": 2026,
+    "value": 2.72,
+    "label": "2026 current-year estimate",
+    "historical_year": 2025,
+    "historical_value": 2.56
+  },
+  "projection": {
+    "year": 2031,
+    "value": 3.67,
+    "cagr_pct": 6.19
+  },
+  "note": "A commercial estimate covering PET systems, cyclotrons, software and services; broader than scanner hardware alone. Forecast bar is a publisher projection, not an observed outcome."
+}

@@ -18,6 +18,7 @@ from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
 import oecd_imaging
+import pet_market
 
 
 LOG = logging.getLogger(__name__)
@@ -316,9 +317,11 @@ def generate(offline=False, today=None, oecd_fetch=None, pubmed_fetch=None, mark
     publication=(pubmed_fetch or pubmed_feed)(offline=offline,today=today)
     if not isinstance(publication,dict) or 'items' not in publication:
         raise ValueError('Invalid publication feed')
+    market=(market_fetch or pet_market.refresh)(pet_market.read_reference(),offline=offline,today=today)
+    pet_market.validate(market)
     return dict(schema_version=1,
                 generated_at=datetime.now(timezone.utc).isoformat(),
-                oecd=data,regional_groups=REGIONAL_GROUPS,pubmed=publication,
+                oecd=data,regional_groups=REGIONAL_GROUPS,pubmed=publication,market=market,
                 purpose='PET modality data and recent PET research, not AI-sector commercial metrics')
 
 

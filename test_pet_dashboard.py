@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 import unittest
 import pet_dashboard as pet
+import pet_market
 
 class PETTests(unittest.TestCase):
     def test_pet_projection_uses_pet_not_mri(self):
@@ -36,3 +37,16 @@ class PETTests(unittest.TestCase):
         items=pet.parse_pubmed(xml.encode(),['1','2','3'])
         self.assertEqual(len(items),1)
         self.assertEqual(items[0]['url'],'https://pubmed.ncbi.nlm.nih.gov/1/')
+
+    def test_pet_market_reference_and_live_extraction(self):
+        ref=pet_market.read_reference()
+        self.assertEqual(ref['baseline']['year'],2026)
+        offline=pet_market.refresh(ref,offline=True,today=date(2026,11,11))
+        self.assertEqual(offline['baseline']['value'],2.72)
+        self.assertIn('offline',offline['check_status'])
+        sample='Market Size (2026) USD 2.75 Billion Market Size (2031) USD 3.70 Billion Growth Rate (2026 - 2031) 6.12 %'
+        live=pet_market.refresh(ref,offline=False,today=date(2026,11,11),fetcher=lambda _:sample)
+        self.assertEqual(live['baseline']['value'],2.75)
+        self.assertEqual(live['projection']['value'],3.70)
+        self.assertEqual(live['projection']['cagr_pct'],6.12)
+        self.assertEqual(live['check_status'],'source figure reverified')

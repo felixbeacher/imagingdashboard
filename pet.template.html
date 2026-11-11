@@ -164,13 +164,10 @@
 <section class="pet-card pet-market-section" id="pet-market" aria-labelledby="pet-market-heading">
 <h2 id="pet-market-heading">Global PET market · published estimate</h2>
 <p class="pet-muted">Equipment, associated software and services form a different market from PET examinations and radiopharmaceuticals. Check the publisher’s segment boundaries before comparing estimates.</p>
-<article class="pet-indicator"><h3>Global PET market · 2025 estimate and 2030 projection</h3><p class="pet-definition"><strong>What it measures</strong>A commercial estimate covering PET systems, cyclotrons, software and services; this is broader than scanner hardware alone.</p>
-<div class="pet-market-big">US$2.56bn</div><p class="pet-muted">Mordor Intelligence · 2025 historical estimate (projected US$3.52bn by 2030 at 6.57% CAGR) · report updated 11 September 2026</p>
-<div class="pet-market-estimates" aria-label="Mordor Intelligence published 2025 PET market estimate compared with 2030 projection">
-<div class="pet-market-size-row"><div class="pet-market-size-name"><div>2025 historical estimate</div><small class="pet-market-source">Mordor Intelligence · baseline</small></div><div class="pet-market-size-track"><div class="pet-market-size-fill" style="width:72.73%" title="2025 historical estimate: US$2.56 billion"></div></div><span class="pet-market-size-number">$2.56bn</span></div>
-<div class="pet-market-size-row"><div class="pet-market-size-name"><div>2030 commercial projection</div><small class="pet-market-source">Mordor Intelligence · 6.57% CAGR forecast</small></div><div class="pet-market-size-track"><div class="pet-market-size-fill" style="width:100%;background:linear-gradient(90deg,#c59a58,#f2c879)" title="2030 commercial projection: US$3.52 billion"></div></div><span class="pet-market-size-number">$3.52bn</span></div>
-</div>
-<p class="pet-source"><a href="https://www.mordorintelligence.com/industry-reports/positron-emission-tomography-pet-market" target="_blank" rel="noopener noreferrer">Publisher’s market estimate and segment definitions →</a></p></article>
+<article class="pet-indicator"><h3>Global PET market · <span id="pet-market-heading-years">estimate and projection</span></h3><p class="pet-definition"><strong>What it measures</strong>A commercial estimate covering PET systems, cyclotrons, software and services; this is broader than scanner hardware alone.</p>
+<div class="pet-market-big" id="pet-market-size-value">Source estimate loading…</div><p class="pet-muted" id="pet-market-size-subtitle"></p>
+<div class="pet-market-estimates" id="pet-market-estimate-chart" aria-label="Published PET market estimate compared with commercial projection"></div>
+<p class="pet-source"><a id="pet-market-source-link" href="https://www.mordorintelligence.com/industry-reports/positron-emission-tomography-pet-market" target="_blank" rel="noopener noreferrer">Publisher’s market estimate and segment definitions →</a> <span id="pet-market-check-status"></span></p></article>
 <div class="pet-insight">A planning benchmark rather than audited sales. The 2030 bar is a publisher forecast, not an observed outcome. No regional allocation, vendor revenue or manufacturer shares are inferred from this estimate. Radiopharmaceutical and clinical-service revenues are not added to it.</div>
 </section>
 <section class="pet-card" id="pet-activity" aria-labelledby="pet-activity-heading">
@@ -500,7 +497,31 @@ const initial=REGIONS[regionParam]?regionParam:'global';
 regionSelect.addEventListener('change',()=>{const u=new URL(location.href);u.searchParams.set('region',regionSelect.value);u.searchParams.delete('country');history.pushState(null,'',u);chooseRegion(regionSelect.value);});
 window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search).get('region');chooseRegion(REGIONS[p]?p:'global');});
 if(initial)chooseRegion(initial);else $('pet-stat-grid').textContent='No regional PET data configured.';
-renderPapers();renderSources();
+function renderPetMarket(){
+ const market=petData.market;
+ if(!market||!market.baseline||!market.projection)return;
+ const b=market.baseline,p=market.projection,hi=Math.max(b.value,p.value,0.1);
+ $('pet-market-heading-years').textContent=b.year+' estimate and '+p.year+' projection';
+ $('pet-market-size-value').textContent='US$'+fmt(b.value,2)+'bn';
+ $('pet-market-size-subtitle').textContent=market.publisher+' · '+b.year+' estimate (projected US$'+fmt(p.value,2)+'bn by '+p.year+' at '+fmt(p.cagr_pct,2)+'% CAGR)';
+ const chart=$('pet-market-estimate-chart');chart.replaceChildren();
+ for(const [title,sub,val,isProj] of [
+  [b.year+' baseline estimate',market.publisher+' · baseline',b.value,false],
+  [p.year+' commercial projection',market.publisher+' · '+fmt(p.cagr_pct,2)+'% CAGR forecast',p.value,true]
+ ]){
+  const row=el('div','pet-market-size-row'),name=el('div','pet-market-size-name');
+  name.append(el('div','',title),el('small','pet-market-source',sub));
+  const track=el('div','pet-market-size-track'),fill=el('div','pet-market-size-fill');
+  fill.style.width=(100*val/hi).toFixed(2)+'%';
+  if(isProj)fill.style.background='linear-gradient(90deg,#c59a58,#f2c879)';
+  fill.title=title+': US$'+fmt(val,2)+' billion';
+  track.append(fill);row.append(name,track,el('span','pet-market-size-number','$'+fmt(val,2)+'bn'));
+  chart.append(row);
+ }
+ if(market.source&&market.source.startsWith('https://'))$('pet-market-source-link').href=market.source;
+ $('pet-market-check-status').textContent='· '+(market.check_status||'dated published reference')+(market.checked_at?' ('+market.checked_at+')':'');
+}
+renderPapers();renderSources();renderPetMarket();
 </script>
 </body>
 </html>
