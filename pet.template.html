@@ -281,7 +281,10 @@ function regionalHistory(regionKey,kind,label,unit){
  for(const r of rows){
   for(const [i,p] of r.data.points.entries()){
    const prev=r.data.points[i-1];
-   if(prev&&p.year===prev.year+1&&!(p.flags||[]).includes('B'))svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':3}));
+   if(prev&&!(p.flags||[]).includes('B')){
+    const annual=p.year===prev.year+1;
+    svg.append(shape('line',{x1:X(prev.year),y1:Y(prev.value),x2:X(p.year),y2:Y(p.value),stroke:r.color,'stroke-width':annual?3:2,...(annual?{}:{'stroke-dasharray':'2 4','stroke-opacity':'.7'})}));
+   }
    const dot=shape('circle',{cx:X(p.year),cy:Y(p.value),r:3.5,fill:r.color});
    dot.append(shape('title',{},r.name+' · OECD '+p.year+': '+fmt(p.value)+' '+unit+(pointFlags(p)?' · '+pointFlags(p):'')));svg.append(dot);
   }
@@ -428,11 +431,21 @@ function setRegionalOverview(regionKey){
  $('pet-comparison-warning').textContent=oldest===null?
   'No verified country observations are available for this region.':
   'Source observation years range from '+oldest+' to '+youngest+' across available PET indicators. This is NOT a same-year comparison. Year labels and provider scope appear beneath every reading.';
+ const summaryStat=(label,unit,items,fallback)=>{
+  const valid=items.filter(r=>r.point).sort((a,b)=>a.point.value-b.point.value);
+  if(valid.length>=2){
+   const vals=valid.map(r=>r.point.value),mid=Math.floor(vals.length/2);
+   const med=vals.length%2?vals[mid]:(vals[mid-1]+vals[mid])/2;
+   const yrs=valid.map(r=>r.point.year),loY=Math.min(...yrs),hiY=Math.max(...yrs);
+   return stat(label+' · '+name+' sample median','Median '+fmt(med)+' '+unit,
+    'Range '+fmt(vals[0])+'–'+fmt(vals[vals.length-1])+' across '+valid.length+' OECD countries (latest readings '+loY+'–'+hiY+'; scope varies by country)');
+  }
+  return stat(label+(fallback?' · '+fallback.name:''),fallback?fmt(fallback.point.value)+' '+unit:'Unavailable',
+   fallback?fallback.name+' · Reported for '+fallback.point.year+' · OECD · '+(fallback.scope||'Scope not available')+(pointFlags(fallback.point)?' · '+pointFlags(fallback.point):''):'No published country observation');
+ };
  put($('pet-stat-grid'),
-  stat('PET scanners available'+(latestS?' · '+latestS.name:''),latestS?fmt(latestS.point.value)+' per million people':'Unavailable',
-       latestS?latestS.name+' · Equipment reported for '+latestS.point.year+' · OECD · '+(latestS.scope||'Scope not available')+(pointFlags(latestS.point)?' · '+pointFlags(latestS.point):''):'No published country observation'),
-  stat('PET scans performed in one year'+(latestE?' · '+latestE.name:''),latestE?fmt(latestE.point.value)+' per 1,000 people':'Unavailable',
-       latestE?latestE.name+' · Scans during '+latestE.point.year+' · OECD · '+(latestE.scope||'Scope not available')+(pointFlags(latestE.point)?' · '+pointFlags(latestE.point):''):'No published country observation')
+  summaryStat('PET scanners available','per million people',scanners,latestS),
+  summaryStat('PET scans performed in one year','per 1,000 people',exams,latestE)
  );
  regionalBars('pet-region-scanners',scanners,'scanners per million people');
  regionalBars('pet-region-exams',exams,'scans per 1,000 people per year');
