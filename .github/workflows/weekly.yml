@@ -96,7 +96,7 @@ jobs:
           dashboards = [
               ('AI', 'ai_update_data.py', 'ai.html'),
           ]
-          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'pet_dashboard.py', 'pet_market.py', 'pet_market_reference.json', 'pet.template.html', 'xray_dashboard.py', 'xray.template.html', 'eudamed.py', 'eudamed_snapshot.json', 'public_build.py', 'global-macro.template.html', 'risk.svg', 'risk-data.csv', 'global-risk-report.html']
+          required = ['index.html', 'styles.css', 'images/earth-hero.png', 'images/imaging-dashboard-social.jpg', 'ai.template.html', 'macro_dashboard.py', 'macro_briefing.py', 'global_valuation.py', 'oecd_imaging.py', 'ct_dashboard.py', 'ct_market.py', 'ct_market_reference.json', 'ct.template.html', 'mri_dashboard.py', 'mri_market.py', 'mri_market_reference.json', 'mri.template.html', 'pet_dashboard.py', 'pet_market.py', 'pet_market_reference.json', 'pet.template.html', 'xray_dashboard.py', 'xray.template.html', 'eudamed.py', 'eudamed_snapshot.json', 'public_build.py', 'global-macro.template.html']
           required += [filename for _, script, template in dashboards for filename in (script, template)]
           missing = [filename for filename in required if not (root / filename).is_file()]
           if missing:

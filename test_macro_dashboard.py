@@ -44,28 +44,30 @@ class MacroTests(unittest.TestCase):
         rendered=ai.render_dashboard(template.read_text(),p)
         self.assertNotIn('ai-context-title',rendered);self.assertIn('global-macro.html',rendered)
         self.assertNotIn('_PLACEHOLDER',rendered)
-    def test_offline_macro_retains_risk_without_invented_economics(self):
+    def test_offline_macro_omits_frozen_risk_without_invented_economics(self):
         with patch.object(ai,'public_json',side_effect=AssertionError('Network called')):
             p=macro.build_payload(ROOT,ai.regional_economic_background,True)
-        self.assertEqual(p['economic_mode'],'offline');self.assertEqual(p['risk']['count'],81)
+        self.assertEqual(p['economic_mode'],'offline');self.assertNotIn('risk',p)
         self.assertTrue(all(c['value'] is None for r in p['economics'].values() for c in r['cards']))
     def test_macro_render_escapes_script(self):
         html=macro.render('<script><!-- MACRO_DATA --></script>',{'x':'</script><script>alert(1)</script>'})
         self.assertEqual(html.count('</script>'),1)
-    def test_static_publication_copies_assets(self):
+    def test_static_publication_omits_frozen_risk_assets(self):
         with tempfile.TemporaryDirectory() as tmp:
             macro.publish_macro(tmp,ROOT,ai.regional_economic_background,True)
-            for name in ['global-macro.html','risk-data.csv','risk.svg','global-risk-report.html']:self.assertTrue((Path(tmp)/name).is_file())
+            self.assertTrue((Path(tmp)/'global-macro.html').is_file())
+            for name in ['risk-data.csv','risk.svg','global-risk-report.html']:self.assertFalse((Path(tmp)/name).exists())
     def test_server_routes_and_safe_asset_allowlist(self):
         template=ROOT/'ai.template.html'
         if not template.exists():template=ROOT/'ai.html'
         service=ai.DashboardService(template,offline=True)
         handler=ai.make_handler(service);request=object.__new__(handler);responses=[]
         request.send_content=lambda status,content,kind:responses.append((status,content,kind))
-        for route,kind in [('/global-macro.html','text/html'),('/api/macroeconomics','application/json'),('/risk.svg','image/svg+xml'),('/risk-data.csv','text/csv')]:
+        for route,kind in [('/global-macro.html','text/html'),('/api/macroeconomics','application/json')]:
             request.path=route;request.do_GET();status,content,ctype=responses.pop();self.assertEqual(status,200);self.assertTrue(ctype.startswith(kind))
-        request.path='/macro_dashboard.py';request.do_GET();self.assertEqual(responses.pop()[0],404)
-    def test_requested_headings_and_risk_asset(self):
+        for route in ['/macro_dashboard.py','/risk.svg','/risk-data.csv','/global-risk-report.html']:
+            request.path=route;request.do_GET();self.assertEqual(responses.pop()[0],404)
+    def test_requested_headings_and_live_overview(self):
         for name in ['ai.html','ai.template.html']:
             page=(ROOT/name).read_text()
             self.assertTrue('Summary: Global Market for Imaging AI' in page or 'Imaging AI · evidence and market context' in page)
@@ -74,8 +76,9 @@ class MacroTests(unittest.TestCase):
         for name in ['global-macro.html','global-macro.template.html']:
             page=(ROOT/name).read_text()
             self.assertIn('>Global economy</a>',page)
-            self.assertIn('src="risk.svg"',page)
-            self.assertIn('Further information',page);self.assertIn('Why it matters for imaging',page)
+            self.assertNotIn('src="risk.svg"',page)
+            self.assertNotIn('global-risk-report.html',page)
+            self.assertIn('US Buffett Indicator',page)
     def test_imf_annual_charts_keep_country_coverage_and_forecast_status(self):
         current = date.today().year
         years = range(current - 10, current + 3)
@@ -127,16 +130,15 @@ class MacroTests(unittest.TestCase):
             page=(ROOT/filename).read_text(encoding='utf-8')
             order=[page.index('id="'+section+'"') for section in
                    ('overview-section','economy-section','financing-section',
-                    'risk-section','imaging-section','valuation-section','methods-section')]
+                    'imaging-section','valuation-section','methods-section')]
             self.assertEqual(order,sorted(order))
             self.assertIn('id="overview-grid"',page)
             self.assertIn('renderOverview(key,r)',page)
             self.assertIn('id="financing-cards"',page)
             self.assertIn('card.append(financeTrend(m,rate))',page)
             self.assertNotIn('id="financing-trends"',page)
-            self.assertIn('id="risk-drivers"',page)
-            self.assertIn('risk-evidence',page)
-            self.assertIn('underlying percentile calibration could not be independently reproduced',page)
+            self.assertNotIn('id="risk-section"',page)
+            self.assertNotIn('id="risk-drivers"',page)
             self.assertIn('OECD medical technology availability data',page)
             self.assertIn('<div class="valuation-expander"><h3>',page)
             self.assertNotIn('<details class="valuation-expander"',page)

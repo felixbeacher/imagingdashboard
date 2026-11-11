@@ -7,11 +7,10 @@ from macro_briefing import briefings
 class BriefingTests(unittest.TestCase):
     def setUp(self):
         self.payload = dict(generated_at='2026-10-16T12:00:00Z',
-            economics={k:dict(cards=[dict(label='Growth',value=3.1,period='2026',source=dict(name='IMF',url='https://www.imf.org'))]) for k in ('global','europe')},
-            risk=dict(end='2026-09-01',latest=50,change=2,components=[]))
+            economics={k:dict(cards=[dict(label='Growth',value=3.1,period='2026',source=dict(name='IMF',url='https://www.imf.org'))]) for k in ('global','europe')})
 
     def response(self, entry=None):
-        entry = entry or dict(summary='Growth remains positive in the supplied estimates.',implication='Investment may depend on local procurement budgets.',uncertainty='Historical risk does not describe current conditions.',source_ids=['econ0','risk'])
+        entry = entry or dict(summary='Growth remains positive in the supplied estimates.',implication='Investment may depend on local procurement budgets.',uncertainty='Economic estimates do not describe future scanner demand.',source_ids=['econ0'])
         response=MagicMock()
         response.__enter__.return_value.read.return_value=json.dumps(dict(candidates=[dict(finishReason='STOP',content=dict(parts=[dict(text=json.dumps({k:entry for k in self.payload['economics']}))]))])).encode()
         return response

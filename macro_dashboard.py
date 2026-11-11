@@ -80,11 +80,10 @@ def read_risk(root):
 
 def build_payload(root, fetch_economics, offline=False, fetch_financing=None, fetch_imaging=None):
     payload = dict(generated_at=datetime.now(timezone.utc).isoformat(timespec='seconds'),
-                economics=fetch_economics(offline), risk=read_risk(root),
+                economics=fetch_economics(offline),
                 financing=fetch_financing(offline) if fetch_financing else [],
                 imaging=fetch_imaging(offline) if fetch_imaging else {},
-                economic_mode='offline' if offline else 'source_refresh',
-                risk_notice='Supplied historical snapshot; economic refreshes do not update this risk dataset.')
+                economic_mode='offline' if offline else 'source_refresh')
 
     payload["valuation"] = fetch_valuation(offline)
     payload["briefing"] = briefings(payload, offline)
@@ -111,8 +110,6 @@ def publish_macro(destination, root, fetch_economics, offline=False, fetch_finan
     payload=build_payload(root, fetch_economics, offline, fetch_financing, fetch_imaging)
     page=render((root/'global-macro.template.html').read_text(encoding='utf-8'),payload)
     destination.mkdir(parents=True,exist_ok=True)
-    for name in ['risk.svg','risk-data.csv','global-risk-report.html']:
-        if (root/name).resolve() != (destination/name).resolve():shutil.copy2(root/name,destination/name)
     atomic_write(destination/'global-macro.html',page)
     return payload
 

@@ -9,7 +9,7 @@ const axePath = path.join(modules, 'axe-core', 'axe.min.js');
 const chartPath = path.join(modules, 'chart.js', 'dist', 'chart.umd.js');
 const base = process.argv[2] || 'http://127.0.0.1:8765';
 const pages = ['index','global-macro','intel-feed','ai','ct','mri','pet','xray','consultancy',
-               'intel-regulatory','intel-ma','intel-funding','intel-partnerships','global-risk-report'];
+               'intel-regulatory','intel-ma','intel-funding','intel-partnerships'];
 const sizes = [{width:375,height:812}, {width:768,height:1024}, {width:1440,height:1000}];
 const results = [], failures = [];
 fs.mkdirSync('qa-results', {recursive:true});

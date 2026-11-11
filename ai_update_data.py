@@ -1364,11 +1364,10 @@ def make_handler(service):
                     self.send_content(200, safe_json(service.payload()['fda_benchmark']), 'application/json; charset=utf-8')
                 elif path in ('/', '/index.html', '/ct.html', '/2_ct.html', '/mri.html', '/3_mri.html',
                               '/pet.html', '/4_pet.html', '/xray.html', '/5_xray.html', '/styles.css',
-                              '/images/earth-hero.png', '/risk.svg', '/risk-data.csv', '/global-risk-report.html'):
+                              '/images/earth-hero.png'):
                     # Exact allowlist: serve the landing page and its assets without
                     # exposing arbitrary local files. Keep old modality URLs as aliases.
-                    aliases = {'/risk.svg': 'risk.svg', '/risk-data.csv': 'risk-data.csv',
-                               '/global-risk-report.html': 'global-risk-report.html', '/': 'index.html', '/index.html': 'index.html',
+                    aliases = {'/': 'index.html', '/index.html': 'index.html',
                                '/ct.html': '2_ct.html', '/2_ct.html': '2_ct.html',
                                '/mri.html': '3_mri.html', '/3_mri.html': '3_mri.html',
                                '/pet.html': '4_pet.html', '/4_pet.html': '4_pet.html',
