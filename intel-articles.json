@@ -1,5 +1,5 @@
 {
-  "edition": "2026-11-09",
+  "edition": "2026-11-11",
   "mode": "automated",
   "articles": [
     {
@@ -35,6 +35,22 @@
       "created": "2026-11-09"
     },
     {
+      "id": "news-105d4797ac9c8451",
+      "category": "partnerships",
+      "date": "2026-11-09",
+      "region": "Location not stated in headline",
+      "title": "Society of Interventional Radiology urges trauma centers to integrate IRs into hemorrhage care",
+      "source": "Radiology Business - rbj",
+      "url": "https://radiologybusiness.com/topics/medical-imaging/interventional-radiology/society-interventional-radiology-urges-trauma-centers-integrate-irs-hemorrhage-care",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business - rbj published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-11",
+      "created": "2026-11-11"
+    },
+    {
       "id": "news-223d2699d1832e04",
       "category": "funding",
       "date": "2026-11-06",
@@ -67,6 +83,38 @@
       "created": "2026-11-09"
     },
     {
+      "id": "news-53c3942bd416fc83",
+      "category": "partnerships",
+      "date": "2026-11-05",
+      "region": "Location not stated in headline",
+      "title": "From Fragmentation to Integration: How AI-native radiology is transforming the traditional practice and operations model",
+      "source": "Radiology Business",
+      "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPZDRXcjVncGlEbGZUeERhNm9NMHRZUzZmd2c1M0REZUVoV1E5c28tR3JrMkZLWEtSaUtqem5JRHVtNUZGWi1vekxkR1NaZGJMM1JvZFJtVnZBY3VWVlo2QmxXYjZNMm4xU3Y0UzBmYWNqeGhXb2xGREtwZVI4WDIwbktxNFJxMGhqb2djNERuN1Q5amoya2NGcDBmcFc4MWlpS0RSLXVvMm9raXFKUjhqcmh1aXB0Tm5GVV94RFFlOURZSmxyUFE3N0lvUTM2RzI2Y2JtZEZ1clVuYkR1MjJyNFdIMXM?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Radiology Business published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-11",
+      "created": "2026-11-11"
+    },
+    {
+      "id": "news-c317be446427ad48",
+      "category": "regulatory",
+      "date": "2026-11-04",
+      "region": "United States (named in headline)",
+      "title": "Evident Vascular secures FDA clearance for IVUS imaging system",
+      "source": "AuntMinnie",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNZ0RsTklob2k3Tjh2OEVYY2lyc01WaDFiZ0pIX2dlbkpPX2tkQ3BsVmlHOUdpaW11d3RZUDVSaDZnbGtrU0laM2xRSGtfWDMxeUM2WmptbTkxbUI5X25taFBRMzhvWGduY1dvSFB0N1dlUUtra0xBVHZ0ZUk0eVVoRVk5SHoxS3FpXzB1YUxyMHJYR1NpNk9rVUoyZTlFTjd3NDBucEJRbEhBbnhLanpoUjAzb3ViREZvQlNaUlJmOUNPWmppdFhF?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "AuntMinnie published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-11-11",
+      "created": "2026-11-11"
+    },
+    {
       "id": "news-b12aa95e8929fe46",
       "category": "partnerships",
       "date": "2026-11-03",
@@ -81,6 +129,22 @@
       "method": "source-digest",
       "checked": "2026-11-03",
       "created": "2026-11-03"
+    },
+    {
+      "id": "news-975f358ac7b8f6d7",
+      "category": "funding",
+      "date": "2026-11-03",
+      "region": "Location not stated in headline",
+      "title": "EASE Raises $9.5 Million To Expand AI-Enabled Medical Imaging And Surgical Robotics In South Africa And Ghana",
+      "source": "Pulse 2.0",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQd3Jhd29tLWF4ejhmX3pwUXBXWF9ZQmJDWUhDVXhDYjhaYWd2Z3k1UzNtRDdGaEROY3lHTWJweFI4SDdDVnVTR1JiLWhWNDdqbDRPOGpDZkhzWV9vT2gwejhJc2tGRE9RZEg2UmwtWjFuR1IxdjdDTXFVTmxIX0VxQkJXU1VLWHM4b0o3SHhlTXFUdmhNU0JleWQ3MDlIMXBqYml0QWVqNFZDMlZUdVlMWGJDblBKaXZmRUdTd1I4ZFZmOWpsMWQ4?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Pulse 2.0 published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "For commercial financing, ask how capital supports product delivery and long-term maintenance; for research grants or R&D spending, check study scope, timelines and clinical translation.",
+      "watch": "Announced funding, R&D investment or grant allocation does not by itself establish profitability, cash runway, completed research or routine clinical adoption. Check the disclosed terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-11",
+      "created": "2026-11-11"
     },
     {
       "id": "news-2e7bbb7f11546497",
@@ -376,7 +440,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-11-09",
+    "last_attempt": "2026-11-11",
     "sources": [
       {
         "name": "Radiology Business",
@@ -523,6 +587,26 @@
       "title": "FDA clears AI-powered intravascular ultrasound imaging platform",
       "url": "https://radiologybusiness.com/topics/medical-imaging/interventional-radiology/fda-clears-ai-powered-intravascular-ultrasound-imaging-platform",
       "date": "2026-11-06"
+    },
+    {
+      "title": "Society of Interventional Radiology urges trauma centers to integrate IRs into hemorrhage care",
+      "url": "https://radiologybusiness.com/topics/medical-imaging/interventional-radiology/society-interventional-radiology-urges-trauma-centers-integrate-irs-hemorrhage-care",
+      "date": "2026-11-09"
+    },
+    {
+      "title": "From Fragmentation to Integration: How AI-native radiology is transforming the traditional practice and operations model",
+      "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxPZDRXcjVncGlEbGZUeERhNm9NMHRZUzZmd2c1M0REZUVoV1E5c28tR3JrMkZLWEtSaUtqem5JRHVtNUZGWi1vekxkR1NaZGJMM1JvZFJtVnZBY3VWVlo2QmxXYjZNMm4xU3Y0UzBmYWNqeGhXb2xGREtwZVI4WDIwbktxNFJxMGhqb2djNERuN1Q5amoya2NGcDBmcFc4MWlpS0RSLXVvMm9raXFKUjhqcmh1aXB0Tm5GVV94RFFlOURZSmxyUFE3N0lvUTM2RzI2Y2JtZEZ1clVuYkR1MjJyNFdIMXM?oc=5",
+      "date": "2026-11-05"
+    },
+    {
+      "title": "Evident Vascular secures FDA clearance for IVUS imaging system",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNZ0RsTklob2k3Tjh2OEVYY2lyc01WaDFiZ0pIX2dlbkpPX2tkQ3BsVmlHOUdpaW11d3RZUDVSaDZnbGtrU0laM2xRSGtfWDMxeUM2WmptbTkxbUI5X25taFBRMzhvWGduY1dvSFB0N1dlUUtra0xBVHZ0ZUk0eVVoRVk5SHoxS3FpXzB1YUxyMHJYR1NpNk9rVUoyZTlFTjd3NDBucEJRbEhBbnhLanpoUjAzb3ViREZvQlNaUlJmOUNPWmppdFhF?oc=5",
+      "date": "2026-11-04"
+    },
+    {
+      "title": "EASE Raises $9.5 Million To Expand AI-Enabled Medical Imaging And Surgical Robotics In South Africa And Ghana",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQd3Jhd29tLWF4ejhmX3pwUXBXWF9ZQmJDWUhDVXhDYjhaYWd2Z3k1UzNtRDdGaEROY3lHTWJweFI4SDdDVnVTR1JiLWhWNDdqbDRPOGpDZkhzWV9vT2gwejhJc2tGRE9RZEg2UmwtWjFuR1IxdjdDTXFVTmxIX0VxQkJXU1VLWHM4b0o3SHhlTXFUdmhNU0JleWQ3MDlIMXBqYml0QWVqNFZDMlZUdVlMWGJDblBKaXZmRUdTd1I4ZFZmOWpsMWQ4?oc=5",
+      "date": "2026-11-03"
     }
   ]
 }
