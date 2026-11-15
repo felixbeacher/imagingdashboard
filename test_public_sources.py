@@ -41,7 +41,7 @@ class PublicSourceTests(unittest.TestCase):
    with patch.object(m,'public_json',return_value=response):d=m.trial_observations('pet')
    self.assertTrue(all(v['value'] is None for v in d.values()))
  def test_cpi_same_month_yoy_and_missing_values(self):
-  points=[dict(year='2026',period='M08',value='510'),dict(year='2025',period='M08',value='500'),dict(year='2025',period='M10',value='-'),dict(year='2026',period='M13',value='999')]
+  points=[dict(year='2026',period='M08',value='510'),dict(year='2025',period='M08',value='500'),dict(year='2026',period='M10',value='520'),dict(year='2025',period='M10',value='-'),dict(year='2026',period='M13',value='999')]
   response={'status':'REQUEST_SUCCEEDED','Results':{'series':[{'seriesID':'CUUR0000SAM','data':points}]}}
   with patch.object(m,'public_json',return_value=response):d=m.us_medical_inflation()
   self.assertAlmostEqual(d['value'],2);self.assertEqual(d['period'],'2026-08');self.assertIn('does not tell us what hospitals pay',d['methodology'])

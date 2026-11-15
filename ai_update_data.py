@@ -800,10 +800,11 @@ def us_medical_inflation():
                 raise ValueError('Invalid CPI index value')
             if date(y, m, 1) <= date.today():
                 points[y, m] = value
-    current = max(points)
-    previous = (current[0] - 1, current[1])
-    if previous not in points:
+    yoy_months = [ym for ym in points if (ym[0] - 1, ym[1]) in points]
+    if not yoy_months:
         raise ValueError('Matching prior-year CPI month is missing; no alternative period substituted')
+    current = max(yoy_months)
+    previous = (current[0] - 1, current[1])
     value = (points[current] / points[previous] - 1) * 100
     period = f'{current[0]}-{current[1]:02d}'
     history = []
