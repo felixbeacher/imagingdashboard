@@ -1,7 +1,71 @@
 {
-  "edition": "2026-11-11",
+  "edition": "2026-11-16",
   "mode": "automated",
   "articles": [
+    {
+      "id": "news-94def217875929fb",
+      "category": "ma",
+      "date": "2026-11-16",
+      "region": "Location not stated in headline",
+      "title": "DLA Piper advises Radon Medical Imaging on acquisition by Leonard Green & Partners",
+      "source": "Legal Desire",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNdElySDdYb1RIWEtoUzcwRl85Zlo0YnlKOXkwZTZJSGNGcGFGa2NGZGtTR1d4b0RYZVlSVVdzUGEwV3ROLUdZcGRvam00S1c5SExHa1pydnV5LWJMMWNLVm53UGxWNlVNZ1M1RVpJOEhxUm1qQzhuN010ZFdDUDNKakREVDZISEF0OEpOXzJoZTBGVGFvcUc0MDBkUjV4dFUtcUFOd2NETjM?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Legal Desire published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-11-16",
+      "created": "2026-11-16"
+    },
+    {
+      "id": "news-579bb4255e64a8be",
+      "category": "funding",
+      "date": "2026-11-16",
+      "region": "Location not stated in headline",
+      "title": "TestDynamics Secures $9 Million With Series A Backing for Medical Imaging AI Evaluation",
+      "source": "Unite.AI",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPdkp4eVlkQmI4UkNpamFNRTFyYWZGZzBnS05mbHlCb3Q0R1hXS2RLWHl0a0lseDl2Z08tOE1IdWljZ2FSVVhKSm14Vk9UdUQ0M1RBX2VHdkRHdEQ1M0lzTi0xSS1VdkFtSXB4V1J5cTd3bE1RY3JQOWh4c3dlQm9zTm5kdWw3b0llRDlR?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Unite.AI published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "For commercial financing, ask how capital supports product delivery and long-term maintenance; for research grants or R&D spending, check study scope, timelines and clinical translation.",
+      "watch": "Announced funding, R&D investment or grant allocation does not by itself establish profitability, cash runway, completed research or routine clinical adoption. Check the disclosed terms before drawing conclusions.",
+      "method": "source-digest",
+      "checked": "2026-11-16",
+      "created": "2026-11-16"
+    },
+    {
+      "id": "news-295a4e52f8322a91",
+      "category": "partnerships",
+      "date": "2026-11-13",
+      "region": "Location not stated in headline",
+      "title": "Nanox Imaging Expands Its Market Presence in Greece with Medworks Partnership",
+      "source": "Applied Radiology",
+      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOTWtfcUp6ZEpqX2Y1Y0dQMFRzT19DWnZWbENTLVpDX3RRNENQT0F0MHZnMU1jcmVuS1p0YVdHRVRfMUJfREx4Z29NdkJvMi03T1R1elYwc1NTX3lVcWdqRjF5bW5MOTdDTktENk9VeGZZU2k4MXJ4c01YTjh3UDhkR282NUExSEtwb1B1YjRCS1JpODlSaVMzWl9vUlVsUVF4YzBJNVg1RmRBWTdhVk1iWEFSdnNRdw?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Applied Radiology published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-16",
+      "created": "2026-11-16"
+    },
+    {
+      "id": "news-403d945aabf034a5",
+      "category": "partnerships",
+      "date": "2026-11-12",
+      "region": "Location not stated in headline",
+      "title": "RadNet's Imaging Growth Can Fund DeepHealth's Hospital Rollout",
+      "source": "Seeking Alpha",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOR0RoU3VpTG9ycXZwczN0OGRrenpIZlZFaGhLU0Q3bWNQQndYZ1p4TkJWVTJlV3cteGpJOVVKUFhvNjdzT3kwMW5Gekl1ZFdxOG5TVVU0UGxrUG5QN0JueHQtNHUycWxIWlhERjZLZzUwTG9Uc2FwRDZVbHBXUFUtc2k1YzRabWwwdkNUY2d3N210UXFGa2ZvRzNJNkxaQVlNZHNLUGZwOU0?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Seeking Alpha published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-16",
+      "created": "2026-11-16"
+    },
     {
       "id": "news-a32de43243aa5455",
       "category": "ma",
@@ -440,7 +504,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-11-11",
+    "last_attempt": "2026-11-16",
     "sources": [
       {
         "name": "Radiology Business",
@@ -607,6 +671,26 @@
       "title": "EASE Raises $9.5 Million To Expand AI-Enabled Medical Imaging And Surgical Robotics In South Africa And Ghana",
       "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQd3Jhd29tLWF4ejhmX3pwUXBXWF9ZQmJDWUhDVXhDYjhaYWd2Z3k1UzNtRDdGaEROY3lHTWJweFI4SDdDVnVTR1JiLWhWNDdqbDRPOGpDZkhzWV9vT2gwejhJc2tGRE9RZEg2UmwtWjFuR1IxdjdDTXFVTmxIX0VxQkJXU1VLWHM4b0o3SHhlTXFUdmhNU0JleWQ3MDlIMXBqYml0QWVqNFZDMlZUdVlMWGJDblBKaXZmRUdTd1I4ZFZmOWpsMWQ4?oc=5",
       "date": "2026-11-03"
+    },
+    {
+      "title": "DLA Piper advises Radon Medical Imaging on acquisition by Leonard Green & Partners",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNdElySDdYb1RIWEtoUzcwRl85Zlo0YnlKOXkwZTZJSGNGcGFGa2NGZGtTR1d4b0RYZVlSVVdzUGEwV3ROLUdZcGRvam00S1c5SExHa1pydnV5LWJMMWNLVm53UGxWNlVNZ1M1RVpJOEhxUm1qQzhuN010ZFdDUDNKakREVDZISEF0OEpOXzJoZTBGVGFvcUc0MDBkUjV4dFUtcUFOd2NETjM?oc=5",
+      "date": "2026-11-16"
+    },
+    {
+      "title": "TestDynamics Secures $9 Million With Series A Backing for Medical Imaging AI Evaluation",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPdkp4eVlkQmI4UkNpamFNRTFyYWZGZzBnS05mbHlCb3Q0R1hXS2RLWHl0a0lseDl2Z08tOE1IdWljZ2FSVVhKSm14Vk9UdUQ0M1RBX2VHdkRHdEQ1M0lzTi0xSS1VdkFtSXB4V1J5cTd3bE1RY3JQOWh4c3dlQm9zTm5kdWw3b0llRDlR?oc=5",
+      "date": "2026-11-16"
+    },
+    {
+      "title": "Nanox Imaging Expands Its Market Presence in Greece with Medworks Partnership",
+      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOTWtfcUp6ZEpqX2Y1Y0dQMFRzT19DWnZWbENTLVpDX3RRNENQT0F0MHZnMU1jcmVuS1p0YVdHRVRfMUJfREx4Z29NdkJvMi03T1R1elYwc1NTX3lVcWdqRjF5bW5MOTdDTktENk9VeGZZU2k4MXJ4c01YTjh3UDhkR282NUExSEtwb1B1YjRCS1JpODlSaVMzWl9vUlVsUVF4YzBJNVg1RmRBWTdhVk1iWEFSdnNRdw?oc=5",
+      "date": "2026-11-13"
+    },
+    {
+      "title": "RadNet's Imaging Growth Can Fund DeepHealth's Hospital Rollout",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOR0RoU3VpTG9ycXZwczN0OGRrenpIZlZFaGhLU0Q3bWNQQndYZ1p4TkJWVTJlV3cteGpJOVVKUFhvNjdzT3kwMW5Gekl1ZFdxOG5TVVU0UGxrUG5QN0JueHQtNHUycWxIWlhERjZLZzUwTG9Uc2FwRDZVbHBXUFUtc2k1YzRabWwwdkNUY2d3N210UXFGa2ZvRzNJNkxaQVlNZHNLUGZwOU0?oc=5",
+      "date": "2026-11-12"
     }
   ]
 }
