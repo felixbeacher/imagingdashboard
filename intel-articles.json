@@ -1,7 +1,71 @@
 {
-  "edition": "2026-11-16",
+  "edition": "2026-11-23",
   "mode": "automated",
   "articles": [
+    {
+      "id": "news-c09e4f3b0d96af7c",
+      "category": "partnerships",
+      "date": "2026-11-23",
+      "region": "Location not stated in headline",
+      "title": "Mach7 Technologies and Rad AI Partner to Carry Radiologists' Work from Image to Report",
+      "source": "PR Newswire",
+      "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQTVFwSVhDR2FNSFRGaG5jZ25BUGpNTjdFdjJjS0Q0ZGFfb0JMd2dnYXRsZXZ3ekZQMDlnWDRndER4UDZ1UFlrVTJFRGVfLXZzVFp4MkJwS0RNMkxfQVFCeG9oblliNFBNOVZtaVdEbjdhUlI1bDgzMVBFdjFMNktDaUxJTlU5ajUtenk1cUR1Y2MxdjAwTkFXMVJRcU1qVDBVZ2tEUHdhc1ZuOU53djQ3LXZIQ0xxMzJnNkJfTV9XdUhvdksycTlpZUdEd2xuUzBFZ0NGOTdocjE?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "PR Newswire published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-23",
+      "created": "2026-11-23"
+    },
+    {
+      "id": "news-ec60d27d8fa97a11",
+      "category": "partnerships",
+      "date": "2026-11-23",
+      "region": "Location not stated in headline",
+      "title": "Lima Radiological Associates, Inc. Contracts with Healthcare Administrative Partners for Comprehensive Revenue Cycle Management Services",
+      "source": "Business Wire",
+      "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxOTzFId19FVDlHV08tQTBOd0M4R1l5WXhlaXE1MEJuMWxNVVVWVkFTTVlhS2F2SnB2THZGbmVaWmx2TjQ5cWtEVGxjRFBPVW9ac2MzM2RpUHdUS0pzOHlVYVZxcHlfZEdpTllRS3gxMVktR2NjVzdkRHNENk9EcW90YVZMWFpIb1hiSTUxVXJYZERZbVBiMHZuUWpDc1luX0doXzdpVU1udWNPQm02XzR3bXJxc3lyeUs2QV9xS04zOVFKd1VSMGxKemVqczktSzZyamZCSjFkeG5GOFAtX0hWc2tQejNYTmxibXNBMUZjT3N5NFpnU2JSS1BUYW5NRXVxU0pkWnRjU1BhOVd1NkFLWTVLNEFGZ01WUUVWdQ?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Business Wire published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Ask what is actually available: product access, integration, local support or a named deployment. Evaluate implementation responsibilities and compatibility with your existing systems.",
+      "watch": "A partnership announcement is not evidence of a completed rollout, revenue or improved clinical outcomes. Look for named customers and measured results.",
+      "method": "source-digest",
+      "checked": "2026-11-23",
+      "created": "2026-11-23"
+    },
+    {
+      "id": "news-709b21e7c72594e4",
+      "category": "ma",
+      "date": "2026-11-22",
+      "region": "Location not stated in headline",
+      "title": "Pacific Equity Partners signs to acquire Allegro’s $800m radiology biz",
+      "source": "AFR",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNMUdGeHBva2dpRjQ2Zi0wbWc4ZVRjSDdXX196cDNrUm5jN09hZk5lVDRramtJcXBiUk44eVBzY2g2bl9aY25EXzdvMGJhUG95VmhNWXg3MUlnaHgxS3N5QzNheGRKSENWWmU5TTl0Zzcxbzl6ZFJGUjZVdldFaHVaVzdQbWxPN2hNMDJxVFp4QmlqZ0VMT0hqT1NtaTBqbHE3czRPRHZQamhETDE2SEotV1VCTW53bmx5?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "AFR published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Review whether a proposed ownership change could affect service support, supplier choice or contract renewal. Ask the companies about product roadmaps and continuity arrangements.",
+      "watch": "Check whether this is an agreement, a proposal or a completed transaction. Do not assume that an announced deal has closed.",
+      "method": "source-digest",
+      "checked": "2026-11-23",
+      "created": "2026-11-23"
+    },
+    {
+      "id": "news-b37e8ca42929cdd7",
+      "category": "regulatory",
+      "date": "2026-11-21",
+      "region": "United States (named in headline)",
+      "title": "Siemens Healthineers Secures FDA Clearance for Syngo.CT Coronary Cockpit Software",
+      "source": "Applied Radiology",
+      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPeWhKWXdKcDlaV0VvUFRTcmlJWTViVUJES3cxR0U2OFlzVl9Gb1o0eGVpdGptRm9UbWtneURNa0ZyQVVhSzk1RkpSSGNKM3MyazhxQzQ3ci04UFJCdG5fU3RFeE9Wd1o3M1A2SzJPTVVfbGJ0Nncta0tQTm5tdTBER0NjY1hJTXREVVN4QlplRC1pM2NldTdGWXF4QTNXLUlMdDZhOWlDR1NzVEZlUXF3MV9VNE9VS2VCVVFz?oc=5",
+      "status": "Source report · unverified announcement",
+      "summary": "Applied Radiology published the report linked below (headline reproduced above; full report not independently verified).",
+      "meaning": "Check the authorised indication, jurisdiction and compatibility with your clinical workflow before considering adoption. Ask for the decision record and local validation evidence.",
+      "watch": "Regulatory authorisation does not by itself demonstrate improved patient outcomes, reimbursement or suitability for every scanner.",
+      "method": "source-digest",
+      "checked": "2026-11-23",
+      "created": "2026-11-23"
+    },
     {
       "id": "news-94def217875929fb",
       "category": "ma",
@@ -504,7 +568,7 @@
     }
   ],
   "backend": {
-    "last_attempt": "2026-11-16",
+    "last_attempt": "2026-11-23",
     "sources": [
       {
         "name": "Radiology Business",
@@ -691,6 +755,26 @@
       "title": "RadNet's Imaging Growth Can Fund DeepHealth's Hospital Rollout",
       "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOR0RoU3VpTG9ycXZwczN0OGRrenpIZlZFaGhLU0Q3bWNQQndYZ1p4TkJWVTJlV3cteGpJOVVKUFhvNjdzT3kwMW5Gekl1ZFdxOG5TVVU0UGxrUG5QN0JueHQtNHUycWxIWlhERjZLZzUwTG9Uc2FwRDZVbHBXUFUtc2k1YzRabWwwdkNUY2d3N210UXFGa2ZvRzNJNkxaQVlNZHNLUGZwOU0?oc=5",
       "date": "2026-11-12"
+    },
+    {
+      "title": "Mach7 Technologies and Rad AI Partner to Carry Radiologists' Work from Image to Report",
+      "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQTVFwSVhDR2FNSFRGaG5jZ25BUGpNTjdFdjJjS0Q0ZGFfb0JMd2dnYXRsZXZ3ekZQMDlnWDRndER4UDZ1UFlrVTJFRGVfLXZzVFp4MkJwS0RNMkxfQVFCeG9oblliNFBNOVZtaVdEbjdhUlI1bDgzMVBFdjFMNktDaUxJTlU5ajUtenk1cUR1Y2MxdjAwTkFXMVJRcU1qVDBVZ2tEUHdhc1ZuOU53djQ3LXZIQ0xxMzJnNkJfTV9XdUhvdksycTlpZUdEd2xuUzBFZ0NGOTdocjE?oc=5",
+      "date": "2026-11-23"
+    },
+    {
+      "title": "Lima Radiological Associates, Inc. Contracts with Healthcare Administrative Partners for Comprehensive Revenue Cycle Management Services",
+      "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxOTzFId19FVDlHV08tQTBOd0M4R1l5WXhlaXE1MEJuMWxNVVVWVkFTTVlhS2F2SnB2THZGbmVaWmx2TjQ5cWtEVGxjRFBPVW9ac2MzM2RpUHdUS0pzOHlVYVZxcHlfZEdpTllRS3gxMVktR2NjVzdkRHNENk9EcW90YVZMWFpIb1hiSTUxVXJYZERZbVBiMHZuUWpDc1luX0doXzdpVU1udWNPQm02XzR3bXJxc3lyeUs2QV9xS04zOVFKd1VSMGxKemVqczktSzZyamZCSjFkeG5GOFAtX0hWc2tQejNYTmxibXNBMUZjT3N5NFpnU2JSS1BUYW5NRXVxU0pkWnRjU1BhOVd1NkFLWTVLNEFGZ01WUUVWdQ?oc=5",
+      "date": "2026-11-23"
+    },
+    {
+      "title": "Pacific Equity Partners signs to acquire Allegro’s $800m radiology biz",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNMUdGeHBva2dpRjQ2Zi0wbWc4ZVRjSDdXX196cDNrUm5jN09hZk5lVDRramtJcXBiUk44eVBzY2g2bl9aY25EXzdvMGJhUG95VmhNWXg3MUlnaHgxS3N5QzNheGRKSENWWmU5TTl0Zzcxbzl6ZFJGUjZVdldFaHVaVzdQbWxPN2hNMDJxVFp4QmlqZ0VMT0hqT1NtaTBqbHE3czRPRHZQamhETDE2SEotV1VCTW53bmx5?oc=5",
+      "date": "2026-11-22"
+    },
+    {
+      "title": "Siemens Healthineers Secures FDA Clearance for Syngo.CT Coronary Cockpit Software",
+      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPeWhKWXdKcDlaV0VvUFRTcmlJWTViVUJES3cxR0U2OFlzVl9Gb1o0eGVpdGptRm9UbWtneURNa0ZyQVVhSzk1RkpSSGNKM3MyazhxQzQ3ci04UFJCdG5fU3RFeE9Wd1o3M1A2SzJPTVVfbGJ0Nncta0tQTm5tdTBER0NjY1hJTXREVVN4QlplRC1pM2NldTdGWXF4QTNXLUlMdDZhOWlDR1NzVEZlUXF3MV9VNE9VS2VCVVFz?oc=5",
+      "date": "2026-11-21"
     }
   ]
 }
